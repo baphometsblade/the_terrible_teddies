@@ -1,5 +1,7 @@
 // gameLogic.js
 
+const Teddy = require('./models/Teddy');
+
 // Function to initiate a battle. This should set up the initial state for a battle.
 function initiateBattle(playerTeddy, opponentTeddy) {
     console.log('Initiating battle between', playerTeddy.name, 'and', opponentTeddy.name);
@@ -23,25 +25,26 @@ function executeTurn(battleState, playerMove) {
         opponentTeddy.currentHealth -= playerTeddy.attackDamage;
     }
     
+    // Switch turn
+    battleState.turn = battleState.turn === 'player' ? 'opponent' : 'player';
+    
+    return battleState;
+}
+
+// Function to determine the outcome of the battle
+function determineBattleOutcome(battleState) {
+    const { playerTeddy, opponentTeddy } = battleState;
     // Check if the opponent is defeated
     if (opponentTeddy.currentHealth <= 0) {
         battleState.winner = 'player';
         console.log('Battle won by player');
-        return battleState;
     }
-    
-    // Process opponent's turn
-    playerTeddy.currentHealth -= opponentTeddy.attackDamage;
     
     // Check if the player is defeated
     if (playerTeddy.currentHealth <= 0) {
         battleState.winner = 'opponent';
         console.log('Battle won by opponent');
-        return battleState;
     }
-    
-    // Switch turn
-    battleState.turn = battleState.turn === 'player' ? 'opponent' : 'player';
     
     return battleState;
 }
@@ -53,8 +56,43 @@ function applySpecialMove(attacker, defender) {
     // This would read the attacker's specialMove property and apply effects accordingly.
 }
 
+// Function to load teddies for a player's lineup from the database
+async function loadTeddiesByIds(teddyIds) {
+    try {
+        const teddies = await Teddy.find({ '_id': { $in: teddyIds } });
+        console.log('Loaded teddies for lineup:', teddies.map(teddy => teddy.name));
+        return teddies;
+    } catch (error) {
+        console.error('Error loading teddies:', error.message, error.stack);
+        throw error; // Rethrow the error to be handled by the calling function
+    }
+}
+
+// Function to save teddy health and other attributes changes to the database
+async function saveTeddyProgress(teddy) {
+    try {
+        const updateData = {
+            health: teddy.currentHealth,
+            // Add other teddy attributes that need to be saved after a battle
+            // Example: experience: teddy.experience
+        };
+        // Update the example attribute if it exists
+        if (teddy.experience) {
+            updateData.experience = teddy.experience;
+        }
+        await Teddy.findByIdAndUpdate(teddy._id, updateData);
+        console.log(`Saved teddy progress for ${teddy.name}`);
+    } catch (error) {
+        console.error('Error saving teddy progress:', error.message, error.stack);
+        throw error; // Rethrow the error to be handled by the calling function
+    }
+}
+
 module.exports = {
     initiateBattle,
     executeTurn,
-    applySpecialMove
+    determineBattleOutcome,
+    applySpecialMove,
+    loadTeddiesByIds,
+    saveTeddyProgress
 };

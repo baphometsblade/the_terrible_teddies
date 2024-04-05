@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/_head.ejs') %>
+  <body>
+    <%- include('partials/_header.ejs') %>
+    <main role="main" class="container mt-4">
+      <h1>Select Your Teddies</h1>
+      <form id="lineup-form">
+        <div class="row">
+          <% teddies.forEach(function(teddy) { %>
+            <div class="col-md-4 mb-3">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title"><%= teddy.name %></h5>
+                  <p class="card-text"><%= teddy.description %></p>
+                  <ul class="list-unstyled">
+                    <li>Attack Damage: <%= teddy.attackDamage %></li>
+                    <li>Health: <%= teddy.health %></li>
+                    <li>Special Move: <%= teddy.specialMove %></li>
+                    <li>Rarity: <%= teddy.rarity %></li>
+                  </ul>
+                  <button type="button" class="btn btn-primary select-teddy" data-teddy-id="<%= teddy._id %>">Select</button>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+        <button type="submit" class="btn btn-success mt-3">Initiate Battle</button>
+      </form>
+    </main>
+    <%- include('partials/_footer.ejs') %>
+    <script src="/js/teddies.js"></script>
+  </body>
+</html>
