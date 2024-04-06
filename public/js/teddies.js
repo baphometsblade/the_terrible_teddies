@@ -26,9 +26,8 @@ $(document).ready(function() {
       success: function(response) {
         // Redirect to battle initiation or update the UI accordingly
         console.log('Battle initiated with lineup:', response);
-        // Implement the correct redirection or UI update logic after the lineup is successfully chosen
-        // For example, redirect to the dashboard or update the UI to show the chosen lineup
-        window.location.href = '/dashboard'; // Redirect to the dashboard page
+        // Redirect to the battle page or update the UI with the battle state
+        window.location.href = '/game/battle'; // Assuming '/game/battle' is the route for the battle page
       },
       error: function(xhr, status, error) {
         console.error('Error initiating battle:', error);

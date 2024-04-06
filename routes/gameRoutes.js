@@ -78,10 +78,28 @@ router.post('/game/execute-turn', isAuthenticated, async (req, res) => {
 router.get('/teddies', isAuthenticated, async (req, res) => {
   try {
     const teddies = await Teddy.find({});
+    if (teddies.length === 0) {
+      console.log('No teddies found in the database');
+      return res.status(404).send('No teddies found');
+    }
     res.render('teddies', { teddies: teddies });
   } catch (error) {
     console.error('Error fetching teddies:', error.message, error.stack);
     res.status(500).send('Error fetching teddies');
+  }
+});
+
+// Route to render the battle view
+router.get('/game/battle', isAuthenticated, async (req, res) => {
+  try {
+    if (!req.session.battleState) {
+      console.log('No battle state found for user:', req.session.userId);
+      return res.redirect('/teddies');
+    }
+    res.render('battle', { battleState: req.session.battleState });
+  } catch (error) {
+    console.error('Error rendering battle view:', error.message, error.stack);
+    res.status(500).send('Error rendering battle view');
   }
 });
 
