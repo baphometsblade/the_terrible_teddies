@@ -1,21 +1,31 @@
 $(document).ready(function() {
   var selectedTeddies = [];
 
+  // Update the teddy selection logic to toggle the 'selected' class and update the array of selected teddies
   $('.select-teddy').click(function() {
     var teddyId = $(this).data('teddy-id');
     if (selectedTeddies.includes(teddyId)) {
       selectedTeddies = selectedTeddies.filter(id => id !== teddyId);
       $(this).removeClass('btn-secondary').addClass('btn-primary');
+      console.log('Teddy deselected:', teddyId);
     } else {
-      selectedTeddies.push(teddyId);
-      $(this).removeClass('btn-primary').addClass('btn-secondary');
+      if (selectedTeddies.length < 2) { // Limit the number of selectable teddies to 2
+        selectedTeddies.push(teddyId);
+        $(this).removeClass('btn-primary').addClass('btn-secondary');
+        console.log('Teddy selected:', teddyId);
+      } else {
+        console.log('Cannot select more than 2 teddies.');
+        alert('You can only select 2 teddies for the battle.');
+      }
     }
   });
 
+  // Submit the selected teddies for battle initiation
   $('#lineup-form').submit(function(event) {
     event.preventDefault();
-    if (selectedTeddies.length === 0) {
-      alert('Please select at least one teddy.');
+    if (selectedTeddies.length < 2) {
+      console.log('Attempted to initiate battle without selecting 2 teddies.');
+      alert('Please select 2 teddies to initiate battle.');
       return;
     }
     $.ajax({
@@ -24,10 +34,8 @@ $(document).ready(function() {
       contentType: 'application/json',
       data: JSON.stringify({ lineup: selectedTeddies }),
       success: function(response) {
-        // Redirect to battle initiation or update the UI accordingly
         console.log('Battle initiated with lineup:', response);
-        // Redirect to the battle page or update the UI with the battle state
-        window.location.href = '/game/battle'; // Assuming '/game/battle' is the route for the battle page
+        window.location.href = '/game/battle'; // Redirect to the battle page
       },
       error: function(xhr, status, error) {
         console.error('Error initiating battle:', error);

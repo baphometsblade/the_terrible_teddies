@@ -36,7 +36,7 @@ router.post('/game/choose-lineup', isAuthenticated, async (req, res) => {
 // Route to initiate a battle
 router.post('/game/initiate-battle', isAuthenticated, (req, res) => {
   try {
-    if (!req.session.teddyLineup || req.session.teddyLineup.length < 2) {
+    if (!req.session.teddyLineup || req.session.teddyLineup.length !== 2) {
       console.log('Invalid teddy lineup for battle initiation');
       return res.status(400).send('Invalid teddy lineup for battle initiation');
     }
