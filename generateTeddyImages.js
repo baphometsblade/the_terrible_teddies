@@ -11,6 +11,7 @@ mongoose.connect(process.env.DATABASE_URL)
   })
   .catch((err) => {
     console.error('MongoDB connection error:', err.message, err.stack);
+    process.exit(1); // Exit the process if we cannot connect to MongoDB
   });
 
 async function generateTeddyImages() {
@@ -25,7 +26,8 @@ async function generateTeddyImages() {
     }
 
     if (!fs.existsSync(placeholderImagePath)) {
-      throw new Error(`Placeholder image does not exist at: ${placeholderImagePath}`);
+      console.error(`Placeholder image does not exist at: ${placeholderImagePath}`);
+      process.exit(1); // Exit the process if the placeholder image does not exist
     }
 
     teddies.forEach(teddy => {
@@ -41,9 +43,10 @@ async function generateTeddyImages() {
     });
   } catch (err) {
     console.error('Error generating teddy images:', err.message, err.stack);
+    process.exit(1); // Exit the process if there is an error during image generation
   } finally {
-    mongoose.connection.close();
-    console.log('MongoDB connection closed');
-    process.exit();
+    mongoose.connection.close(() => {
+      console.log('MongoDB connection closed');
+    });
   }
 }

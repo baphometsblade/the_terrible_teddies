@@ -1,6 +1,7 @@
 // gameLogic.js
 
 const Teddy = require('./models/Teddy');
+const Player = require('./models/Player'); // Import the Player model
 
 // Function to initiate a battle. This should set up the initial state for a battle.
 function initiateBattle(playerTeddy, opponentTeddy) {
@@ -88,11 +89,50 @@ async function saveTeddyProgress(teddy) {
     }
 }
 
+// Function to calculate experience points earned after a battle
+function calculateExperiencePoints(playerTeddy, opponentTeddy) {
+    // Experience points based on opponent's rarity and health
+    const experienceBase = 10;
+    const rarityMultiplier = {
+        'Common': 1,
+        'Uncommon': 1.5,
+        'Rare': 2,
+        'Legendary': 3
+    };
+    const experiencePoints = experienceBase * (rarityMultiplier[opponentTeddy.rarity] || 1);
+    return experiencePoints;
+}
+
+// Function to determine if a player has leveled up based on experience points
+function checkForLevelUp(player) {
+    const experienceForNextLevel = player.level * 20; // Example formula for XP needed to level up
+    if (player.experiencePoints >= experienceForNextLevel) {
+        player.level++;
+        player.experiencePoints -= experienceForNextLevel; // Subtract the experience points used to level up
+        // Call function to handle rewards for leveling up
+        handleLevelUpRewards(player);
+        console.log(`Player leveled up to level ${player.level}`);
+    }
+    return player;
+}
+
+// Function to handle rewards when a player levels up
+function handleLevelUpRewards(player) {
+    // Implement actual rewards logic here
+    // Example: improve teddy stats, unlock new teddies, or award in-game currency
+    player.currency = (player.currency || 0) + 100; // Award in-game currency as a reward
+    console.log(`Rewards given for reaching level ${player.level}`);
+    // Additional rewards logic can be implemented here
+}
+
 module.exports = {
     initiateBattle,
     executeTurn,
     determineBattleOutcome,
     applySpecialMove,
     loadTeddiesByIds,
-    saveTeddyProgress
+    saveTeddyProgress,
+    calculateExperiencePoints,
+    checkForLevelUp,
+    handleLevelUpRewards
 };

@@ -67,4 +67,32 @@
   border-color: #57c300;
 }
 
+/* Styles for selected teddy */
+.card.selected {
+  border: 2px solid #ffce00; /* Highlighted border for selected teddy */
+  background-color: #e6f7ff; /* Light blue background to indicate selection */
+}
+
+/* Styles for battle arena */
+.battle-arena {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+  background-color: #f0f0f0; /* Light grey background for the battle arena */
+}
+
+.battle-field {
+  flex-grow: 1;
+  padding: 20px;
+  border: 1px solid #ccc; /* Grey border for the battle field */
+  margin: 0 10px;
+}
+
+.player-hand, .opponent-hand {
+  width: 150px;
+  padding: 10px;
+  border: 1px solid #ccc; /* Grey border for player and opponent hands */
+  background-color: #fff; /* White background for hands */
+}
+
 /* Add additional custom styles as needed for the game's aesthetic */

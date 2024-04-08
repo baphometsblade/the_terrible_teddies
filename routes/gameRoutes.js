@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { isAuthenticated } = require('./middleware/authMiddleware');
-const { initiateBattle, executeTurn, determineBattleOutcome, loadTeddiesByIds, saveTeddyProgress } = require('../gameLogic');
+const { initiateBattle, executeTurn, determineBattleOutcome, loadTeddiesByIds, saveTeddyProgress, calculateExperiencePoints, checkForLevelUp } = require('../gameLogic');
 const Teddy = require('../models/Teddy'); // Import the Teddy model
+const Player = require('../models/Player'); // Import the Player model
 
 // Route to start a new game session
 router.post('/game/session', isAuthenticated, (req, res) => {
@@ -25,8 +26,14 @@ router.post('/game/choose-lineup', isAuthenticated, async (req, res) => {
       return res.status(404).send('Some teddies not found');
     }
     req.session.teddyLineup = teddies;
-    console.log('Lineup chosen for user:', req.session.userId);
-    res.send('Lineup chosen');
+    req.session.save(err => {
+      if (err) {
+        console.error('Error saving session:', err.message, err.stack);
+        return res.status(500).send('Error saving session');
+      }
+      console.log('Lineup chosen for user:', req.session.userId);
+      res.send('Lineup chosen');
+    });
   } catch (error) {
     console.error('Error choosing lineup:', error.message, error.stack);
     res.status(500).send('Error choosing lineup');
@@ -44,8 +51,14 @@ router.post('/game/initiate-battle', isAuthenticated, (req, res) => {
     const opponentTeddy = req.session.teddyLineup[1];
     const battleState = initiateBattle(playerTeddy, opponentTeddy);
     req.session.battleState = battleState;
-    console.log('Battle initiated for user:', req.session.userId);
-    res.json(battleState);
+    req.session.save(err => {
+      if (err) {
+        console.error('Error saving session:', err.message, err.stack);
+        return res.status(500).send('Error saving session');
+      }
+      console.log('Battle initiated for user:', req.session.userId);
+      res.redirect('/game/battle-arena'); // Redirect to the battle arena view
+    });
   } catch (error) {
     console.error('Error initiating battle:', error.message, error.stack);
     res.status(500).send('Error initiating battle');
@@ -63,11 +76,31 @@ router.post('/game/execute-turn', isAuthenticated, async (req, res) => {
     }
     let updatedBattleState = executeTurn(battleState, playerMove);
     updatedBattleState = determineBattleOutcome(updatedBattleState); // Determine the outcome after executing the turn
+
+    // Find player data
+    const player = await Player.findOne({ userId: req.session.userId });
+
+    // Calculate experience points earned
+    const experiencePointsEarned = calculateExperiencePoints(updatedBattleState.playerTeddy, updatedBattleState.opponentTeddy);
+    player.experiencePoints += experiencePointsEarned;
+    
+    // Check for level up and apply rewards if the player leveled up
+    checkForLevelUp(player);
+
+    // Save the player's new experience points and level
+    await player.save();
+
     await saveTeddyProgress(updatedBattleState.playerTeddy);
     await saveTeddyProgress(updatedBattleState.opponentTeddy);
     req.session.battleState = updatedBattleState;
-    console.log('Turn executed for user:', req.session.userId);
-    res.json(updatedBattleState);
+    req.session.save(err => {
+      if (err) {
+        console.error('Error saving session:', err.message, err.stack);
+        return res.status(500).send('Error saving session');
+      }
+      console.log('Turn executed for user:', req.session.userId);
+      res.json(updatedBattleState);
+    });
   } catch (error) {
     console.error('Error executing turn:', error.message, error.stack);
     res.status(500).send('Error executing turn');
@@ -89,17 +122,17 @@ router.get('/teddies', isAuthenticated, async (req, res) => {
   }
 });
 
-// Route to render the battle view
-router.get('/game/battle', isAuthenticated, async (req, res) => {
+// Route to render the battle arena view
+router.get('/game/battle-arena', isAuthenticated, async (req, res) => {
   try {
     if (!req.session.battleState) {
       console.log('No battle state found for user:', req.session.userId);
       return res.redirect('/teddies');
     }
-    res.render('battle', { battleState: req.session.battleState });
+    res.render('battleArena', { battleState: req.session.battleState });
   } catch (error) {
-    console.error('Error rendering battle view:', error.message, error.stack);
-    res.status(500).send('Error rendering battle view');
+    console.error('Error rendering battle arena view:', error.message, error.stack);
+    res.status(500).send('Error rendering battle arena view');
   }
 });
 
