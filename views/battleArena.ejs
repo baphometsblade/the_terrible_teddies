@@ -15,7 +15,7 @@
         <% if (battleState && battleState.playerTeddy) { %>
           <div class="teddy-card">
             <h3><%= battleState.playerTeddy.name %></h3>
-            <p>Health: <%= battleState.playerTeddy.currentHealth %></p>
+            <p>Health: <%= battleState.playerTeddy.health %></p>
             <p>Attack Damage: <%= battleState.playerTeddy.attackDamage %></p>
             <p>Special Move: <%= battleState.playerTeddy.specialMove %></p>
             <!-- Other teddy details here -->
@@ -42,7 +42,7 @@
         <% if (battleState && battleState.opponentTeddy) { %>
           <div class="teddy-card">
             <h3><%= battleState.opponentTeddy.name %></h3>
-            <p>Health: <%= battleState.opponentTeddy.currentHealth %></p>
+            <p>Health: <%= battleState.opponentTeddy.health %></p>
             <p>Attack Damage: <%= battleState.opponentTeddy.attackDamage %></p>
             <p>Special Move: <%= battleState.opponentTeddy.specialMove %></p>
             <!-- Other teddy details here -->

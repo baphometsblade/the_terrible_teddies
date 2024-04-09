@@ -45,10 +45,10 @@ $(document).ready(function() {
       return;
     }
     $.ajax({
-      url: '/game/initiate-battle', // Corrected the URL to initiate battle
+      url: '/game/initiate-battle',
       method: 'POST',
       contentType: 'application/json',
-      data: JSON.stringify({ selectedTeddyIds: selectedTeddyIds }), // Corrected the data format to match expected server-side format
+      data: JSON.stringify({ selectedTeddyIds: selectedTeddyIds }),
       success: function(response) {
         console.log('Battle initiated with teddies:', response);
         // Redirect to the battle arena view
