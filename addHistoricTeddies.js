@@ -4,7 +4,6 @@ const Teddy = require('./models/Teddy');
 
 const historicTeddies = [
   {
-    "_id": "unique_id_historic_1",
     "name": "Emperor Bare-us Caesar",
     "description": "A bear so commanding in the cuddle coliseum, he can make any plushy pledge allegiance with just a wink.",
     "attackDamage": 29,
@@ -19,7 +18,6 @@ const historicTeddies = [
     "collectibilityFactor": 10
   },
   {
-    "_id": "unique_id_historic_2",
     "name": "Cleobearta",
     "description": "With a charm that could launch a thousand ships, this bear's allure is as legendary as her reign.",
     "attackDamage": 27,
@@ -34,7 +32,6 @@ const historicTeddies = [
     "collectibilityFactor": 10
   },
   {
-    "_id": "unique_id_historic_3",
     "name": "Sir Cuddlesalot",
     "description": "A knight so brave and bold, he'd storm the castle gates for a damsel in need of a snuggle.",
     "attackDamage": 25,
@@ -48,7 +45,7 @@ const historicTeddies = [
     "voiceLine": "For honor, for glory, for cuddles!",
     "collectibilityFactor": 8
   },
-  // ... (rest of the historic teddies provided by the user with their _id included) ...
+  // ... (rest of the historic teddies provided by the user) ...
 ];
 
 mongoose.connect(process.env.DATABASE_URL)
@@ -61,17 +58,17 @@ mongoose.connect(process.env.DATABASE_URL)
   });
 
 async function addHistoricTeddies() {
-  const ids = historicTeddies.map(teddy => teddy._id);
-  const uniqueIds = new Set(ids);
-  if (uniqueIds.size !== historicTeddies.length) {
-    console.error('Duplicate _id values found in the historicTeddies array.');
+  const names = historicTeddies.map(teddy => teddy.name);
+  const uniqueNames = new Set(names);
+  if (uniqueNames.size !== historicTeddies.length) {
+    console.error('Duplicate name values found in the historicTeddies array.');
     mongoose.connection.close();
     return;
   }
 
   try {
     for (const teddyData of historicTeddies) {
-      const existingTeddy = await Teddy.findById(teddyData._id).exec();
+      const existingTeddy = await Teddy.findOne({ name: teddyData.name }).exec();
       if (existingTeddy) {
         console.log(`Teddy already exists: ${teddyData.name}`);
         continue;

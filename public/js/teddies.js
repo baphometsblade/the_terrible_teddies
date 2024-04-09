@@ -1,10 +1,22 @@
 $(document).ready(function() {
   var selectedTeddies = [];
 
+  // Initialize the carousel with Slick and set the active class on the center teddy
+  $('#teddies-collection').slick({
+    centerMode: true,
+    centerPadding: '60px',
+    slidesToShow: 3,
+    focusOnSelect: true
+  }).on('afterChange', function(event, slick, currentSlide) {
+    $('.teddy-card').removeClass('active-teddy');
+    var currentTeddy = $('.slick-center').find('.teddy-card');
+    currentTeddy.addClass('active-teddy');
+  });
+
   // Update the teddy selection logic to toggle the 'selected' class and update the array of selected teddies
-  $('.card').on('click', '.select-teddy', function() {
-    var teddyId = $(this).data('teddy-id');
-    var teddyCard = $(this).closest('.card');
+  $('.teddy-card').on('click', '.select-teddy', function() {
+    var teddyId = $(this).closest('.teddy-card').data('teddy-id');
+    var teddyCard = $(this).closest('.teddy-card');
     if (selectedTeddies.includes(teddyId)) {
       selectedTeddies = selectedTeddies.filter(id => id !== teddyId);
       teddyCard.removeClass('selected');
@@ -33,12 +45,12 @@ $(document).ready(function() {
       return;
     }
     $.ajax({
-      url: '/game/choose-lineup',
+      url: '/game/initiate-battle', // Corrected the URL to initiate battle
       method: 'POST',
       contentType: 'application/json',
-      data: JSON.stringify({ lineup: selectedTeddyIds }),
+      data: JSON.stringify({ selectedTeddyIds: selectedTeddyIds }), // Corrected the data format to match expected server-side format
       success: function(response) {
-        console.log('Battle initiated with lineup:', response);
+        console.log('Battle initiated with teddies:', response);
         // Redirect to the battle arena view
         window.location.href = '/game/battle-arena';
       },

@@ -12,19 +12,56 @@
       <div id="player-hand" class="player-hand">
         <h2>Your Hand</h2>
         <!-- Player's teddies will be dynamically inserted here -->
+        <% if (battleState && battleState.playerTeddy) { %>
+          <div class="teddy-card">
+            <h3><%= battleState.playerTeddy.name %></h3>
+            <p>Health: <%= battleState.playerTeddy.currentHealth %></p>
+            <p>Attack Damage: <%= battleState.playerTeddy.attackDamage %></p>
+            <p>Special Move: <%= battleState.playerTeddy.specialMove %></p>
+            <!-- Other teddy details here -->
+          </div>
+        <% } else { %>
+          <p>No teddy selected.</p>
+        <% } %>
       </div>
       <div id="battle-field" class="battle-field">
         <h2>Playing Field</h2>
         <!-- The playing field where teddies battle -->
+        <% if (battleState) { %>
+          <p>Turn: <%= battleState.turn %></p>
+          <% if (battleState.winner) { %>
+            <p>Winner: <%= battleState.winner %></p>
+          <% } else { %>
+            <p>Status: Ongoing</p>
+          <% } %>
+        <% } %>
       </div>
       <div id="opponent-hand" class="opponent-hand">
         <h2>Opponent's Hand</h2>
         <!-- Opponent's teddies will be dynamically inserted here -->
+        <% if (battleState && battleState.opponentTeddy) { %>
+          <div class="teddy-card">
+            <h3><%= battleState.opponentTeddy.name %></h3>
+            <p>Health: <%= battleState.opponentTeddy.currentHealth %></p>
+            <p>Attack Damage: <%= battleState.opponentTeddy.attackDamage %></p>
+            <p>Special Move: <%= battleState.opponentTeddy.specialMove %></p>
+            <!-- Other teddy details here -->
+          </div>
+        <% } else { %>
+          <p>No opponent teddy selected.</p>
+        <% } %>
       </div>
     </div>
     <div id="battle-controls" class="battle-controls">
-      <button id="attack-button" class="btn btn-danger">Attack</button>
-      <button id="special-move-button" class="btn btn-warning">Special Move</button>
+      <% if (battleState && battleState.playerTeddy && battleState.opponentTeddy && !battleState.winner) { %>
+        <button id="attack-button" class="btn btn-danger">Attack</button>
+        <button id="special-move-button" class="btn btn-warning">Special Move</button>
+      <% } else if (battleState && battleState.winner) { %>
+        <p>Battle Over. Winner: <%= battleState.winner %></p>
+        <a href="/teddies" class="btn btn-primary">Return to Teddies</a>
+      <% } else { %>
+        <p>Select teddies to see battle controls.</p>
+      <% } %>
       <!-- Additional battle controls can be added here -->
     </div>
   </main>

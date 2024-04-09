@@ -41,14 +41,20 @@ router.post('/game/choose-lineup', isAuthenticated, async (req, res) => {
 });
 
 // Route to initiate a battle
-router.post('/game/initiate-battle', isAuthenticated, (req, res) => {
+router.post('/game/initiate-battle', isAuthenticated, async (req, res) => {
   try {
-    if (!req.session.teddyLineup || req.session.teddyLineup.length !== 2) {
+    if (typeof req.body.selectedTeddyIds !== 'string' || req.body.selectedTeddyIds.split(',').length !== 2) {
       console.log('Invalid teddy lineup for battle initiation');
       return res.status(400).send('Invalid teddy lineup for battle initiation');
     }
-    const playerTeddy = req.session.teddyLineup[0];
-    const opponentTeddy = req.session.teddyLineup[1];
+    const selectedTeddyIds = req.body.selectedTeddyIds.split(',');
+    const teddies = await loadTeddiesByIds(selectedTeddyIds);
+    if (teddies.length !== selectedTeddyIds.length) {
+      console.log('Some teddies not found for battle initiation');
+      return res.status(404).send('Some teddies not found for battle initiation');
+    }
+    const playerTeddy = teddies[0];
+    const opponentTeddy = teddies[1];
     const battleState = initiateBattle(playerTeddy, opponentTeddy);
     req.session.battleState = battleState;
     req.session.save(err => {
@@ -57,7 +63,7 @@ router.post('/game/initiate-battle', isAuthenticated, (req, res) => {
         return res.status(500).send('Error saving session');
       }
       console.log('Battle initiated for user:', req.session.userId);
-      res.redirect('/game/battle-arena'); // Redirect to the battle arena view
+      res.send('Battle initiated'); // Removed redirection to non-existent route
     });
   } catch (error) {
     console.error('Error initiating battle:', error.message, error.stack);
@@ -122,18 +128,6 @@ router.get('/teddies', isAuthenticated, async (req, res) => {
   }
 });
 
-// Route to render the battle arena view
-router.get('/game/battle-arena', isAuthenticated, async (req, res) => {
-  try {
-    if (!req.session.battleState) {
-      console.log('No battle state found for user:', req.session.userId);
-      return res.redirect('/teddies');
-    }
-    res.render('battleArena', { battleState: req.session.battleState });
-  } catch (error) {
-    console.error('Error rendering battle arena view:', error.message, error.stack);
-    res.status(500).send('Error rendering battle arena view');
-  }
-});
+// Removed the '/game/battle-arena' route as it is not implemented
 
 module.exports = router;

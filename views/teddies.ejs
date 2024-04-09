@@ -3,15 +3,17 @@
   <head>
     <%- include('partials/_head.ejs') %>
     <title>Terrible Teddies - Your Collection</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick-theme.css"/>
   </head>
   <body>
     <%- include('partials/_nav.ejs') %>
     <main role="main" class="container">
       <h1>Your Teddies</h1>
-      <div id="teddies-collection" class="row">
+      <div id="teddies-collection" class="carousel">
         <% teddies.forEach(function(teddy) { %>
-          <div class="col-md-4">
-            <div class="card mb-4 shadow-sm teddy-card">
+          <div>
+            <div class="card mb-4 shadow-sm teddy-card" data-teddy-id="<%= teddy._id %>">
               <img src="/images/teddies/<%= teddy._id %>.jpg" class="card-img-top" alt="<%= teddy.name %>">
               <div class="card-body">
                 <h5 class="card-title"><%= teddy.name %></h5>
@@ -24,7 +26,7 @@
                 </ul>
                 <div class="d-flex justify-content-between align-items-center">
                   <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-outline-secondary select-teddy" data-teddy-id="<%= teddy._id %>">Select</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary select-teddy">Select</button>
                   </div>
                   <small class="text-muted"><%= teddy.rarity %> Rarity</small>
                 </div>
@@ -33,14 +35,44 @@
           </div>
         <% }); %>
       </div>
-      <form id="lineup-form" action="/game/choose-lineup" method="post">
+      <form id="lineup-form" action="/game/initiate-battle" method="post">
         <input type="hidden" name="selectedTeddyIds" id="selectedTeddyIds" value="">
         <button type="submit" class="btn btn-primary">Initiate Battle</button>
       </form>
     </main>
     <%- include('partials/_footer.ejs') %>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick.min.js"></script>
     <script src="/js/main.js"></script>
     <script src="/js/teddies.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function(){
+        $('#teddies-collection').slick({
+          centerMode: true,
+          centerPadding: '60px',
+          slidesToShow: 1,
+          responsive: [
+            {
+              breakpoint: 768,
+              settings: {
+                arrows: false,
+                centerMode: true,
+                centerPadding: '40px',
+                slidesToShow: 1
+              }
+            },
+            {
+              breakpoint: 480,
+              settings: {
+                arrows: false,
+                centerMode: true,
+                centerPadding: '20px',
+                slidesToShow: 1
+              }
+            }
+          ]
+        });
+      });
+    </script>
   </body>
 </html>

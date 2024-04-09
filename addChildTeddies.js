@@ -4,7 +4,6 @@ const Teddy = require('./models/Teddy');
 
 const childTeddies = [
   {
-    "_id": new mongoose.Types.ObjectId(),
     "name": "Naughty Naptime Ned",
     "description": "Once a bear who helped children sleep, now he's more interested in what the adults do in bed.",
     "attackDamage": 18,
@@ -21,7 +20,7 @@ const childTeddies = [
   // ... Add the rest of the child-themed teddies provided by the user ...
 ];
 
-mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.DATABASE_URL)
   .then(() => {
     console.log('MongoDB connected successfully');
     addChildTeddies();
@@ -34,6 +33,11 @@ mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTo
 async function addChildTeddies() {
   try {
     for (const teddyData of childTeddies) {
+      const existingTeddy = await Teddy.findOne({ name: teddyData.name }).exec();
+      if (existingTeddy) {
+        console.log(`Teddy already exists: ${teddyData.name}`);
+        continue;
+      }
       const newTeddy = new Teddy(teddyData);
       await newTeddy.save();
       console.log(`Added new child-themed teddy: ${newTeddy.name}`);
@@ -43,8 +47,6 @@ async function addChildTeddies() {
     console.error('Error adding child-themed teddies:', error.message);
     console.error(error.stack);
   } finally {
-    mongoose.connection.close(() => {
-      console.log('MongoDB connection closed');
-    });
+    mongoose.connection.close();
   }
 }
