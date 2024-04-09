@@ -9,10 +9,12 @@
   transition: 0.3s;
   border-radius: 5px; /* Rounded borders */
   background: #f9f9f9; /* Light grey background */
+  cursor: pointer; /* Indicates the card is clickable */
 }
 
 .card:hover {
   box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px); /* Slight lift effect on hover */
 }
 
 .card img {
@@ -68,9 +70,11 @@
 }
 
 /* Styles for selected teddy */
-.card.selected {
+.card.selected, .card.selected:hover {
   border: 2px solid #ffce00; /* Highlighted border for selected teddy */
   background-color: #e6f7ff; /* Light blue background to indicate selection */
+  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.4); /* More pronounced shadow for selected teddy */
+  transform: none; /* No lift effect for selected teddy */
 }
 
 /* Styles for battle arena */
@@ -93,6 +97,14 @@
   padding: 10px;
   border: 1px solid #ccc; /* Grey border for player and opponent hands */
   background-color: #fff; /* White background for hands */
+}
+
+/* Global background image for all pages */
+body {
+  background-image: url('/images/terrible-teddy-background.jpg'); /* Path to the terrible teddy background image */
+  background-size: cover; /* Cover the entire page */
+  background-repeat: no-repeat; /* Do not repeat the image */
+  background-attachment: fixed; /* Fix the background image position */
 }
 
 /* Add additional custom styles as needed for the game's aesthetic */

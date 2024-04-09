@@ -2,7 +2,7 @@ $(document).ready(function() {
   var selectedTeddies = [];
 
   // Update the teddy selection logic to toggle the 'selected' class and update the array of selected teddies
-  $('.select-teddy').click(function() {
+  $('.card').on('click', '.select-teddy', function() {
     var teddyId = $(this).data('teddy-id');
     var teddyCard = $(this).closest('.card');
     if (selectedTeddies.includes(teddyId)) {
@@ -19,12 +19,15 @@ $(document).ready(function() {
         alert('You can only select 2 teddies for the battle.');
       }
     }
+    // Update the hidden input field with the selected teddy IDs
+    $('#selectedTeddyIds').val(selectedTeddies.join(','));
   });
 
   // Submit the selected teddies for battle initiation
   $('#lineup-form').submit(function(event) {
     event.preventDefault();
-    if (selectedTeddies.length !== 2) {
+    var selectedTeddyIds = $('#selectedTeddyIds').val().split(',');
+    if (selectedTeddyIds.length !== 2) {
       console.log('Attempted to initiate battle without selecting exactly 2 teddies.');
       alert('Please select exactly 2 teddies to initiate battle.');
       return;
@@ -33,7 +36,7 @@ $(document).ready(function() {
       url: '/game/choose-lineup',
       method: 'POST',
       contentType: 'application/json',
-      data: JSON.stringify({ lineup: selectedTeddies }),
+      data: JSON.stringify({ lineup: selectedTeddyIds }),
       success: function(response) {
         console.log('Battle initiated with lineup:', response);
         // Redirect to the battle arena view
