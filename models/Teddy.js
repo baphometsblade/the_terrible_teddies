@@ -29,8 +29,8 @@ const teddySchema = new mongoose.Schema({
     type: String,
     required: [true, 'A teddy must have a rarity'],
     enum: {
-      values: ['Common', 'Uncommon', 'Rare', 'Legendary'],
-      message: 'Rarity must be either: Common, Uncommon, Rare, or Legendary'
+      values: ['Common', 'Uncommon', 'Rare', 'Legendary', 'Mythic'],
+      message: 'Rarity must be either: Common, Uncommon, Rare, Legendary, or Mythic'
     }
   },
   theme: {
