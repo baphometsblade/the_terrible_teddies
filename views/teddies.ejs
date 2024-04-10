@@ -10,35 +10,39 @@
     <%- include('partials/_nav.ejs') %>
     <main role="main" class="container">
       <h1>Your Teddies</h1>
-      <div id="teddies-collection" class="carousel">
-        <% teddies.forEach(function(teddy) { %>
-          <div>
-            <div class="card mb-4 shadow-sm teddy-card" data-teddy-id="<%= teddy._id %>">
-              <img src="/images/teddies/<%= teddy._id %>.jpg" class="card-img-top" alt="<%= teddy.name %>">
-              <div class="card-body">
-                <h5 class="card-title"><%= teddy.name %></h5>
-                <p class="card-text"><%= teddy.description %></p>
-                <ul class="list-unstyled">
-                  <li>Attack Damage: <%= teddy.attackDamage %></li>
-                  <li>Health: <%= teddy.health %></li>
-                  <li>Special Move: <%= teddy.specialMove %></li>
-                  <li>Rarity: <%= teddy.rarity %></li>
-                </ul>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-outline-secondary select-teddy">Select</button>
+      <% if (teddies && teddies.length > 0) { %>
+        <div id="teddies-collection" class="carousel">
+          <% teddies.forEach(function(teddy) { %>
+            <div>
+              <div class="card mb-4 shadow-sm teddy-card" data-teddy-id="<%= teddy._id %>">
+                <img src="/images/teddies/<%= teddy._id %>.jpg" class="card-img-top" alt="<%= teddy.name %>">
+                <div class="card-body">
+                  <h5 class="card-title"><%= teddy.name %></h5>
+                  <p class="card-text"><%= teddy.description %></p>
+                  <ul class="list-unstyled">
+                    <li>Attack Damage: <%= teddy.attackDamage %></li>
+                    <li>Health: <%= teddy.health %></li>
+                    <li>Special Move: <%= teddy.specialMove %></li>
+                    <li>Rarity: <%= teddy.rarity %></li>
+                  </ul>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-sm btn-outline-secondary select-teddy">Select</button>
+                    </div>
+                    <small class="text-muted"><%= teddy.rarity %> Rarity</small>
                   </div>
-                  <small class="text-muted"><%= teddy.rarity %> Rarity</small>
                 </div>
               </div>
             </div>
-          </div>
-        <% }); %>
-      </div>
-      <form id="lineup-form" action="/game/initiate-battle" method="post">
-        <input type="hidden" name="selectedTeddyIds" id="selectedTeddyIds" value="">
-        <button type="submit" class="btn btn-primary">Initiate Battle</button>
-      </form>
+          <% }); %>
+        </div>
+        <form id="lineup-form" action="/game/initiate-battle" method="post">
+          <input type="hidden" name="selectedTeddyIds" id="selectedTeddyIds" value="">
+          <button type="submit" class="btn btn-primary">Initiate Battle</button>
+        </form>
+      <% } else { %>
+        <p>No teddies found. Please check back later.</p>
+      <% } %>
     </main>
     <%- include('partials/_footer.ejs') %>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

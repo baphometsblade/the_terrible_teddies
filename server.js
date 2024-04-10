@@ -22,6 +22,9 @@ app.use(express.json());
 // Setting the templating engine to EJS
 app.set("view engine", "ejs");
 
+// Serve static files
+app.use(express.static("public"));
+
 let server;
 
 // Database connection
@@ -87,9 +90,6 @@ app.use(authRoutes);
 
 // Game Interaction Routes
 app.use(gameRoutes);
-
-// Serve static files after route definitions to give priority to EJS views
-app.use(express.static("public"));
 
 // Root path response
 app.get("/", (req, res) => {

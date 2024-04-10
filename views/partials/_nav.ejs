@@ -11,7 +11,7 @@
       <li class="nav-item">
         <a class="nav-link" href="/teddies">Teddies</a>
       </li>
-      <% if (session && session.userId) { %>
+      <% if (locals.session && locals.session.userId) { %>
       <li class="nav-item">
         <a class="nav-link" href="/game/battle-arena">Battle Arena</a>
       </li>

@@ -124,7 +124,8 @@ router.get('/teddies', isAuthenticated, async (req, res) => {
     res.render('teddies', { teddies: teddies });
   } catch (error) {
     console.error('Error fetching teddies:', error.message, error.stack);
-    res.status(500).send('Error fetching teddies');
+    res.status(500).send('Internal Server Error: Unable to fetch teddies.'); // Updated error message for clarity
+    console.error('Detailed error:', error); // Log the full error details for debugging
   }
 });
 

@@ -65,10 +65,14 @@ const teddySchema = new mongoose.Schema({
 teddySchema.index({ name: 1 }, { unique: true });
 teddySchema.index({ rarity: 1 });
 
+// Error handling for duplicate key errors and validation errors
 teddySchema.post('save', function(error, doc, next) {
   if (error.name === 'MongoError' && error.code === 11000) {
     console.error('Error saving document:', error);
     next(new Error('There was a duplicate key error'));
+  } else if (error.name === 'ValidationError') {
+    console.error('Validation error while saving document:', error);
+    next(new Error('Validation failed: ' + error.message));
   } else {
     next(error);
   }
