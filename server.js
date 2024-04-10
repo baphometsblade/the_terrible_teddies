@@ -22,9 +22,6 @@ app.use(express.json());
 // Setting the templating engine to EJS
 app.set("view engine", "ejs");
 
-// Serve static files
-app.use(express.static("public"));
-
 let server;
 
 // Database connection
@@ -50,9 +47,13 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ 
-      mongoUrl: process.env.DATABASE_URL
+      mongoUrl: process.env.DATABASE_URL,
+      collection: 'sessions' // Optionally, specify the collection name for storing sessions
     }),
-    cookie: { secure: process.env.NODE_ENV === 'production' && app.get('env') === 'production' }
+    cookie: { 
+      secure: process.env.NODE_ENV === 'production' && app.get('env') === 'production', // Set secure to true if in a production environment
+      maxAge: 1000 * 60 * 60 * 24 // Set cookie max age to 1 day
+    }
   }),
 );
 
@@ -81,16 +82,14 @@ process.on('SIGINT', () => {
   });
 });
 
-app.on("error", (error) => {
-  console.error(`Server error: ${error.message}`);
-  console.error(error.stack);
-});
-
 // Authentication Routes
 app.use(authRoutes);
 
 // Game Interaction Routes
 app.use(gameRoutes);
+
+// Serve static files after route definitions to give priority to EJS views
+app.use(express.static("public"));
 
 // Root path response
 app.get("/", (req, res) => {
@@ -98,7 +97,7 @@ app.get("/", (req, res) => {
 });
 
 // If no routes handled the request, it's a 404
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.status(404).send("Page not found.");
 });
 

@@ -128,6 +128,4 @@ router.get('/teddies', isAuthenticated, async (req, res) => {
   }
 });
 
-// Removed the '/game/battle-arena' route as it is not implemented
-
 module.exports = router;
