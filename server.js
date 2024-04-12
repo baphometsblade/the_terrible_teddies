@@ -6,6 +6,7 @@ const session = require("express-session");
 const MongoStore = require('connect-mongo');
 const authRoutes = require("./routes/authRoutes");
 const gameRoutes = require('./routes/gameRoutes'); // Include game routes
+const isAuthenticated = require('./routes/authMiddleware'); // Include isAuthenticated middleware
 
 if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET) {
   console.error("Error: config environment variables not set. Please create/edit .env configuration file.");
@@ -50,15 +51,24 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ 
-      mongoUrl: process.env.DATABASE_URL,
-      collection: 'sessions' // Optionally, specify the collection name for storing sessions
+      mongoUrl: process.env.DATABASE_URL, // Use DATABASE_URL from .env for MongoDB connection
+      collection: 'sessions',
+      autoRemove: 'interval',
+      autoRemoveInterval: 10 // In minutes. You may adjust this value as needed.
     }),
     cookie: { 
-      secure: process.env.NODE_ENV === 'production' && app.get('env') === 'production', // Set secure to true if in a production environment
+      secure: app.get('env') === 'production', // Set secure to true if in a production environment
+      httpOnly: true, // Helps prevent client side JS from accessing the cookie
       maxAge: 1000 * 60 * 60 * 24 // Set cookie max age to 1 day
     }
   }),
 );
+
+// Middleware to make userId available in all views
+app.use((req, res, next) => {
+  res.locals.userId = req.session.userId;
+  next();
+});
 
 // MongoDB event listeners
 mongoose.connection.on('connected', () => {
@@ -66,8 +76,7 @@ mongoose.connection.on('connected', () => {
 });
 
 mongoose.connection.on('error', (err) => {
-  console.error(`Mongoose default connection error: ${err.message}`);
-  console.error(err.stack);
+  console.error(`Mongoose default connection error: ${err.message}`, err.stack);
 });
 
 mongoose.connection.on('disconnected', () => {
@@ -91,6 +100,11 @@ app.use(authRoutes);
 // Game Interaction Routes
 app.use(gameRoutes);
 
+// Dashboard route using isAuthenticated middleware
+app.get("/dashboard", isAuthenticated, (req, res) => {
+  res.render("dashboard");
+});
+
 // Root path response
 app.get("/", (req, res) => {
   res.render("index");
@@ -103,7 +117,11 @@ app.use((req, res) => {
 
 // Error handling
 app.use((err, req, res, next) => {
-  console.error(`Unhandled application error: ${err.message}`);
-  console.error(err.stack);
-  res.status(500).send("There was an error serving your request.");
+  if (app.get('env') === 'development') {
+    console.error(`Unhandled application error: ${err.message}`, err.stack);
+    res.status(err.status || 500).send(err.message || "There was an error serving your request.");
+  } else {
+    console.error(`Unhandled application error: ${err.message}`);
+    res.status(err.status || 500).send("An error occurred.");
+  }
 });

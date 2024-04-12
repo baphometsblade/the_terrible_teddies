@@ -5,8 +5,20 @@
     <title>Terrible Teddies - Your Collection</title>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick.css"/>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick-theme.css"/>
+    <style>
+      .teddy-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        opacity: 0.3;
+      }
+    </style>
   </head>
   <body>
+    <img src="/images/teddy-background.jpg" alt="Game Background" class="teddy-background">
     <%- include('partials/_nav.ejs') %>
     <main role="main" class="container">
       <h1>Your Teddies</h1>
@@ -36,7 +48,7 @@
             </div>
           <% }); %>
         </div>
-        <form id="lineup-form" action="/game/initiate-battle" method="post">
+        <form id="lineup-form" action="/game/choose-lineup" method="post">
           <input type="hidden" name="selectedTeddyIds" id="selectedTeddyIds" value="">
           <button type="submit" class="btn btn-primary">Initiate Battle</button>
         </form>

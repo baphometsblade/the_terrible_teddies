@@ -1,7 +1,7 @@
 // gameLogic.js
 
 const Teddy = require('./models/Teddy');
-const Player = require('./models/Player'); // Import the Player model
+const Player = require('./models/Player'); // Re-added Player model import as it might be used elsewhere
 
 // Function to initiate a battle. This should set up the initial state for a battle.
 function initiateBattle(playerTeddy, opponentTeddy) {

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/_head.ejs') %>
+  <link rel="stylesheet" href="/css/dashboard.css"> <!-- Include custom CSS for the dashboard -->
+  <title>Dashboard - The Terrible Teddies</title>
+</head>
+<body>
+  <%- include('partials/_header.ejs') %>
+
+  <div class="container mt-4">
+    <h1>Welcome to your Dashboard</h1>
+    <p>This is the main control panel for your game interactions.</p>
+    <% if (userId) { %>
+      <div class="dashboard-images">
+        <img src="/images/dashboard-background.jpg" alt="Dashboard Background" class="img-fluid"> <!-- Dashboard background image -->
+        <img src="/images/teddy-dashboard.png" alt="Teddy Character" class="img-fluid teddy-dashboard"> <!-- Dashboard teddy character image -->
+      </div>
+    <% } %>
+    <!-- Additional dashboard content goes here -->
+  </div>
+
+  <%- include('partials/_footer.ejs') %>
+  <script src="/js/main.js"></script>
+</body>
+</html>

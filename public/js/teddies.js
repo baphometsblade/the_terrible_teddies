@@ -32,18 +32,30 @@ $(document).ready(function() {
       }
     }
     // Update the hidden input field with the selected teddy IDs
-    $('#selectedTeddyIds').val(selectedTeddies.join(','));
+    $('#selectedTeddyIds').val(JSON.stringify(selectedTeddies));
   });
+
+  // Function to validate selected teddy lineup before initiating battle
+  function validateTeddySelection(selectedTeddyIds) {
+    if (!selectedTeddyIds || !Array.isArray(selectedTeddyIds) || selectedTeddyIds.length !== 2) {
+      console.log('Invalid teddy lineup for battle initiation');
+      alert('Please select exactly 2 teddies to initiate a battle.');
+      return false;
+    }
+    // Add any additional validation logic if needed
+    return true;
+  }
 
   // Submit the selected teddies for battle initiation
   $('#lineup-form').submit(function(event) {
     event.preventDefault();
-    var selectedTeddyIds = $('#selectedTeddyIds').val().split(',');
-    if (selectedTeddyIds.length !== 2) {
-      console.log('Attempted to initiate battle without selecting exactly 2 teddies.');
-      alert('Please select exactly 2 teddies to initiate battle.');
-      return;
+    var selectedTeddyIds = JSON.parse($('#selectedTeddyIds').val());
+
+    // Perform validation
+    if (!validateTeddySelection(selectedTeddyIds)) {
+      return; // Stop the function if validation fails
     }
+
     $.ajax({
       url: '/game/initiate-battle',
       method: 'POST',

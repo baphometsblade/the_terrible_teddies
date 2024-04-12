@@ -3,6 +3,7 @@
 <head>
   <%- include('partials/_head.ejs') %>
   <title>Battle Arena - Terrible Teddies</title>
+  <link rel="stylesheet" href="/css/battleArena.css"> <!-- Include custom CSS for the battle arena -->
 </head>
 <body>
   <%- include('partials/_nav.ejs') %>
@@ -15,10 +16,10 @@
         <% if (battleState && battleState.playerTeddy) { %>
           <div class="teddy-card">
             <h3><%= battleState.playerTeddy.name %></h3>
-            <p>Health: <%= battleState.playerTeddy.health %></p>
+            <p id="player-health" class="player-health">Health: <%= battleState.playerTeddy.currentHealth %></p>
             <p>Attack Damage: <%= battleState.playerTeddy.attackDamage %></p>
             <p>Special Move: <%= battleState.playerTeddy.specialMove %></p>
-            <!-- Other teddy details here -->
+            <img src="/images/<%= battleState.playerTeddy._id %>.png" alt="<%= battleState.playerTeddy.name %>" class="teddy-image"> <!-- Teddy image -->
           </div>
         <% } else { %>
           <p>No teddy selected.</p>
@@ -28,7 +29,7 @@
         <h2>Playing Field</h2>
         <!-- The playing field where teddies battle -->
         <% if (battleState) { %>
-          <p>Turn: <%= battleState.turn %></p>
+          <p class="battle-turn">Turn: <%= battleState.turn %></p>
           <% if (battleState.winner) { %>
             <p>Winner: <%= battleState.winner %></p>
           <% } else { %>
@@ -42,10 +43,10 @@
         <% if (battleState && battleState.opponentTeddy) { %>
           <div class="teddy-card">
             <h3><%= battleState.opponentTeddy.name %></h3>
-            <p>Health: <%= battleState.opponentTeddy.health %></p>
+            <p id="opponent-health" class="opponent-health">Health: <%= battleState.opponentTeddy.currentHealth %></p>
             <p>Attack Damage: <%= battleState.opponentTeddy.attackDamage %></p>
             <p>Special Move: <%= battleState.opponentTeddy.specialMove %></p>
-            <!-- Other teddy details here -->
+            <img src="/images/<%= battleState.opponentTeddy._id %>.png" alt="<%= battleState.opponentTeddy.name %>" class="teddy-image"> <!-- Opponent teddy image -->
           </div>
         <% } else { %>
           <p>No opponent teddy selected.</p>

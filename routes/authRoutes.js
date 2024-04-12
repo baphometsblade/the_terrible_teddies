@@ -35,20 +35,37 @@ router.post('/auth/login', async (req, res) => {
     const user = await User.findOne({ username });
     if (!user) {
       console.log('Login attempt failed: User not found');
-      return res.status(400).send('User not found');
+      res.status(400).render('login', { error: 'User not found' });
+      return;
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (isMatch) {
       req.session.userId = user._id;
-      console.log(`User logged in: ${user.username}`);
-      return res.redirect('/');
+      // Save the session before redirecting to ensure the session is established
+      req.session.save(err => {
+        if (err) {
+          console.error('Error saving session:', err.message, err.stack);
+          res.status(500).render('login', { error: 'Error saving session' });
+          return;
+        }
+        console.log(`User logged in: ${user.username}`);
+        // Redirect to the dashboard after successful login
+        if (req.session.originalUrl) {
+          res.redirect(req.session.originalUrl);
+          req.session.originalUrl = null;
+        } else {
+          res.redirect('/dashboard');
+        }
+      });
     } else {
       console.log('Login attempt failed: Password is incorrect');
-      return res.status(400).send('Password is incorrect');
+      res.status(400).render('login', { error: 'Password is incorrect' });
+      return;
     }
   } catch (error) {
     console.error('Login error:', error.message, error.stack);
-    return res.status(500).send('An error occurred during login.');
+    res.status(500).render('login', { error: 'An error occurred during login.' });
+    return;
   }
 });
 
@@ -56,10 +73,11 @@ router.get('/auth/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) {
       console.error('Error during session destruction:', err.message, err.stack);
-      return res.status(500).send('Error logging out');
+      res.status(500).send('Error logging out');
+    } else {
+      console.log('User logged out successfully');
+      res.redirect('/auth/login'); // Redirect to the login page after successful logout
     }
-    console.log('User logged out successfully');
-    res.redirect('/auth/login');
   });
 });
 
