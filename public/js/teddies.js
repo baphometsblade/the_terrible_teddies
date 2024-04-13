@@ -35,39 +35,45 @@ $(document).ready(function() {
     $('#selectedTeddyIds').val(JSON.stringify(selectedTeddies));
   });
 
-  // Function to validate selected teddy lineup before initiating battle
-  function validateTeddySelection(selectedTeddyIds) {
-    if (!selectedTeddyIds || !Array.isArray(selectedTeddyIds) || selectedTeddyIds.length !== 2) {
-      console.log('Invalid teddy lineup for battle initiation');
-      alert('Please select exactly 2 teddies to initiate a battle.');
-      return false;
-    }
-    // Add any additional validation logic if needed
-    return true;
-  }
-
   // Submit the selected teddies for battle initiation
   $('#lineup-form').submit(function(event) {
     event.preventDefault();
-    var selectedTeddyIds = JSON.parse($('#selectedTeddyIds').val());
+    var selectedTeddyIds = $('#selectedTeddyIds').val();
 
-    // Perform validation
-    if (!validateTeddySelection(selectedTeddyIds)) {
-      return; // Stop the function if validation fails
+    if (!selectedTeddyIds) {
+      console.error('No teddy IDs provided for battle initiation');
+      alert('Please select exactly 2 teddies to initiate a battle.');
+      return false;
     }
 
+    try {
+      selectedTeddyIds = JSON.parse(selectedTeddyIds);
+    } catch (error) {
+      console.error('Error parsing selected teddy IDs:', error.message, error.stack);
+      alert('Invalid teddy selection. Please try again.');
+      return false;
+    }
+
+    if (!Array.isArray(selectedTeddyIds) || selectedTeddyIds.length !== 2) {
+      console.error('Invalid teddy lineup for battle initiation');
+      alert('Please select exactly 2 teddies to initiate a battle.');
+      return false;
+    }
+
+    // Proceed with the AJAX request only if two teddies are selected
     $.ajax({
+      type: 'POST',
       url: '/game/initiate-battle',
-      method: 'POST',
       contentType: 'application/json',
       data: JSON.stringify({ selectedTeddyIds: selectedTeddyIds }),
       success: function(response) {
-        console.log('Battle initiated with teddies:', response);
-        // Redirect to the battle arena view
+        // Handle success
+        console.log('Battle initiated successfully:', response);
         window.location.href = '/game/battle-arena';
       },
       error: function(xhr, status, error) {
-        console.error('Error initiating battle:', error);
+        // Handle error
+        console.error('Error initiating battle:', xhr.responseText, status, error);
         alert('Error initiating battle. Please try again.');
       }
     });

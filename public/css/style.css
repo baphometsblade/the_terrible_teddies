@@ -115,3 +115,45 @@ body {
   background-repeat: no-repeat; /* Do not repeat the image */
   background-attachment: fixed; /* Fix the background image position */
 }
+
+/* Additional styles for new game-related images */
+.game-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Styles for the dashboard */
+.dashboard-images {
+  position: relative;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.dashboard-images img {
+  max-width: 100%;
+  height: auto;
+}
+
+.teddy-dashboard {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 300px; /* Set a max-width for the teddy image on the dashboard */
+}
+
+/* Styles for the login and register pages */
+.auth-teddy {
+  max-width: 300px;
+  height: auto;
+  display: block;
+  margin: 20px auto;
+}
+
+/* Additional global styles */
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+}

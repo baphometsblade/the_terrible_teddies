@@ -48,7 +48,7 @@
             </div>
           <% }); %>
         </div>
-        <form id="lineup-form" action="/game/choose-lineup" method="post">
+        <form id="lineup-form" action="/game/initiate-battle" method="post">
           <input type="hidden" name="selectedTeddyIds" id="selectedTeddyIds" value="">
           <button type="submit" class="btn btn-primary">Initiate Battle</button>
         </form>
@@ -61,34 +61,5 @@
     <script src="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick.min.js"></script>
     <script src="/js/main.js"></script>
     <script src="/js/teddies.js"></script>
-    <script type="text/javascript">
-      $(document).ready(function(){
-        $('#teddies-collection').slick({
-          centerMode: true,
-          centerPadding: '60px',
-          slidesToShow: 1,
-          responsive: [
-            {
-              breakpoint: 768,
-              settings: {
-                arrows: false,
-                centerMode: true,
-                centerPadding: '40px',
-                slidesToShow: 1
-              }
-            },
-            {
-              breakpoint: 480,
-              settings: {
-                arrows: false,
-                centerMode: true,
-                centerPadding: '20px',
-                slidesToShow: 1
-              }
-            }
-          ]
-        });
-      });
-    </script>
   </body>
 </html>

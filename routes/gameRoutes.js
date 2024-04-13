@@ -1,15 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const isAuthenticated = require('./middleware/authMiddleware').isAuthenticated;
 const { initiateBattle, executeTurn, determineBattleOutcome, loadTeddiesByIds, saveTeddyProgress, calculateExperiencePoints, checkForLevelUp } = require('../gameLogic');
 const Teddy = require('../models/Teddy'); // Import the Teddy model
 const Player = require('../models/Player'); // Import the Player model
-
-// Route to start a new game session
-router.post('/game/session', isAuthenticated, (req, res) => {
-  console.log('New game session started for user:', req.session.userId);
-  res.send('New game session started');
-});
 
 // Helper function to handle session save errors
 const handleSessionSaveError = (err, res) => {
@@ -19,11 +14,22 @@ const handleSessionSaveError = (err, res) => {
   }
 };
 
+// Helper function to validate MongoDB Object IDs
+const isValidObjectId = (id) => {
+  return mongoose.Types.ObjectId.isValid(id);
+};
+
+// Helper function to validate player moves
+const validPlayerMoves = ['attack', 'special']; // Extendable list of valid moves
+const isValidPlayerMove = (move) => {
+  return validPlayerMoves.includes(move);
+};
+
 // Route to choose a lineup of teddies
 router.post('/game/choose-lineup', isAuthenticated, async (req, res) => {
   try {
     const teddyLineup = req.body.lineup;
-    if (!teddyLineup || !Array.isArray(teddyLineup) || teddyLineup.length === 0) {
+    if (!teddyLineup || !Array.isArray(teddyLineup) || teddyLineup.length === 0 || !teddyLineup.every(isValidObjectId)) {
       console.log('Invalid lineup provided');
       return res.status(400).json({ error: 'Invalid lineup provided. Please select valid teddies.' });
     }
@@ -47,10 +53,16 @@ router.post('/game/choose-lineup', isAuthenticated, async (req, res) => {
 // Route to initiate a battle
 router.post('/game/initiate-battle', isAuthenticated, async (req, res) => {
   try {
-    const selectedTeddyIds = req.body.selectedTeddyIds;
-    if (!selectedTeddyIds || !Array.isArray(selectedTeddyIds) || selectedTeddyIds.length !== 2) {
+    let selectedTeddyIds;
+    try {
+      selectedTeddyIds = JSON.parse(req.body.selectedTeddyIds); // Parse the JSON string back into an array
+    } catch (parseError) {
+      console.error('Error parsing selectedTeddyIds:', parseError.message, parseError.stack);
+      return res.status(400).json({ error: 'Invalid teddy lineup for battle initiation. Unable to parse selected teddy IDs.' });
+    }
+    if (!selectedTeddyIds || !Array.isArray(selectedTeddyIds) || selectedTeddyIds.length !== 2 || !selectedTeddyIds.every(isValidObjectId)) {
       console.log('Invalid teddy lineup for battle initiation');
-      return res.status(400).json({ error: 'Invalid teddy lineup for battle initiation' });
+      return res.status(400).json({ error: 'Invalid teddy lineup for battle initiation. Please select exactly two teddies.' });
     }
     const teddies = await loadTeddiesByIds(selectedTeddyIds);
     if (teddies.length !== selectedTeddyIds.length) {
@@ -77,9 +89,9 @@ router.post('/game/execute-turn', isAuthenticated, async (req, res) => {
   try {
     const battleState = req.session.battleState;
     const playerMove = req.body.move;
-    if (!battleState || !playerMove) {
+    if (!battleState || typeof playerMove !== 'string' || !isValidPlayerMove(playerMove)) {
       console.log('Invalid battle state or player move');
-      return res.status(400).json({ error: 'Invalid battle state or player move' });
+      return res.status(400).json({ error: 'Invalid battle state or player move. Please provide a valid move.' });
     }
     let updatedBattleState = executeTurn(battleState, playerMove);
     updatedBattleState = determineBattleOutcome(updatedBattleState); // Determine the outcome after executing the turn

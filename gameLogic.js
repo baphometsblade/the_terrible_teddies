@@ -20,7 +20,7 @@ function executeTurn(battleState, playerMove) {
     const { playerTeddy, opponentTeddy } = battleState;
     console.log(`${battleState.turn}'s turn. Executing move:`, playerMove);
     // Apply player move
-    if (playerMove.special) {
+    if (playerMove === 'special') {
         applySpecialMove(playerTeddy, opponentTeddy);
     } else {
         opponentTeddy.currentHealth -= playerTeddy.attackDamage;
