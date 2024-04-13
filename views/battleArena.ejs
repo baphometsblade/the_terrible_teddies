@@ -3,8 +3,7 @@
 <head>
   <%- include('partials/_head.ejs') %>
   <title>Battle Arena - Terrible Teddies</title>
-  <link rel="stylesheet" href="/css/battleArena.css"> <!-- Include custom CSS for the battle arena -->
-  <!-- Removed reference to battleArenaImprove.css as it's no longer needed -->
+  <link rel="stylesheet" href="/css/battleArena.css">
 </head>
 <body>
   <%- include('partials/_nav.ejs') %>
@@ -13,14 +12,16 @@
     <div id="battle-arena" class="battle-arena">
       <div id="player-hand" class="player-hand">
         <h2>Your Hand</h2>
-        <!-- Player's teddies will be dynamically inserted here -->
         <% if (battleState && battleState.playerTeddy) { %>
           <div class="teddy-card">
             <h3><%= battleState.playerTeddy.name %></h3>
-            <p id="player-health" class="player-health">Health: <%= battleState.playerTeddy.currentHealth %></p>
+            <div class="health-bar">
+              <div class="health-bar-filled" style="width: <%= (battleState.playerTeddy.currentHealth / battleState.playerTeddy.health) * 100 %>%;"></div>
+            </div>
+            <p>Health: <%= battleState.playerTeddy.currentHealth %></p>
             <p>Attack Damage: <%= battleState.playerTeddy.attackDamage %></p>
             <p>Special Move: <%= battleState.playerTeddy.specialMove %></p>
-            <img src="/images/teddies/<%= battleState.playerTeddy._id %>.jpg" alt="<%= battleState.playerTeddy.name %>" class="teddy-image"> <!-- Teddy image -->
+            <img src="/images/teddies/<%= battleState.playerTeddy._id %>.jpg" alt="<%= battleState.playerTeddy.name %>" class="teddy-image">
           </div>
         <% } else { %>
           <p>No teddy selected.</p>
@@ -28,7 +29,6 @@
       </div>
       <div id="battle-field" class="battle-field">
         <h2>Playing Field</h2>
-        <!-- The playing field where teddies battle -->
         <% if (battleState) { %>
           <p class="battle-turn">Turn: <%= battleState.turn %></p>
           <% if (battleState.winner) { %>
@@ -40,14 +40,16 @@
       </div>
       <div id="opponent-hand" class="opponent-hand">
         <h2>Opponent's Hand</h2>
-        <!-- Opponent's teddies will be dynamically inserted here -->
         <% if (battleState && battleState.opponentTeddy) { %>
           <div class="teddy-card">
             <h3><%= battleState.opponentTeddy.name %></h3>
-            <p id="opponent-health" class="opponent-health">Health: <%= battleState.opponentTeddy.currentHealth %></p>
+            <div class="health-bar">
+              <div class="health-bar-filled" style="width: <%= (battleState.opponentTeddy.currentHealth / battleState.opponentTeddy.health) * 100 %>%;"></div>
+            </div>
+            <p>Health: <%= battleState.opponentTeddy.currentHealth %></p>
             <p>Attack Damage: <%= battleState.opponentTeddy.attackDamage %></p>
             <p>Special Move: <%= battleState.opponentTeddy.specialMove %></p>
-            <img src="/images/teddies/<%= battleState.opponentTeddy._id %>.jpg" alt="<%= battleState.opponentTeddy.name %>" class="teddy-image"> <!-- Opponent teddy image -->
+            <img src="/images/teddies/<%= battleState.opponentTeddy._id %>.jpg" alt="<%= battleState.opponentTeddy.name %>" class="teddy-image">
           </div>
         <% } else { %>
           <p>No opponent teddy selected.</p>
@@ -69,5 +71,6 @@
   </main>
   <%- include('partials/_footer.ejs') %>
   <script src="/js/battleArena.js"></script>
+  <script src="/js/battleArenaUI.js"></script> <!-- Include the new battle arena UI script -->
 </body>
 </html>

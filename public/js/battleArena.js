@@ -26,9 +26,9 @@ function executeTurn(move) {
 
 function updateBattleUI(battleState) {
   // Update health, status, and turn information
-  $('#player-hand .teddy-card p.health').text('Health: ' + battleState.playerTeddy.currentHealth);
-  $('#opponent-hand .teddy-card p.health').text('Health: ' + battleState.opponentTeddy.currentHealth);
-  $('#battle-field p.turn').text('Turn: ' + battleState.turn);
+  $('#player-hand .teddy-card .health-bar-filled').css('width', (battleState.playerTeddy.currentHealth / battleState.playerTeddy.health) * 100 + '%');
+  $('#opponent-hand .teddy-card .health-bar-filled').css('width', (battleState.opponentTeddy.currentHealth / battleState.opponentTeddy.health) * 100 + '%');
+  $('#battle-field .battle-turn').text('Turn: ' + battleState.turn);
 
   // Check for winner and update UI accordingly
   if (battleState.winner) {
@@ -36,5 +36,15 @@ function updateBattleUI(battleState) {
     console.log('Battle over. Winner:', battleState.winner);
   } else {
     console.log('Battle status updated. Current turn:', battleState.turn);
+    // Enable or disable buttons based on whose turn it is
+    if (battleState.turn === 'player') {
+      $('#attack-button').prop('disabled', false);
+      $('#special-move-button').prop('disabled', false);
+    } else {
+      $('#attack-button').prop('disabled', true);
+      $('#special-move-button').prop('disabled', true);
+    }
   }
+
+  // Additional UI updates can be added here
 }

@@ -1,67 +1,19 @@
 // gameLogic.js
 
 const Teddy = require('./models/Teddy');
-const aiLogic = require('./aiLogic'); // Import AI logic module
+const Player = require('./models/Player');
 
-// Function to initiate a battle. This should set up the initial state for a battle.
-function initiateBattle(playerTeddy, opponentTeddy, isOpponentAI = false) {
-    console.log('Initiating battle between', playerTeddy.name, 'and', opponentTeddy.name);
-    // Initialize battle state
-    return {
-        playerTeddy: {...playerTeddy, currentHealth: playerTeddy.health},
-        opponentTeddy: {...opponentTeddy, currentHealth: opponentTeddy.health},
-        turn: 'player', // 'player' or 'opponent'
-        winner: null, // 'player', 'opponent', or null if the battle is ongoing
-        isOpponentAI: isOpponentAI // Indicates if the opponent is an AI
-    };
-}
-
-// Function to execute a turn. This will process the player's move and the opponent's move.
-function executeTurn(battleState, playerMove) {
-    const { playerTeddy, opponentTeddy } = battleState;
-    console.log(`${battleState.turn}'s turn. Executing move:`, playerMove);
-    // Apply player move
-    if (playerMove === 'special') {
-        applySpecialMove(playerTeddy, opponentTeddy);
-    } else {
-        opponentTeddy.currentHealth -= playerTeddy.attackDamage;
-    }
-    
-    // Check for battle outcome after player's move
-    determineBattleOutcome(battleState);
-    
-    // Switch turn to the next player if the battle is not yet won
-    if (battleState.winner === null) {
-        battleState.turn = battleState.turn === 'player' ? 'opponent' : 'player';
-    }
-    
-    return battleState;
-}
-
-// Function to determine the outcome of the battle
-function determineBattleOutcome(battleState) {
-    const { playerTeddy, opponentTeddy } = battleState;
-    // Check if the opponent is defeated
-    if (opponentTeddy.currentHealth <= 0) {
-        battleState.winner = 'player';
-        console.log('Battle won by player');
-    }
-    
-    // Check if the player is defeated
-    if (playerTeddy.currentHealth <= 0) {
-        battleState.winner = 'opponent';
-        console.log('Battle won by opponent');
-    }
-    
-    return battleState;
-}
-
-// Function to apply special moves. This can modify the game state in various ways.
-function applySpecialMove(attacker, defender) {
-    console.log(`Applying special move from ${attacker.name} to ${defender.name}`);
-    // Placeholder for special move logic
-    // This would read the attacker's specialMove property and apply effects accordingly.
-}
+// Constants
+const EXPERIENCE_BASE = 10;
+const RARITY_MULTIPLIER = {
+    'Common': 1,
+    'Uncommon': 1.5,
+    'Rare': 2,
+    'Legendary': 3,
+    // Adjust rarity multipliers as needed for game balance
+    'Mythic': 4
+};
+const LEVEL_UP_BASE = 20; // Adjust base experience required for leveling up as needed for game balance
 
 // Function to load teddies for a player's lineup from the database
 async function loadTeddiesByIds(teddyIds) {
@@ -71,7 +23,8 @@ async function loadTeddiesByIds(teddyIds) {
         return teddies;
     } catch (error) {
         console.error('Error loading teddies:', error.message, error.stack);
-        throw error; // Rethrow the error to be handled by the calling function
+        // Rethrow the error to be handled by the calling function
+        throw error;
     }
 }
 
@@ -80,36 +33,30 @@ async function saveTeddyProgress(teddy) {
     try {
         const updateData = {
             health: teddy.currentHealth
-            // Removed commented-out example code for experience attribute
+            // Other attributes can be updated here if needed
         };
         await Teddy.findByIdAndUpdate(teddy._id, updateData);
         console.log(`Saved teddy progress for ${teddy.name}`);
     } catch (error) {
         console.error('Error saving teddy progress:', error.message, error.stack);
-        throw error; // Rethrow the error to be handled by the calling function
+        // Rethrow the error to be handled by the calling function
+        throw error;
     }
 }
 
 // Function to calculate experience points earned after a battle
 function calculateExperiencePoints(playerTeddy, opponentTeddy) {
-    // Experience points based on opponent's rarity and health
-    const experienceBase = 10;
-    const rarityMultiplier = {
-        'Common': 1,
-        'Uncommon': 1.5,
-        'Rare': 2,
-        'Legendary': 3
-    };
-    const experiencePoints = experienceBase * (rarityMultiplier[opponentTeddy.rarity] || 1);
+    const experiencePoints = EXPERIENCE_BASE * (RARITY_MULTIPLIER[opponentTeddy.rarity] || 1);
     return experiencePoints;
 }
 
 // Function to determine if a player has leveled up based on experience points
 function checkForLevelUp(player) {
-    const experienceForNextLevel = player.level * 20; // Example formula for XP needed to level up
+    const experienceForNextLevel = player.level * LEVEL_UP_BASE;
     if (player.experiencePoints >= experienceForNextLevel) {
         player.level++;
-        player.experiencePoints -= experienceForNextLevel; // Subtract the experience points used to level up
+        // Subtract the experience points used to level up
+        player.experiencePoints -= experienceForNextLevel;
         // Call function to handle rewards for leveling up
         handleLevelUpRewards(player);
         console.log(`Player leveled up to level ${player.level}`);
@@ -127,10 +74,6 @@ function handleLevelUpRewards(player) {
 }
 
 module.exports = {
-    initiateBattle,
-    executeTurn,
-    determineBattleOutcome,
-    applySpecialMove,
     loadTeddiesByIds,
     saveTeddyProgress,
     calculateExperiencePoints,

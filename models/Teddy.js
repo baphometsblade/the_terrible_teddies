@@ -63,8 +63,9 @@ const teddySchema = new mongoose.Schema({
 
 // Indexes for efficient querying
 teddySchema.index({ name: 1 }, { unique: true });
-// Additional index for efficient querying by rarity
 teddySchema.index({ rarity: 1 });
+// Additional compound index for efficient querying by attackDamage and health
+teddySchema.index({ attackDamage: 1, health: 1 });
 
 // Error handling for duplicate key errors and validation errors
 teddySchema.post('save', function(error, doc, next) {
@@ -76,6 +77,26 @@ teddySchema.post('save', function(error, doc, next) {
     next(new Error('Validation failed: ' + error.message));
   } else {
     next(error);
+  }
+});
+
+// Error handling for duplicate key errors on update
+teddySchema.post('update', function(error, res, next) {
+  if (error.name === 'MongoError' && error.code === 11000) {
+    console.error('Error updating document:', error);
+    next(new Error('There was a duplicate key error during update'));
+  } else {
+    next();
+  }
+});
+
+// Error handling for duplicate key errors on findOneAndUpdate
+teddySchema.post('findOneAndUpdate', function(error, res, next) {
+  if (error.name === 'MongoError' && error.code === 11000) {
+    console.error('Error with findOneAndUpdate:', error);
+    next(new Error('There was a duplicate key error during findOneAndUpdate'));
+  } else {
+    next();
   }
 });
 

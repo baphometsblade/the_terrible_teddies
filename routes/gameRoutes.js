@@ -3,16 +3,13 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const isAuthenticated = require('./middleware/authMiddleware').isAuthenticated;
 const {
-  initiateBattle,
-  executeTurn,
-  determineBattleOutcome,
   loadTeddiesByIds,
   saveTeddyProgress,
   calculateExperiencePoints,
   checkForLevelUp,
   handleLevelUpRewards
 } = require('../gameLogic');
-const { generateAIMove } = require('../aiLogic'); // Import AI logic module
+const CombatSystem = require('../combatSystem'); // Import new combat system module
 const Teddy = require('../models/Teddy');
 const Player = require('../models/Player');
 
@@ -73,7 +70,9 @@ router.post('/game/initiate-battle', isAuthenticated, async (req, res) => {
     const opponentTeddy = teddies[1];
     // Determine if the opponent is AI based on the request body parameter
     const isOpponentAI = req.body.opponentUserId === 'ai' || !req.body.opponentUserId;
-    const battleState = initiateBattle(playerTeddy, opponentTeddy, isOpponentAI);
+    const combat = new CombatSystem(playerTeddy, opponentTeddy, isOpponentAI);
+    combat.initiateBattle();
+    const battleState = combat.getBattleState();
     req.session.battleState = battleState;
     await req.session.save();
     console.log('Battle initiated for user:', req.session.userId);
@@ -93,14 +92,20 @@ router.post('/game/execute-turn', isAuthenticated, async (req, res) => {
       console.log('Invalid battle state or player move');
       return res.status(400).json({ error: 'Invalid battle state or player move. Please provide a valid move.' });
     }
-    let updatedBattleState = executeTurn(battleState, playerMove);
-    updatedBattleState = determineBattleOutcome(updatedBattleState);
+    const combat = new CombatSystem(battleState.playerTeddy, battleState.opponentTeddy, battleState.isOpponentAI);
+    combat.setBattleState(battleState);
+    if (battleState.turn === 'player') {
+      combat.executePlayerTurn(playerMove);
+    } else {
+      combat.executeOpponentTurn();
+    }
+    let updatedBattleState = combat.getBattleState();
 
     // If the opponent is an AI and the battle is not yet won, execute the AI's turn
     if (updatedBattleState.isOpponentAI && updatedBattleState.winner === null) {
-      const aiMove = generateAIMove(updatedBattleState);
-      updatedBattleState = executeTurn(updatedBattleState, aiMove);
-      updatedBattleState = determineBattleOutcome(updatedBattleState);
+      const aiMove = combat.generateAIMove();
+      combat.executeOpponentTurn(aiMove);
+      updatedBattleState = combat.getBattleState();
     }
 
     const player = await Player.findOne({ userId: req.session.userId });
