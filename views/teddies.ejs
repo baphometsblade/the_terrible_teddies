@@ -15,6 +15,30 @@
         z-index: -1;
         opacity: 0.3;
       }
+      /* Additional styles for UI improvements */
+      .container {
+        max-width: 1200px;
+      }
+      .teddy-card {
+        cursor: pointer;
+        transition: transform 0.3s ease;
+      }
+      .teddy-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      }
+      .teddy-card.selected {
+        border: 2px solid #007bff; /* Highlight selected teddy */
+      }
+      #lineup-form {
+        margin-top: 20px;
+        text-align: center;
+      }
+      .error-message {
+        color: red;
+        text-align: center;
+        margin-top: 10px;
+      }
     </style>
   </head>
   <body>
@@ -52,6 +76,7 @@
           <input type="hidden" name="selectedTeddyIds" id="selectedTeddyIds" value="">
           <button type="submit" class="btn btn-primary">Initiate Battle</button>
         </form>
+        <div id="error-message" class="error-message" style="display: none;"></div>
       <% } else { %>
         <p>No teddies found. Please check back later.</p>
       <% } %>
@@ -61,5 +86,29 @@
     <script src="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick.min.js"></script>
     <script src="/js/main.js"></script>
     <script src="/js/teddies.js"></script>
+    <script>
+      // Attach event handler to the form submission
+      $('#lineup-form').on('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+        var selectedTeddyIds = $('#selectedTeddyIds').val();
+        if (!selectedTeddyIds) {
+          $('#error-message').text('Please select at least one teddy to initiate battle.').show();
+          return;
+        }
+        $.ajax({
+          url: '/game/initiate-battle',
+          type: 'POST',
+          contentType: 'application/x-www-form-urlencoded',
+          data: { selectedTeddyIds: selectedTeddyIds },
+          success: function(response) {
+            window.location.href = '/game/battle-arena'; // Redirect to the battle arena on success
+          },
+          error: function(xhr, status, error) {
+            var errorMessage = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'An error occurred while initiating the battle. Please try again.';
+            $('#error-message').text(errorMessage).show(); // Display the error message
+          }
+        });
+      });
+    </script>
   </body>
 </html>

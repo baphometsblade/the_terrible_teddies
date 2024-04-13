@@ -2,17 +2,19 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const isAuthenticated = require('./middleware/authMiddleware').isAuthenticated;
-const { initiateBattle, executeTurn, determineBattleOutcome, loadTeddiesByIds, saveTeddyProgress, calculateExperiencePoints, checkForLevelUp } = require('../gameLogic');
-const Teddy = require('../models/Teddy'); // Import the Teddy model
-const Player = require('../models/Player'); // Import the Player model
-
-// Helper function to handle session save errors
-const handleSessionSaveError = (err, res) => {
-  if (err) {
-    console.error('Error saving session:', err.message, err.stack);
-    return res.status(500).json({ error: 'Error saving session' });
-  }
-};
+const {
+  initiateBattle,
+  executeTurn,
+  determineBattleOutcome,
+  loadTeddiesByIds,
+  saveTeddyProgress,
+  calculateExperiencePoints,
+  checkForLevelUp,
+  handleLevelUpRewards
+} = require('../gameLogic');
+const { generateAIMove } = require('../aiLogic'); // Import AI logic module
+const Teddy = require('../models/Teddy');
+const Player = require('../models/Player');
 
 // Helper function to validate MongoDB Object IDs
 const isValidObjectId = (id) => {
@@ -39,11 +41,9 @@ router.post('/game/choose-lineup', isAuthenticated, async (req, res) => {
       return res.status(404).json({ error: 'Some teddies not found' });
     }
     req.session.teddyLineup = teddies;
-    req.session.save(err => {
-      handleSessionSaveError(err, res);
-      console.log('Lineup chosen for user:', req.session.userId);
-      res.json({ message: 'Lineup chosen' });
-    });
+    await req.session.save();
+    console.log('Lineup chosen for user:', req.session.userId);
+    res.json({ message: 'Lineup chosen' });
   } catch (error) {
     console.error('Error choosing lineup:', error.message, error.stack);
     res.status(500).json({ error: 'Error choosing lineup' });
@@ -71,16 +71,16 @@ router.post('/game/initiate-battle', isAuthenticated, async (req, res) => {
     }
     const playerTeddy = teddies[0];
     const opponentTeddy = teddies[1];
-    const battleState = initiateBattle(playerTeddy, opponentTeddy);
+    // Determine if the opponent is AI based on the request body parameter
+    const isOpponentAI = req.body.opponentUserId === 'ai' || !req.body.opponentUserId;
+    const battleState = initiateBattle(playerTeddy, opponentTeddy, isOpponentAI);
     req.session.battleState = battleState;
-    req.session.save(err => {
-      handleSessionSaveError(err, res);
-      console.log('Battle initiated for user:', req.session.userId);
-      res.json({ message: 'Battle initiated' });
-    });
+    await req.session.save();
+    console.log('Battle initiated for user:', req.session.userId);
+    res.json({ message: 'Battle initiated', isOpponentAI: isOpponentAI });
   } catch (error) {
     console.error('Error initiating battle:', error.message, error.stack);
-    res.status(500).json({ error: 'Error initiating battle' });
+    res.status(500).json({ error: 'Error initiating battle. Please ensure that the teddies selected are valid and try again.' });
   }
 });
 
@@ -94,29 +94,34 @@ router.post('/game/execute-turn', isAuthenticated, async (req, res) => {
       return res.status(400).json({ error: 'Invalid battle state or player move. Please provide a valid move.' });
     }
     let updatedBattleState = executeTurn(battleState, playerMove);
-    updatedBattleState = determineBattleOutcome(updatedBattleState); // Determine the outcome after executing the turn
+    updatedBattleState = determineBattleOutcome(updatedBattleState);
 
-    // Find player data
+    // If the opponent is an AI and the battle is not yet won, execute the AI's turn
+    if (updatedBattleState.isOpponentAI && updatedBattleState.winner === null) {
+      const aiMove = generateAIMove(updatedBattleState);
+      updatedBattleState = executeTurn(updatedBattleState, aiMove);
+      updatedBattleState = determineBattleOutcome(updatedBattleState);
+    }
+
     const player = await Player.findOne({ userId: req.session.userId });
 
-    // Calculate experience points earned
     const experiencePointsEarned = calculateExperiencePoints(updatedBattleState.playerTeddy, updatedBattleState.opponentTeddy);
     player.experiencePoints += experiencePointsEarned;
-    
-    // Check for level up and apply rewards if the player leveled up
-    checkForLevelUp(player);
 
-    // Save the player's new experience points and level
+    const playerLeveledUp = checkForLevelUp(player);
+    if (playerLeveledUp) {
+      handleLevelUpRewards(player);
+    }
+
     await player.save();
 
     await saveTeddyProgress(updatedBattleState.playerTeddy);
     await saveTeddyProgress(updatedBattleState.opponentTeddy);
+
     req.session.battleState = updatedBattleState;
-    req.session.save(err => {
-      handleSessionSaveError(err, res);
-      console.log('Turn executed for user:', req.session.userId);
-      res.json(updatedBattleState);
-    });
+    await req.session.save();
+    console.log('Turn executed for user:', req.session.userId);
+    res.json(updatedBattleState);
   } catch (error) {
     console.error('Error executing turn:', error.message, error.stack);
     res.status(500).json({ error: 'Error executing turn' });
@@ -139,7 +144,7 @@ router.get('/teddies', isAuthenticated, async (req, res) => {
 });
 
 // Route to render the battle arena view
-router.get('/game/battle-arena', isAuthenticated, (req, res) => {
+router.get('/game/battle-arena', isAuthenticated, async (req, res) => {
   try {
     if (!req.session.battleState) {
       console.log('No battle state found, redirecting to teddies selection');

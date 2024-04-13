@@ -4,6 +4,7 @@
   <%- include('partials/_head.ejs') %>
   <title>Battle Arena - Terrible Teddies</title>
   <link rel="stylesheet" href="/css/battleArena.css"> <!-- Include custom CSS for the battle arena -->
+  <!-- Removed reference to battleArenaImprove.css as it's no longer needed -->
 </head>
 <body>
   <%- include('partials/_nav.ejs') %>
@@ -19,7 +20,7 @@
             <p id="player-health" class="player-health">Health: <%= battleState.playerTeddy.currentHealth %></p>
             <p>Attack Damage: <%= battleState.playerTeddy.attackDamage %></p>
             <p>Special Move: <%= battleState.playerTeddy.specialMove %></p>
-            <img src="/images/<%= battleState.playerTeddy._id %>.png" alt="<%= battleState.playerTeddy.name %>" class="teddy-image"> <!-- Teddy image -->
+            <img src="/images/teddies/<%= battleState.playerTeddy._id %>.jpg" alt="<%= battleState.playerTeddy.name %>" class="teddy-image"> <!-- Teddy image -->
           </div>
         <% } else { %>
           <p>No teddy selected.</p>
@@ -46,7 +47,7 @@
             <p id="opponent-health" class="opponent-health">Health: <%= battleState.opponentTeddy.currentHealth %></p>
             <p>Attack Damage: <%= battleState.opponentTeddy.attackDamage %></p>
             <p>Special Move: <%= battleState.opponentTeddy.specialMove %></p>
-            <img src="/images/<%= battleState.opponentTeddy._id %>.png" alt="<%= battleState.opponentTeddy.name %>" class="teddy-image"> <!-- Opponent teddy image -->
+            <img src="/images/teddies/<%= battleState.opponentTeddy._id %>.jpg" alt="<%= battleState.opponentTeddy.name %>" class="teddy-image"> <!-- Opponent teddy image -->
           </div>
         <% } else { %>
           <p>No opponent teddy selected.</p>

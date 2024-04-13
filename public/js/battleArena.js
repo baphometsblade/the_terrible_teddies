@@ -1,24 +1,25 @@
 $(document).on('click', '#attack-button', function() {
-  executeTurn({ special: false });
+  executeTurn('attack');
 });
 
 $(document).on('click', '#special-move-button', function() {
-  executeTurn({ special: true });
+  executeTurn('special');
 });
 
-function executeTurn(playerMove) {
+function executeTurn(move) {
   $.ajax({
     url: '/game/execute-turn',
     type: 'POST',
-    contentType: 'application/json',
-    data: JSON.stringify({ move: playerMove }),
+    contentType: 'application/x-www-form-urlencoded',
+    data: { move: move },
     success: function(updatedBattleState) {
       console.log('Turn executed successfully:', updatedBattleState);
       updateBattleUI(updatedBattleState);
     },
     error: function(xhr, status, error) {
-      console.error('Error executing turn:', xhr.responseText, status, error);
-      alert('Error executing turn: ' + xhr.responseText);
+      var errorMessage = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'An unexpected error occurred while executing the turn. Please try again.';
+      console.error('Error executing turn:', errorMessage, error);
+      alert('Error executing turn: ' + errorMessage);
     }
   });
 }

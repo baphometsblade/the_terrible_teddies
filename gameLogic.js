@@ -1,17 +1,18 @@
 // gameLogic.js
 
 const Teddy = require('./models/Teddy');
-const Player = require('./models/Player'); // Re-added Player model import as it might be used elsewhere
+const aiLogic = require('./aiLogic'); // Import AI logic module
 
 // Function to initiate a battle. This should set up the initial state for a battle.
-function initiateBattle(playerTeddy, opponentTeddy) {
+function initiateBattle(playerTeddy, opponentTeddy, isOpponentAI = false) {
     console.log('Initiating battle between', playerTeddy.name, 'and', opponentTeddy.name);
     // Initialize battle state
     return {
         playerTeddy: {...playerTeddy, currentHealth: playerTeddy.health},
         opponentTeddy: {...opponentTeddy, currentHealth: opponentTeddy.health},
         turn: 'player', // 'player' or 'opponent'
-        winner: null // 'player', 'opponent', or null if the battle is ongoing
+        winner: null, // 'player', 'opponent', or null if the battle is ongoing
+        isOpponentAI: isOpponentAI // Indicates if the opponent is an AI
     };
 }
 
@@ -26,8 +27,13 @@ function executeTurn(battleState, playerMove) {
         opponentTeddy.currentHealth -= playerTeddy.attackDamage;
     }
     
-    // Switch turn
-    battleState.turn = battleState.turn === 'player' ? 'opponent' : 'player';
+    // Check for battle outcome after player's move
+    determineBattleOutcome(battleState);
+    
+    // Switch turn to the next player if the battle is not yet won
+    if (battleState.winner === null) {
+        battleState.turn = battleState.turn === 'player' ? 'opponent' : 'player';
+    }
     
     return battleState;
 }
@@ -73,14 +79,9 @@ async function loadTeddiesByIds(teddyIds) {
 async function saveTeddyProgress(teddy) {
     try {
         const updateData = {
-            health: teddy.currentHealth,
-            // Add other teddy attributes that need to be saved after a battle
-            // Example: experience: teddy.experience
+            health: teddy.currentHealth
+            // Removed commented-out example code for experience attribute
         };
-        // Update the example attribute if it exists
-        if (teddy.experience) {
-            updateData.experience = teddy.experience;
-        }
         await Teddy.findByIdAndUpdate(teddy._id, updateData);
         console.log(`Saved teddy progress for ${teddy.name}`);
     } catch (error) {

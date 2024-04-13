@@ -157,3 +157,66 @@ body {
   font-family: 'Arial', sans-serif;
   margin: 0;
 }
+
+/* Major graphical improvements for better user experience */
+/* Enhanced battle arena visuals */
+.battle-arena {
+  background-image: url('/images/battle-arena-background.jpg'); /* New background image for battle arena */
+  background-size: cover;
+  background-repeat: no-repeat;
+  border: 3px solid #333; /* Solid border for emphasis */
+  border-radius: 10px; /* Rounded corners for the arena */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); /* Shadow for depth */
+}
+
+/* Improved card visuals with new hover effects */
+.card:hover {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); /* Enhanced shadow on hover */
+  transform: translateY(-5px); /* Slight lift effect */
+}
+
+/* New styles for battle controls for better interaction */
+.battle-controls {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.battle-controls button {
+  margin: 0 10px;
+  padding: 10px 20px;
+  font-size: 1.1em;
+  letter-spacing: 1px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.battle-controls button:hover {
+  background-color: #ffa500; /* Orange color for interactive buttons on hover */
+  transform: scale(1.1); /* Scale up for emphasis */
+}
+
+/* Responsive design adjustments for better mobile experience */
+@media (max-width: 768px) {
+  .battle-arena {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .player-hand, .opponent-hand {
+    width: auto; /* Full width for smaller screens */
+    margin-bottom: 20px;
+  }
+
+  .battle-field {
+    order: 2; /* Reorder battle field for mobile layout */
+  }
+
+  .battle-controls {
+    flex-direction: column;
+  }
+
+  .battle-controls button {
+    width: 100%; /* Full width buttons on mobile */
+    margin-bottom: 10px;
+  }
+}

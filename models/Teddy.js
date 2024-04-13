@@ -63,6 +63,7 @@ const teddySchema = new mongoose.Schema({
 
 // Indexes for efficient querying
 teddySchema.index({ name: 1 }, { unique: true });
+// Additional index for efficient querying by rarity
 teddySchema.index({ rarity: 1 });
 
 // Error handling for duplicate key errors and validation errors

@@ -18,7 +18,7 @@ const port = process.env.PORT || 3000;
 
 // Middleware to parse request bodies
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json()); // Ensure express can parse JSON request bodies
 
 // Setting the templating engine to EJS
 app.set("view engine", "ejs");
@@ -117,11 +117,10 @@ app.use((req, res) => {
 
 // Error handling
 app.use((err, req, res, next) => {
+  console.error(`Unhandled application error: ${err.message}`, err.stack);
   if (app.get('env') === 'development') {
-    console.error(`Unhandled application error: ${err.message}`, err.stack);
     res.status(err.status || 500).send(err.message || "There was an error serving your request.");
   } else {
-    console.error(`Unhandled application error: ${err.message}`);
     res.status(err.status || 500).send("An error occurred.");
   }
 });

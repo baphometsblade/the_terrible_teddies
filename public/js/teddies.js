@@ -42,7 +42,7 @@ $(document).ready(function() {
 
     if (!selectedTeddyIds) {
       console.error('No teddy IDs provided for battle initiation');
-      alert('Please select exactly 2 teddies to initiate a battle.');
+      $('#error-message').text('Please select exactly 2 teddies to initiate a battle.').show();
       return false;
     }
 
@@ -50,13 +50,13 @@ $(document).ready(function() {
       selectedTeddyIds = JSON.parse(selectedTeddyIds);
     } catch (error) {
       console.error('Error parsing selected teddy IDs:', error.message, error.stack);
-      alert('Invalid teddy selection. Please try again.');
+      $('#error-message').text('Invalid teddy selection. Please try again.').show();
       return false;
     }
 
     if (!Array.isArray(selectedTeddyIds) || selectedTeddyIds.length !== 2) {
       console.error('Invalid teddy lineup for battle initiation');
-      alert('Please select exactly 2 teddies to initiate a battle.');
+      $('#error-message').text('Please select exactly 2 teddies to initiate a battle.').show();
       return false;
     }
 
@@ -73,8 +73,9 @@ $(document).ready(function() {
       },
       error: function(xhr, status, error) {
         // Handle error
+        var errorMessage = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'An error occurred while initiating the battle. Please try again.';
         console.error('Error initiating battle:', xhr.responseText, status, error);
-        alert('Error initiating battle. Please try again.');
+        $('#error-message').text(errorMessage).show();
       }
     });
   });
