@@ -10,18 +10,17 @@ class CombatEmitter extends EventEmitter {
     // Event handlers for combat events
     this.on('healthChanged', (data) => {
       console.log(`Health changed event received for character ${data.characterId}, new health: ${data.newHealth}`);
+      // Additional logic for healthChanged event can be added here
     });
 
-    this.on('damageDealt', (data) => {
-      console.log(`Damage dealt event received, attacker: ${data.attackerId}, defender: ${data.defenderId}, damage: ${data.damage}`);
+    this.on('attack', (data) => {
+      console.log(`Attack event received, attacker: ${data.attackerId}, defender: ${data.defenderId}, damage: ${data.damage}`);
+      // Additional logic for attack event can be added here
     });
 
-    this.on('specialMoveExecuted', (data) => {
-      console.log(`Special move executed event received, character: ${data.characterId}, move: ${data.move}`);
-    });
-
-    this.on('aiMoveDecided', (data) => {
-      console.log(`AI move decided event received, character: ${data.characterId}, move: ${data.move}`);
+    this.on('specialMove', (data) => {
+      console.log(`Special move event received, character: ${data.characterId}, move: ${data.move}`);
+      // Additional logic for specialMove event can be added here
     });
 
     // Additional combat event handlers can be added here as needed

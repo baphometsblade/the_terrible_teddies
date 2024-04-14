@@ -1,8 +1,8 @@
-const HealthManager = require('./healthManager');
-const DamageManager = require('./damageManager');
-const SpecialMoves = require('./specialMoves');
-const AIDecisionMaker = require('./aiDecisionMaker');
-const combatEvents = require('./combatEvents');
+const HealthManager = require('./services/combat/healthManager');
+const DamageManager = require('./services/combat/damageManager');
+const SpecialMoves = require('./services/combat/specialMoves');
+const AIDecisionMaker = require('./services/combat/aiDecisionMaker');
+const combatEvents = require('./services/combat/combatEvents');
 
 class CombatSystem {
   constructor() {
@@ -25,12 +25,20 @@ class CombatSystem {
 
     // Subscribe to attack events
     combatEvents.on('attack', (data) => {
-      this.handleAttackEvent(data);
+      try {
+        this.handleAttackEvent(data);
+      } catch (error) {
+        console.error('Error handling attack event:', error.message, error.stack);
+      }
     });
 
     // Subscribe to special move events
     combatEvents.on('specialMove', (data) => {
-      this.handleSpecialMoveEvent(data);
+      try {
+        this.handleSpecialMoveEvent(data);
+      } catch (error) {
+        console.error('Error handling specialMove event:', error.message, error.stack);
+      }
     });
   }
 

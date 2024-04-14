@@ -1,17 +1,16 @@
 const combatEvents = require('./combatEvents');
 
 class DamageManager {
-  constructor() {}
-
   calculateDamage(attacker, defender) {
     try {
-      const damage = attacker.attackDamage; // Basic damage calculation, can be expanded with more complex logic
+      // Basic damage calculation, can be expanded with more complex logic
+      const damage = attacker.attackDamage - (defender.defense || 0);
       console.log(`DamageManager: Calculating damage. Attacker: ${attacker.name}, Defender: ${defender.name}, Damage: ${damage}`);
-      
+
       // Emit an event after calculating damage
       combatEvents.emit('damageCalculated', {
-        attackerId: attacker.id,
-        defenderId: defender.id,
+        attackerId: attacker._id, // Ensure the property name is consistent with the schema
+        defenderId: defender._id, // Ensure the property name is consistent with the schema
         damage: damage
       });
 

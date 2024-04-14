@@ -1,7 +1,6 @@
 const combatEvents = require('./combatEvents');
 
 class SpecialMoves {
-  constructor() {}
 
   applySpecialMove(attacker, defender, move) {
     try {
