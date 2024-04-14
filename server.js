@@ -7,6 +7,7 @@ const MongoStore = require('connect-mongo');
 const authRoutes = require("./routes/authRoutes");
 const gameRoutes = require('./routes/gameRoutes'); // Include game routes
 const isAuthenticated = require('./routes/authMiddleware'); // Include isAuthenticated middleware
+const Player = require('./models/Player'); // Include Player model
 
 if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET) {
   console.error("Error: config environment variables not set. Please create/edit .env configuration file.");
@@ -101,8 +102,19 @@ app.use(authRoutes);
 app.use(gameRoutes);
 
 // Dashboard route using isAuthenticated middleware
-app.get("/dashboard", isAuthenticated, (req, res) => {
-  res.render("dashboard");
+app.get("/dashboard", isAuthenticated, async (req, res, next) => {
+  try {
+    const player = await Player.findOne({ userId: req.session.userId }).exec();
+    if (!player) {
+      console.log('Player not found for userId:', req.session.userId);
+      return res.status(404).send("Player not found.");
+    }
+    const playerDetails = await player.getPlayerDetails();
+    res.render("dashboard", { playerDetails });
+  } catch (error) {
+    console.error('Error fetching player details:', error.message, error.stack);
+    next(error);
+  }
 });
 
 // Root path response
@@ -111,16 +123,14 @@ app.get("/", (req, res) => {
 });
 
 // If no routes handled the request, it's a 404
-app.use((req, res) => {
-  res.status(404).send("Page not found.");
+app.use((req, res, next) => {
+  const err = new Error('Page not found.');
+  err.status = 404;
+  next(err);
 });
 
 // Error handling
 app.use((err, req, res, next) => {
   console.error(`Unhandled application error: ${err.message}`, err.stack);
-  if (app.get('env') === 'development') {
-    res.status(err.status || 500).send(err.message || "There was an error serving your request.");
-  } else {
-    res.status(err.status || 500).send("An error occurred.");
-  }
+  res.status(err.status || 500).send(err.message || "An error occurred.");
 });

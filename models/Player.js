@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { LEVEL_UP_BASE, CURRENCY_REWARD } = require('../constants');
 
 const playerSchema = new mongoose.Schema({
   userId: { 
@@ -15,7 +16,6 @@ const playerSchema = new mongoose.Schema({
     type: Number, 
     default: 1 
   },
-  // Additional fields for player rewards can be added here
   unlockedTeddies: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Teddy'
@@ -23,26 +23,63 @@ const playerSchema = new mongoose.Schema({
   currency: {
     type: Number,
     default: 0
-  }
+  },
+  rewards: [{
+    level: Number,
+    currency: Number,
+    specialMove: String,
+    unlockedTeddy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Teddy'
+    },
+    additionalItems: [String]
+  }]
 });
 
-playerSchema.methods.addExperience = function(experience) {
-  this.experiencePoints += experience;
-  const experienceForNextLevel = this.level * 20; // Example formula for XP needed to level up
+playerSchema.methods.addExperience = function (points) {
+  this.experiencePoints += points;
+  const experienceForNextLevel = this.level * LEVEL_UP_BASE;
   if (this.experiencePoints >= experienceForNextLevel) {
-    this.levelUp();
+    this.level++;
+    this.experiencePoints -= experienceForNextLevel;
+    this.applyLevelUpRewards();
+  }
+  console.log(`Added ${points} experience points to player ${this.userId}`);
+};
+
+playerSchema.methods.applyLevelUpRewards = function () {
+  this.currency += CURRENCY_REWARD;
+  console.log(`Applied level up rewards to player ${this.userId}`);
+};
+
+playerSchema.methods.getPlayerDetails = async function () {
+  try {
+    await this.populate('unlockedTeddies');
+    await this.populate({
+      path: 'rewards.unlockedTeddy',
+      model: 'Teddy'
+    });
+    const challenges = this.rewards.filter(reward => reward.level <= this.level);
+    return {
+      teddies: this.unlockedTeddies,
+      level: this.level,
+      challenges: challenges
+    };
+  } catch (error) {
+    console.error('Error getting player details:', error.message, error.stack);
+    throw error;
   }
 };
 
-playerSchema.methods.levelUp = function() {
-  this.level++;
-  const experienceForNextLevel = this.level * 20;
-  this.experiencePoints -= experienceForNextLevel;
-  // Logic for rewards upon leveling up
-  this.currency += 100; // Award in-game currency as a reward
-  // Additional rewards logic can be implemented here
-  console.log(`Player ${this.userId} leveled up to level ${this.level} and received 100 currency.`);
-};
+playerSchema.pre('save', async function (next) {
+  try {
+    console.log(`Saving player ${this.userId}`);
+    next();
+  } catch (error) {
+    console.error('Error saving player:', error.message, error.stack);
+    next(error);
+  }
+});
 
 const Player = mongoose.model('Player', playerSchema);
 

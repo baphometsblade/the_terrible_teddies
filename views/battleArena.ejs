@@ -4,6 +4,7 @@
   <%- include('partials/_head.ejs') %>
   <title>Battle Arena - Terrible Teddies</title>
   <link rel="stylesheet" href="/css/battleArena.css">
+  <link rel="stylesheet" href="/css/animations.css"> <!-- Include animations stylesheet -->
 </head>
 <body>
   <%- include('partials/_nav.ejs') %>
@@ -58,8 +59,8 @@
     </div>
     <div id="battle-controls" class="battle-controls">
       <% if (battleState && battleState.playerTeddy && battleState.opponentTeddy && !battleState.winner) { %>
-        <button id="attack-button" class="btn btn-danger">Attack</button>
-        <button id="special-move-button" class="btn btn-warning">Special Move</button>
+        <button id="attack-button" class="btn btn-danger attack-btn">Attack</button>
+        <button id="special-move-button" class="btn btn-warning special-move-btn">Special Move</button>
       <% } else if (battleState && battleState.winner) { %>
         <p>Battle Over. Winner: <%= battleState.winner %></p>
         <a href="/teddies" class="btn btn-primary">Return to Teddies</a>

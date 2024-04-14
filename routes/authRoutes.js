@@ -49,7 +49,7 @@ router.post('/auth/login', async (req, res) => {
           return;
         }
         console.log(`User logged in: ${user.username}`);
-        // Redirect to the dashboard after successful login
+        // Redirect to the original URL or dashboard after successful login
         if (req.session.originalUrl) {
           res.redirect(req.session.originalUrl);
           req.session.originalUrl = null;

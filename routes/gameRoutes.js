@@ -103,7 +103,7 @@ router.post('/game/execute-turn', isAuthenticated, async (req, res) => {
 
     // If the opponent is an AI and the battle is not yet won, execute the AI's turn
     if (updatedBattleState.isOpponentAI && updatedBattleState.winner === null) {
-      const aiMove = combat.generateAIMove();
+      const aiMove = combat.generateStrategicAIMove(); // Updated to use the new method name
       combat.executeOpponentTurn(aiMove);
       updatedBattleState = combat.getBattleState();
     }

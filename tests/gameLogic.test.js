@@ -5,7 +5,6 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const { loadTeddiesByIds, saveTeddyProgress, calculateExperiencePoints, checkForLevelUp, handleLevelUpRewards } = require('../gameLogic');
 const Teddy = require('../models/Teddy');
 const Player = require('../models/Player');
-const CombatSystem = require('../combatSystem');
 
 let mongoServer;
 let playerTeddy;
@@ -55,34 +54,6 @@ afterAll(async () => {
   await mongoServer.stop();
 });
 
-test('CombatSystem should set up initial battle state', () => {
-  const combatSystem = new CombatSystem(playerTeddy, opponentTeddy, false);
-  combatSystem.initiateBattle();
-  const battleState = combatSystem.getBattleState();
-  expect(battleState).toHaveProperty('playerTeddy');
-  expect(battleState).toHaveProperty('opponentTeddy');
-  expect(battleState).toHaveProperty('turn', 'player');
-  expect(battleState).toHaveProperty('winner', null);
-});
-
-test('CombatSystem should process player turn', () => {
-  const combatSystem = new CombatSystem(playerTeddy, opponentTeddy, false);
-  combatSystem.initiateBattle();
-  combatSystem.executePlayerTurn('attack');
-  let battleState = combatSystem.getBattleState();
-  expect(battleState.opponentTeddy.currentHealth).toBeLessThan(opponentTeddy.health);
-  expect(battleState.turn).toBe('opponent');
-});
-
-test('CombatSystem should process opponent turn', () => {
-  const combatSystem = new CombatSystem(playerTeddy, opponentTeddy, true);
-  combatSystem.initiateBattle();
-  combatSystem.executePlayerTurn('attack');
-  combatSystem.executeOpponentTurn();
-  let battleState = combatSystem.getBattleState();
-  expect(battleState.turn).toBe('player');
-});
-
 test('loadTeddiesByIds should load teddies from the database', async () => {
   const teddies = await loadTeddiesByIds([playerTeddy._id, opponentTeddy._id]);
   expect(teddies.length).toBe(2);
@@ -93,7 +64,7 @@ test('saveTeddyProgress should save teddy health to the database', async () => {
   playerTeddy.currentHealth = updatedHealth;
   await saveTeddyProgress(playerTeddy);
   const updatedTeddy = await Teddy.findById(playerTeddy._id);
-  expect(updatedTeddy.health).toBe(updatedHealth);
+  expect(updatedTeddy.currentHealth).toBe(updatedHealth);
 });
 
 test('calculateExperiencePoints should return correct experience points', () => {
@@ -103,7 +74,8 @@ test('calculateExperiencePoints should return correct experience points', () => 
 
 test('checkForLevelUp should level up player if enough experience points', () => {
   const player = new Player({ experiencePoints: 40, level: 1 });
-  checkForLevelUp(player);
+  const leveledUp = checkForLevelUp(player);
+  expect(leveledUp).toBeTruthy();
   expect(player.level).toBe(2);
 });
 

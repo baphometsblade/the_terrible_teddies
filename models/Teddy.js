@@ -56,6 +56,10 @@ const teddySchema = new mongoose.Schema({
   collectibilityFactor: {
     type: Number,
     min: [0, 'Collectibility factor cannot be negative']
+  },
+  currentHealth: {
+    type: Number,
+    min: [0, 'Current health cannot be negative']
   }
 }, {
   timestamps: true

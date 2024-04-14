@@ -9,15 +9,30 @@
   <%- include('partials/_header.ejs') %>
 
   <div class="container mt-4">
-    <h1>Welcome to your Dashboard</h1>
-    <p>This is the main control panel for your game interactions.</p>
-    <% if (userId) { %>
-      <div class="dashboard-images">
-        <img src="/images/dashboard-background.jpg" alt="Dashboard Background" class="img-fluid"> <!-- Dashboard background image -->
-        <img src="/images/teddy-dashboard.png" alt="Teddy Character" class="img-fluid teddy-dashboard"> <!-- Dashboard teddy character image -->
+    <h1>Welcome to your Dashboard<% if (playerDetails && playerDetails.level) { %>, <%= playerDetails.level %> Level Player<% } %>!</h1>
+    <p>Here's your teddy collection and available challenges:</p>
+    <% if (playerDetails && playerDetails.teddies && playerDetails.challenges) { %>
+      <div class="row">
+        <div class="col-md-6">
+          <h3>Your Teddies:</h3>
+          <ul>
+            <% playerDetails.teddies.forEach(function(teddy) { %>
+              <li><%= teddy.name %> - Health: <%= teddy.health %>, Attack: <%= teddy.attackDamage %></li>
+            <% }); %>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <h3>Available Challenges:</h3>
+          <ul>
+            <% playerDetails.challenges.forEach(function(challenge) { %>
+              <li><%= challenge.specialMove %> - Unlock at Level: <%= challenge.level %></li>
+            <% }); %>
+          </ul>
+        </div>
       </div>
+    <% } else { %>
+      <p>You currently have no teddies or challenges. Start by collecting teddies!</p>
     <% } %>
-    <!-- Additional dashboard content goes here -->
   </div>
 
   <%- include('partials/_footer.ejs') %>

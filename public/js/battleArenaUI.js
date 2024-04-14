@@ -7,6 +7,7 @@ $(document).ready(function() {
         const opponentHealthPercent = (opponentTeddy.currentHealth / opponentTeddy.health) * 100;
         $('#player-health-bar').css('width', playerHealthPercent + '%');
         $('#opponent-health-bar').css('width', opponentHealthPercent + '%');
+        console.log('Health bars updated');
     }
 
     // Display attack animations
@@ -15,6 +16,7 @@ $(document).ready(function() {
         $(attackerElement).addClass('attacking');
         setTimeout(() => {
             $(attackerElement).removeClass('attacking');
+            console.log(attacker + ' attack animation shown');
         }, 1000);
     }
 
@@ -24,6 +26,7 @@ $(document).ready(function() {
         $(attackerElement).addClass('special-move');
         setTimeout(() => {
             $(attackerElement).removeClass('special-move');
+            console.log(attacker + ' special move animation shown');
         }, 2000);
     }
 
@@ -44,6 +47,7 @@ $(document).ready(function() {
             type: 'POST',
             data: { move: move },
             success: function(battleState) {
+                console.log('Turn executed. Move: ' + move);
                 updateHealthBars(battleState.playerTeddy, battleState.opponentTeddy);
                 if (move === 'attack') {
                     showAttackAnimation('player');
@@ -53,10 +57,12 @@ $(document).ready(function() {
                 // Check for winner and update UI
                 if (battleState.winner) {
                     $('#battle-controls').html(`<p>Battle Over. Winner: ${battleState.winner}</p>`);
+                    console.log('Battle over. Winner: ' + battleState.winner);
                 }
             },
-            error: function() {
+            error: function(jqXHR, textStatus, errorThrown) {
                 alert('An error occurred while executing the move. Please try again.');
+                console.error('Error executing move:', textStatus, errorThrown);
             }
         });
     }

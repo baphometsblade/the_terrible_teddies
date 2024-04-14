@@ -30,6 +30,28 @@ This project leverages Node.js and Express for the backend, with a MongoDB datab
 3. Configure the `.env` file following the `.env.example` template.
 4. Run the application using `npm start`, which will start the server and connect to the MongoDB database.
 
-### License
+## Gameplay
+
+To engage in battle:
+1. Navigate to the Teddies page and select your lineup.
+2. Proceed to the Battle Arena where you can choose to attack or use a special move.
+3. Watch as the battle unfolds with real-time animations and updates.
+4. Gain experience and level up your teddies as you win battles.
+
+For a detailed guide on teddy attributes, battle strategies, and leveling up, refer to the in-game manual accessible from the dashboard.
+
+## Documentation
+
+For a comprehensive breakdown of the game's mechanics, character attributes, database schema, and API endpoints, please refer to the `docs` directory.
+
+## Deployment
+
+To deploy the game, follow the instructions provided in the `DEPLOYMENT.md` file, which includes steps for setting up the database and initializing the game environment.
+
+## Contributing
+
+We welcome contributions to The Terrible Teddies. If you have suggestions for new features or improvements, please open an issue or a pull request.
+
+## License
 
 Copyright (c) 2024.
