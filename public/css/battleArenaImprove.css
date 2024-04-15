@@ -20,10 +20,12 @@
   background-color: #fff3cd;
   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
   transition: 0.3s;
+  cursor: pointer; /* Added cursor pointer to indicate the card is interactive */
 }
 
 .teddy-card:hover {
   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+  transform: translateY(-5px); /* Added subtle animation to lift the card on hover */
 }
 
 .battle-field {
@@ -32,6 +34,19 @@
   padding: 20px;
   margin: 20px 0;
   background-color: #f8d7da;
+  position: relative; /* Added position relative for positioning pseudo-elements or children absolutely within */
+}
+
+.battle-field::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  bottom: -10px;
+  left: -10px;
+  border: 3px solid #dc3545;
+  border-radius: 15px;
+  z-index: -1; /* Added a pseudo-element to create a double-border effect */
 }
 
 .battle-controls {
@@ -46,17 +61,19 @@
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Added transform to transition properties */
 }
 
 #attack-button:hover {
   background-color: #c82333;
   color: #fff;
+  transform: scale(1.05); /* Added scale transform for a hover effect */
 }
 
 #special-move-button:hover {
   background-color: #e0a800;
   color: #fff;
+  transform: scale(1.05); /* Added scale transform for a hover effect */
 }
 
 .battle-turn {
@@ -64,4 +81,25 @@
   color: #dc3545;
   text-align: center;
   margin-bottom: 10px;
+}
+
+/* Added new styles for animations and transitions */
+.attack-animation {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+  20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+.special-move-animation {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }

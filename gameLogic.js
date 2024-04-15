@@ -1,37 +1,32 @@
 // gameLogic.js
 
 const Teddy = require('./models/Teddy');
-const Player = require('./models/Player');
-const { EXPERIENCE_BASE, RARITY_MULTIPLIER, LEVEL_UP_BASE } = require('./constants');
+const { EXPERIENCE_BASE, LEVEL_UP_BASE } = require('./constants');
 
-// Function to load teddies for a player's lineup from the database
-async function loadTeddiesByIds(teddyIds) {
-    try {
-        const teddies = await Teddy.find({ '_id': { $in: teddyIds } });
-        console.log('Loaded teddies for lineup:', teddies.map(teddy => teddy.name));
-        return teddies;
-    } catch (error) {
-        console.error('Error loading teddies:', error.message, error.stack);
-        throw error;
-    }
+// Function to calculate experience points gained from a battle
+function calculateExperiencePoints(teddy, opponentLevel) {
+  // Simple example calculation, can be expanded to consider various factors
+  const experienceGained = EXPERIENCE_BASE * opponentLevel;
+  return experienceGained;
 }
 
-// Function to save teddy health and other attributes changes to the database
-async function saveTeddyProgress(teddy) {
-    try {
-        const updateData = {
-            health: teddy.currentHealth
-            // Other attributes can be updated here if needed
-        };
-        await Teddy.findByIdAndUpdate(teddy._id, updateData);
-        console.log(`Saved teddy progress for ${teddy.name}`);
-    } catch (error) {
-        console.error('Error saving teddy progress:', error.message, error.stack);
-        throw error;
+// Function to handle teddy level up after battle
+async function handleTeddyLevelUp(teddy, opponentLevel) {
+  try {
+    const experienceGained = calculateExperiencePoints(teddy, opponentLevel);
+    const levelUps = await teddy.addExperience(experienceGained);
+    if (levelUps > 0) {
+      console.log(`${teddy.name} leveled up! Total level-ups: ${levelUps}`);
+    } else {
+      console.log(`${teddy.name} gained ${experienceGained} experience points.`);
     }
+    await teddy.save(); // Save the changes to the database
+  } catch (error) {
+    console.error('Error handling teddy level up:', error.message, error.stack);
+    throw error;
+  }
 }
 
 module.exports = {
-    loadTeddiesByIds,
-    saveTeddyProgress
+    handleTeddyLevelUp
 };

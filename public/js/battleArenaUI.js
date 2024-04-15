@@ -13,26 +13,20 @@ $(document).ready(function() {
     // Display attack animations
     function showAttackAnimation(attacker) {
         const attackerElement = attacker === 'player' ? '#player-hand .teddy-card' : '#opponent-hand .teddy-card';
-        $(attackerElement).addClass('teddy-attack');
-
-        // Remove the class after the animation ends to allow it to be re-added next time
-        $(attackerElement).on('animationend', function() {
-            $(this).removeClass('teddy-attack');
-            console.log(attacker + ' attack animation shown');
-        });
+        $(attackerElement).addClass('attack-animation');
     }
 
     // Display special move animations
     function showSpecialMoveAnimation(attacker) {
         const attackerElement = attacker === 'player' ? '#player-hand .teddy-card' : '#opponent-hand .teddy-card';
-        $(attackerElement).addClass('teddy-special-move');
-
-        // Remove the class after the animation ends
-        $(attackerElement).on('animationend', function() {
-            $(this).removeClass('teddy-special-move');
-            console.log(attacker + ' special move animation shown');
-        });
+        $(attackerElement).addClass('special-move-animation');
     }
+
+    // Remove animation classes after the animation ends
+    $('.teddy-card').on('animationend', function() {
+        $(this).removeClass('attack-animation special-move-animation');
+        console.log('Animation ended and classes removed');
+    });
 
     // Handle attack button click
     $('#attack-button').click(function() {
@@ -66,7 +60,7 @@ $(document).ready(function() {
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 alert('An error occurred while executing the move. Please try again.');
-                console.error('Error executing move:', textStatus, errorThrown);
+                console.error('Error executing move:', textStatus, errorThrown, jqXHR);
             }
         });
     }

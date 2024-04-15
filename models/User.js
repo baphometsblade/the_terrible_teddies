@@ -7,15 +7,17 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre('save', async function(next) {
-  const user = this;
-  if (!user.isModified('password')) return next();
-  try {
-    const hash = await bcrypt.hash(user.password, 10);
-    user.password = hash;
+  if (this.isModified('password')) {
+    try {
+      const hash = await bcrypt.hash(this.password, 10);
+      this.password = hash;
+      next();
+    } catch (err) {
+      console.error('Error hashing password:', err.message, err.stack);
+      next(err);
+    }
+  } else {
     next();
-  } catch (err) {
-    console.error('Error hashing password:', err.message, err.stack);
-    next(err);
   }
 });
 

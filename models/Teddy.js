@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { LEVEL_UP_BASE } = require('../constants'); // Assuming constants.js is in the root directory
 
 const teddySchema = new mongoose.Schema({
   name: {
@@ -60,7 +61,21 @@ const teddySchema = new mongoose.Schema({
   currentHealth: {
     type: Number,
     min: [0, 'Current health cannot be negative']
-  }
+  },
+  experiencePoints: {
+    type: Number,
+    default: 0,
+    min: [0, 'Experience points cannot be negative']
+  },
+  level: {
+    type: Number,
+    default: 1,
+    min: [1, 'Level cannot be less than 1']
+  },
+  abilities: [{
+    type: String,
+    trim: true
+  }]
 }, {
   timestamps: true
 });
@@ -71,37 +86,33 @@ teddySchema.index({ rarity: 1 });
 // Additional compound index for efficient querying by attackDamage and health
 teddySchema.index({ attackDamage: 1, health: 1 });
 
+// Common error handling function for duplicate key errors
+function handleDuplicateKeyError(error, next) {
+  if (error.name === 'MongoError' && error.code === 11000) {
+    console.error('Duplicate key error:', error);
+    next(new Error('There was a duplicate key error'));
+  } else {
+    next();
+  }
+}
+
 // Error handling for duplicate key errors and validation errors
 teddySchema.post('save', function(error, doc, next) {
-  if (error.name === 'MongoError' && error.code === 11000) {
-    console.error('Error saving document:', error);
-    next(new Error('There was a duplicate key error'));
-  } else if (error.name === 'ValidationError') {
+  handleDuplicateKeyError(error, next);
+  if (error.name === 'ValidationError') {
     console.error('Validation error while saving document:', error);
     next(new Error('Validation failed: ' + error.message));
-  } else {
-    next(error);
   }
 });
 
 // Error handling for duplicate key errors on update
 teddySchema.post('update', function(error, res, next) {
-  if (error.name === 'MongoError' && error.code === 11000) {
-    console.error('Error updating document:', error);
-    next(new Error('There was a duplicate key error during update'));
-  } else {
-    next();
-  }
+  handleDuplicateKeyError(error, next);
 });
 
 // Error handling for duplicate key errors on findOneAndUpdate
 teddySchema.post('findOneAndUpdate', function(error, res, next) {
-  if (error.name === 'MongoError' && error.code === 11000) {
-    console.error('Error with findOneAndUpdate:', error);
-    next(new Error('There was a duplicate key error during findOneAndUpdate'));
-  } else {
-    next();
-  }
+  handleDuplicateKeyError(error, next);
 });
 
 const Teddy = mongoose.model('Teddy', teddySchema);
