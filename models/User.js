@@ -28,6 +28,15 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
   }
 };
 
+userSchema.statics.findByUsername = async function(username) {
+  try {
+    return await this.findOne({ username: username });
+  } catch (err) {
+    console.error('Error finding user by username:', err.message, err.stack);
+    throw err;
+  }
+};
+
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;

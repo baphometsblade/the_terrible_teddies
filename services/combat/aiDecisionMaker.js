@@ -2,39 +2,26 @@ const combatEvents = require('./combatEvents');
 
 class AIDecisionMaker {
   constructor() {
-    // Subscribe to AI decision events
-    combatEvents.on('decideMove', (playerTeddy, opponentTeddy) => {
-      try {
-        this.decideMove(playerTeddy, opponentTeddy);
-      } catch (error) {
-        console.error('Error in AIDecisionMaker event listener:', error.message, error.stack);
-        this.emit('error', error);
-      }
-    });
+    // Listeners can be registered here if needed in the future
   }
 
-  decideMove(playerTeddy, opponentTeddy) {
+  decideMove(aiTeddy, playerTeddy) {
     try {
-      // Basic AI decision logic
-      if (playerTeddy.currentHealth < playerTeddy.health * 0.3) {
-        // If player's teddy health is below 30%, use special move
-        console.log(`AI Decision: Player teddy's health is low, using special move.`);
-        combatEvents.emit('specialMove', {
-          attacker: playerTeddy,
-          defender: opponentTeddy,
-          move: 'specialMove'
-        });
+      // Basic AI logic for decision making
+      let move = { special: false, name: '' };
+      // Use special move if player's health is low or as a finishing move
+      if ((playerTeddy.health < 30) || (aiTeddy.attackDamage >= playerTeddy.health)) {
+        move.special = true;
+        move.name = aiTeddy.specialMove;
+        combatEvents.emit('specialMove', aiTeddy, playerTeddy, move.name);
       } else {
-        // Otherwise, use a regular attack
-        console.log(`AI Decision: Player teddy's health is sufficient, using regular attack.`);
-        combatEvents.emit('attack', {
-          attacker: playerTeddy,
-          defender: opponentTeddy
-        });
+        // Default to attack if none of the above conditions are met
+        combatEvents.emit('attack', aiTeddy, playerTeddy);
       }
+      return move;
     } catch (error) {
-      console.error('Error in AIDecisionMaker.decideMove:', error.message, error.stack);
-      this.emit('error', error);
+      combatEvents.emit('error', `Error in AIDecisionMaker.decideMove: ${error.message}`, error.stack);
+      return { special: false, name: 'defaultAttack' }; // Default to attack if there's an error
     }
   }
 }

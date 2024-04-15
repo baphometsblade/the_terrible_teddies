@@ -26,19 +26,19 @@ router.post('/auth/register', async (req, res) => {
 });
 
 router.get('/auth/login', (req, res) => {
-  res.render('login');
+  res.render('login', { error: null });
 });
 
 router.post('/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    const user = await User.findOne({ username });
+    const user = await User.findByUsername(username);
     if (!user) {
       console.log('Login attempt failed: User not found');
-      res.status(400).render('login', { error: 'User not found' });
+      res.status(400).render('login', { error: 'Username not found. Please register if you don\'t have an account.' });
       return;
     }
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await user.comparePassword(password);
     if (isMatch) {
       req.session.userId = user._id;
       // Save the session before redirecting to ensure the session is established

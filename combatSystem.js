@@ -1,7 +1,9 @@
-const HealthManager = require('./services/combat/healthManager');
-const DamageManager = require('./services/combat/damageManager');
-const SpecialMoves = require('./services/combat/specialMoves');
-const AIDecisionMaker = require('./services/combat/aiDecisionMaker');
+// combatSystem.js
+
+const { HealthManager } = require('./services/combat/healthManager');
+const { DamageManager } = require('./services/combat/damageManager');
+const { SpecialMoves } = require('./services/combat/specialMoves');
+const { AIDecisionMaker } = require('./services/combat/aiDecisionMaker');
 const combatEvents = require('./services/combat/combatEvents');
 
 class CombatSystem {
@@ -10,63 +12,78 @@ class CombatSystem {
     this.damageManager = new DamageManager();
     this.specialMoves = new SpecialMoves();
     this.aiDecisionMaker = new AIDecisionMaker();
+    this.setupEventListeners();
+  }
 
-    // Subscribe to health change events
-    combatEvents.on('healthChanged', (data) => {
+  setupEventListeners() {
+    combatEvents.on('healthChange', (character, change) => {
       try {
-        // Update battle state with the new health
-        this.updateBattleState(data.characterId, data.newHealth);
-        // Trigger UI updates if necessary
-        combatEvents.emit('battleStateUpdated', data);
+        this.healthManager.adjustHealth(character, change);
+        console.log(`Health adjusted for ${character.name}, change: ${change}`);
       } catch (error) {
-        console.error('Error handling healthChanged event:', error.message, error.stack);
+        console.error('Error handling healthChange event:', error.message, error.stack);
       }
     });
 
-    // Subscribe to attack events
-    combatEvents.on('attack', (data) => {
+    combatEvents.on('attack', (attacker, defender) => {
       try {
-        this.handleAttackEvent(data);
+        const damage = this.damageManager.calculateDamage(attacker, defender);
+        combatEvents.emit('healthChange', defender, -damage);
+        console.log(`Attack event: ${attacker.name} attacks ${defender.name} for ${damage} damage`);
       } catch (error) {
         console.error('Error handling attack event:', error.message, error.stack);
       }
     });
 
-    // Subscribe to special move events
-    combatEvents.on('specialMove', (data) => {
+    combatEvents.on('specialMove', (attacker, defender, move) => {
       try {
-        this.handleSpecialMoveEvent(data);
+        this.specialMoves.applySpecialMove(attacker, defender, move);
+        console.log(`Special move event: ${attacker.name} uses ${move} on ${defender.name}`);
       } catch (error) {
         console.error('Error handling specialMove event:', error.message, error.stack);
       }
     });
+
+    combatEvents.on('aiMove', (aiTeddy, playerTeddy) => {
+      try {
+        const move = this.aiDecisionMaker.decideMove(aiTeddy, playerTeddy);
+        if (move.special) {
+          combatEvents.emit('specialMove', aiTeddy, playerTeddy, move.name);
+        } else {
+          combatEvents.emit('attack', aiTeddy, playerTeddy);
+        }
+        console.log(`AI move event: ${aiTeddy.name} decides on ${move.special ? 'special move' : 'attack'}`);
+      } catch (error) {
+        console.error('Error handling aiMove event:', error.message, error.stack);
+      }
+    });
+
+    combatEvents.on('battleStart', (playerTeddy, aiTeddy) => {
+      console.log('Battle started between', playerTeddy.name, 'and', aiTeddy.name);
+    });
   }
 
-  updateBattleState(characterId, newHealth) {
-    // Logic to update the battle state
-    const character = this.battleState.characters.find(c => c.id === characterId);
-    if (character) {
-      character.currentHealth = newHealth;
-      console.log(`Battle state updated for character ${characterId} with new health ${newHealth}`);
-    } else {
-      console.error(`Character with ID ${characterId} not found in battle state.`);
-    }
+  initiateBattle(playerTeddy, aiTeddy) {
+    combatEvents.emit('battleStart', playerTeddy, aiTeddy);
+    console.log(`Battle initiated between ${playerTeddy.name} and ${aiTeddy.name}`);
   }
 
-  handleAttackEvent(data) {
-    // Logic to handle attack event
-    const damage = this.damageManager.calculateDamage(data.attacker, data.defender);
-    this.healthManager.adjustHealth(data.defender, -damage);
-    console.log(`${data.attacker.name} attacked ${data.defender.name} for ${damage} damage.`);
+  playerAttack(playerTeddy, aiTeddy) {
+    combatEvents.emit('attack', playerTeddy, aiTeddy);
+    console.log(`${playerTeddy.name} attacks ${aiTeddy.name}`);
   }
 
-  handleSpecialMoveEvent(data) {
-    // Logic to handle special move event
-    this.specialMoves.applySpecialMove(data.attacker, data.defender, data.move);
-    console.log(`${data.attacker.name} used special move ${data.move} on ${data.defender.name}.`);
+  playerUseSpecialMove(playerTeddy, aiTeddy, move) {
+    combatEvents.emit('specialMove', playerTeddy, aiTeddy, move);
+    console.log(`${playerTeddy.name} uses special move ${move} on ${aiTeddy.name}`);
   }
 
-  // Other methods related to combat
+  aiTurn(aiTeddy, playerTeddy) {
+    combatEvents.emit('aiMove', aiTeddy, playerTeddy);
+    console.log(`AI turn for ${aiTeddy.name} against ${playerTeddy.name}`);
+  }
+
+  // ... Additional methods related to combat system ...
 }
 
 module.exports = CombatSystem;

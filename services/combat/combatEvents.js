@@ -1,32 +1,40 @@
 const EventEmitter = require('events');
 
-class CombatEmitter extends EventEmitter {
+class CombatEvents extends EventEmitter {
   constructor() {
     super();
     this.on('error', (error) => {
-      console.error('Error event emitted in CombatEmitter:', error.message, error.stack);
+      console.error('Error in CombatEvents:', error.message, error.stack);
     });
 
-    // Event handlers for combat events
-    this.on('healthChanged', (data) => {
-      console.log(`Health changed event received for character ${data.characterId}, new health: ${data.newHealth}`);
-      // Additional logic for healthChanged event can be added here
+    // Registering combat-related events with their handlers
+    this.on('healthChange', (character, change) => {
+      console.log(`Event 'healthChange' triggered for ${character.name} with change: ${change}`);
+      // Error handling should be implemented in the method this event calls
     });
 
-    this.on('attack', (data) => {
-      console.log(`Attack event received, attacker: ${data.attackerId}, defender: ${data.defenderId}, damage: ${data.damage}`);
-      // Additional logic for attack event can be added here
+    this.on('attack', (attacker, defender) => {
+      console.log(`Event 'attack' triggered: ${attacker.name} attacks ${defender.name}`);
+      // Error handling should be implemented in the method this event calls
     });
 
-    this.on('specialMove', (data) => {
-      console.log(`Special move event received, character: ${data.characterId}, move: ${data.move}`);
-      // Additional logic for specialMove event can be added here
+    this.on('specialMove', (attacker, defender, move) => {
+      console.log(`Event 'specialMove' triggered: ${attacker.name} uses ${move} on ${defender.name}`);
+      // Error handling should be implemented in the method this event calls
     });
 
-    // Additional combat event handlers can be added here as needed
+    this.on('aiMove', (aiTeddy, playerTeddy) => {
+      console.log(`Event 'aiMove' triggered: AI decides move for ${aiTeddy.name}`);
+      // Error handling should be implemented in the method this event calls
+    });
+
+    this.on('battleStart', (playerTeddy, aiTeddy) => {
+      console.log(`Event 'battleStart' triggered: Battle started between ${playerTeddy.name} and ${aiTeddy.name}`);
+      // Error handling should be implemented in the method this event calls
+    });
   }
 }
 
-const combatEvents = new CombatEmitter();
+const combatEvents = new CombatEvents();
 
 module.exports = combatEvents;

@@ -5,29 +5,33 @@ $(document).ready(function() {
     function updateHealthBars(playerTeddy, opponentTeddy) {
         const playerHealthPercent = (playerTeddy.currentHealth / playerTeddy.health) * 100;
         const opponentHealthPercent = (opponentTeddy.currentHealth / opponentTeddy.health) * 100;
-        $('#player-health-bar').css('width', playerHealthPercent + '%');
-        $('#opponent-health-bar').css('width', opponentHealthPercent + '%');
+        $('#player-hand .health-bar-filled').css('width', playerHealthPercent + '%');
+        $('#opponent-hand .health-bar-filled').css('width', opponentHealthPercent + '%');
         console.log('Health bars updated');
     }
 
     // Display attack animations
     function showAttackAnimation(attacker) {
-        const attackerElement = attacker === 'player' ? '#player-hand' : '#opponent-hand';
-        $(attackerElement).addClass('attacking');
-        setTimeout(() => {
-            $(attackerElement).removeClass('attacking');
+        const attackerElement = attacker === 'player' ? '#player-hand .teddy-card' : '#opponent-hand .teddy-card';
+        $(attackerElement).addClass('teddy-attack');
+
+        // Remove the class after the animation ends to allow it to be re-added next time
+        $(attackerElement).on('animationend', function() {
+            $(this).removeClass('teddy-attack');
             console.log(attacker + ' attack animation shown');
-        }, 1000);
+        });
     }
 
     // Display special move animations
     function showSpecialMoveAnimation(attacker) {
-        const attackerElement = attacker === 'player' ? '#player-hand' : '#opponent-hand';
-        $(attackerElement).addClass('special-move');
-        setTimeout(() => {
-            $(attackerElement).removeClass('special-move');
+        const attackerElement = attacker === 'player' ? '#player-hand .teddy-card' : '#opponent-hand .teddy-card';
+        $(attackerElement).addClass('teddy-special-move');
+
+        // Remove the class after the animation ends
+        $(attackerElement).on('animationend', function() {
+            $(this).removeClass('teddy-special-move');
             console.log(attacker + ' special move animation shown');
-        }, 2000);
+        });
     }
 
     // Handle attack button click
