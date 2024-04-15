@@ -113,3 +113,5 @@ router.get('/game/battle-arena', isAuthenticated, async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error: Unable to render battle arena.' });
   }
 });
+
+module.exports = router;

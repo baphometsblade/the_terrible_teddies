@@ -2,11 +2,11 @@
 <html lang="en">
 <%- include('partials/_head.ejs') %>
   <body>
-<%- include('partials/_header.ejs', { userId: userId }) %>
+<%- include('partials/_header.ejs', { userId: req.session.userId }) %>
     <main role="main" class="container mt-4">
       <div class="text-center">
         <h1>the_terrible_teddies</h1>
-        <% if (userId) { %>
+        <% if (req.session && req.session.userId) { %>
           <a href="/teddies" class="btn btn-primary mt-3">Create Hand</a>
           <a href="/game/battle-arena" class="btn btn-primary mt-3">Battle Arena</a>
           <a href="/dashboard" class="btn btn-secondary mt-3">Dashboard</a>

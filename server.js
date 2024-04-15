@@ -44,9 +44,19 @@ app.set('views', path.join(__dirname, 'views'));
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Use routes
-app.use(authRoutes);
-app.use(gameRoutes);
+// Use routes with prefixes
+app.use('/auth', authRoutes);
+app.use('/game', gameRoutes);
+
+// Home page route
+app.get('/', (req, res) => {
+  try {
+    res.render('index');
+  } catch (error) {
+    console.error('Error rendering home page:', error.message, error.stack);
+    res.status(500).render('error', { error });
+  }
+});
 
 // Error handler
 app.use((err, req, res, next) => {

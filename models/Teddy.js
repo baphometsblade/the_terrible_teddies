@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { LEVEL_UP_BASE } = require('../constants'); // Assuming constants.js is in the root directory
 
 const teddySchema = new mongoose.Schema({
   name: {
