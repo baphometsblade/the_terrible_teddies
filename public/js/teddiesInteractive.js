@@ -37,7 +37,7 @@ $(document).ready(function() {
             url: '/game/initiate-battle',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ playerTeddyId: selectedTeddyIds[0], opponentTeddyId: selectedTeddyIds[1] }),
+            data: JSON.stringify({ selectedTeddyIds: selectedTeddyIds }),
             success: function(response) {
                 console.log('Battle initiated successfully.');
                 window.location.href = '/game/battle-arena';
@@ -46,6 +46,7 @@ $(document).ready(function() {
                 console.error('Error initiating battle:', error);
                 var errorMessage = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'An error occurred while initiating the battle. Please try again.';
                 $('#error-message').text(errorMessage).show();
+                console.error("Error initiating battle: " + errorMessage + ". Status: " + status + ". Error: " + error); // Log the error details
             }
         });
     });

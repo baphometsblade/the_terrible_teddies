@@ -106,6 +106,7 @@
           error: function(xhr, status, error) {
             var errorMessage = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'An error occurred while initiating the battle. Please try again.';
             $('#error-message').text(errorMessage).show(); // Display the error message
+            console.error("Error initiating battle: " + errorMessage + ". Status: " + status + ". Error: " + error); // Log the error details
           }
         });
       });
