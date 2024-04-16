@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <h1>Create Your Player Profile</h1>
-        <form action="/game/create-profile" method="POST">
+        <form>
             <div class="form-group">
                 <label for="experiencePoints">Experience Points</label>
                 <input type="number" id="experiencePoints" name="experiencePoints" value="0" min="0" required>
@@ -26,5 +26,40 @@
         </form>
     </div>
     <script src="/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const experiencePoints = document.getElementById('experiencePoints').value;
+                const level = document.getElementById('level').value;
+                const currency = document.getElementById('currency').value;
+
+                fetch('/game/create-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        experiencePoints: experiencePoints,
+                        level: level,
+                        currency: currency
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/dashboard';
+                    } else {
+                        alert('Error creating profile: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error creating player profile:', error);
+                    alert('An error occurred while creating your profile. Please try again.');
+                });
+            });
+        });
+    </script>
 </body>
 </html>

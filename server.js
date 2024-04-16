@@ -36,7 +36,8 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: process.env.DATABASE_URL })
+  store: MongoStore.create({ mongoUrl: process.env.DATABASE_URL }),
+  cookie: { maxAge: 3600000 } // Session expires after 1 hour of inactivity
 }));
 
 // Set the view engine to EJS
