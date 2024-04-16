@@ -1,5 +1,9 @@
+const combatEvents = require('./combatEvents');
+
 class HealthManager {
-  constructor() {}
+  constructor() {
+    combatEvents.on('healthChange', (character, change) => this.adjustHealth(character, change));
+  }
 
   adjustHealth(character, change) {
     try {
@@ -10,6 +14,7 @@ class HealthManager {
         character.health = character.maxHealth;
       }
       console.log(`Health adjusted for ${character.name}, new health: ${character.health}`);
+      combatEvents.emit('healthAdjusted', character);
     } catch (error) {
       console.error('Error adjusting health:', error.message, error.stack);
     }

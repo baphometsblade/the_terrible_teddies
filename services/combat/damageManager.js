@@ -1,5 +1,7 @@
 // damageManager.js
 
+const combatEvents = require('./combatEvents');
+
 class DamageManager {
   constructor() {}
 
@@ -9,6 +11,10 @@ class DamageManager {
       // This is a placeholder for more complex logic involving character stats, items, etc.
       const damage = attacker.attackDamage - (defender.defense || 0);
       console.log(`${attacker.name} attacks ${defender.name} for ${damage} damage.`);
+      
+      // Emitting an event when damage is calculated
+      combatEvents.emit('damageCalculated', attacker, defender, damage);
+      
       return damage;
     } catch (error) {
       console.error('Error calculating damage:', error.message, error.stack);

@@ -49,25 +49,22 @@ router.post('/game/choose-lineup', combinedAuthMiddleware, async (req, res) => {
 // Route to initiate a battle
 router.post('/game/initiate-battle', combinedAuthMiddleware, async (req, res) => {
   try {
-    const { playerTeddyId, opponentTeddyId } = req.body;
-    if (!isValidObjectId(playerTeddyId) || !isValidObjectId(opponentTeddyId)) {
+    const selectedTeddyIds = req.body.selectedTeddyIds.split(',').map(id => id.trim());
+    if (!selectedTeddyIds.every(isValidObjectId)) {
       return res.status(400).json({ error: 'Invalid teddy IDs provided.' });
     }
-    const playerTeddy = await Teddy.findById(playerTeddyId);
-    const opponentTeddy = await Teddy.findById(opponentTeddyId);
-    if (!playerTeddy || !opponentTeddy) {
-      const missingTeddyId = !playerTeddy ? playerTeddyId : opponentTeddyId;
-      console.error(`Teddy not found with id: ${missingTeddyId}`);
-      return res.status(404).json({ error: `Teddy not found with id: ${missingTeddyId}.` });
+    const teddies = await Teddy.find({ '_id': { $in: selectedTeddyIds } });
+    if (teddies.length !== selectedTeddyIds.length) {
+      console.error(`One or more Teddies not found with provided ids: ${selectedTeddyIds.join(', ')}`);
+      return res.status(404).json({ error: `One or more Teddies not found.` });
     }
     // Initialize battle state in the session
     req.session.battleState = {
-      playerTeddy: playerTeddy,
-      opponentTeddy: opponentTeddy,
+      teddies: teddies,
       turn: 'player' // Assuming the player always starts
     };
     await req.session.save();
-    console.log('Battle initiated successfully');
+    console.log('Battle initiated successfully with teddies:', selectedTeddyIds.join(', '));
     res.status(200).json({ message: 'Battle initiated', battleState: req.session.battleState });
   } catch (error) {
     console.error('Error initiating battle:', error.message, error.stack);
