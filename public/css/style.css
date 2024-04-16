@@ -1,0 +1,97 @@
+/* Style definitions for the_terrible_teddies app */
+
+/* Add your custom styles below */
+
+/* Dashboard Enhancements */
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.dashboard-header {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.teddy-collection-overview, .recent-battles {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.teddy-card, .battle-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 10px;
+  display: inline-block;
+  width: calc(50% - 20px);
+}
+
+/* Teddies Showcase Improvements */
+.teddy-card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.teddy-card:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+.teddy-filter {
+  margin: 20px 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.teddy-search {
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 5px 15px;
+}
+
+/* General Styles */
+.btn {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.btn:hover {
+  background-color: #0056b3;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+}
+
+.success-message {
+  color: green;
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .teddy-card, .battle-card {
+    width: calc(100% - 20px);
+  }
+
+  .dashboard-container {
+    padding: 10px;
+  }
+
+  .teddy-filter {
+    flex-direction: column;
+  }
+
+  .teddy-search {
+    margin-bottom: 10px;
+  }
+}

@@ -81,6 +81,21 @@ playerSchema.pre('save', async function (next) {
   }
 });
 
+// Ensure that a Player document is created for each new User
+playerSchema.statics.ensurePlayerProfile = async function(userId) {
+  try {
+    let player = await this.findOne({ userId: userId });
+    if (!player) {
+      player = await this.create({ userId: userId, experiencePoints: 0, level: 1, unlockedTeddies: [], currency: 100 });
+      console.log(`Created new player profile for userId: ${userId}`);
+    }
+    return player;
+  } catch (error) {
+    console.error('Error ensuring player profile:', error.message, error.stack);
+    throw error;
+  }
+};
+
 const Player = mongoose.model('Player', playerSchema);
 
 module.exports = Player;

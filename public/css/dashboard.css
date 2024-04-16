@@ -1,0 +1,101 @@
+/* Dashboard Page Styles */
+
+body {
+  background-color: #f0f2f5;
+  font-family: 'Arial', sans-serif;
+}
+
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.dashboard-header {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.dashboard-header h1 {
+  font-size: 2.5rem;
+  color: #333;
+}
+
+.dashboard-content {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.teddy-collection-overview, .recent-battles {
+  flex: 1;
+  margin-right: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 20px;
+}
+
+.teddy-collection-overview:last-child, .recent-battles:last-child {
+  margin-right: 0;
+}
+
+.teddy-collection-overview h2, .recent-battles h2 {
+  font-size: 1.5rem;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+.teddy-item, .battle-item {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.teddy-item:last-child, .battle-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.teddy-item img, .battle-item img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.teddy-item span, .battle-item span {
+  vertical-align: middle;
+}
+
+.links-section {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.links-section a {
+  display: inline-block;
+  background: #007bff;
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+.links-section a:hover {
+  background: #0056b3;
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    flex-direction: column;
+  }
+
+  .teddy-collection-overview, .recent-battles {
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
+}

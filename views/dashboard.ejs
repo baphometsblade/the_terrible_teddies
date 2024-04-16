@@ -33,9 +33,42 @@
     <% } else { %>
       <p>You currently have no teddies or challenges. Start by collecting teddies!</p>
     <% } %>
+    <div class="row mt-4">
+      <div class="col-md-12">
+        <h3>Manage Your Teddies' Items:</h3>
+        <form action="/items/equip" method="post">
+          <label for="teddySelect">Select Teddy:</label>
+          <select id="teddySelect" name="teddyId" required>
+            <% playerDetails.teddies.forEach(function(teddy) { %>
+              <option value="<%= teddy._id %>"><%= teddy.name %></option>
+            <% }); %>
+          </select>
+          <label for="itemSelect">Select Item:</label>
+          <select id="itemSelect" name="itemId" required>
+            <% playerDetails.items.forEach(function(item) { %>
+              <option value="<%= item._id %>"><%= item.name %></option>
+            <% }); %>
+          </select>
+          <button type="submit" class="btn btn-primary">Equip Item</button>
+        </form>
+      </div>
+    </div>
+    <!-- Feedback Form Section -->
+    <div class="feedback-form-section mt-4">
+      <h2>Feedback</h2>
+      <p>Your feedback is important to us. Please let us know how we can improve your experience.</p>
+      <form action="/feedback/submit" method="POST">
+        <div class="form-group">
+          <label for="feedbackText">Feedback:</label>
+          <textarea id="feedbackText" name="feedbackText" rows="4" class="form-control" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit Feedback</button>
+      </form>
+    </div>
   </div>
 
   <%- include('partials/_footer.ejs') %>
   <script src="/js/main.js"></script>
+  <script src="/js/dashboard.js"></script> <!-- Include custom JavaScript for dynamic dashboard functionalities -->
 </body>
 </html>

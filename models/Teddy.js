@@ -74,6 +74,15 @@ const teddySchema = new mongoose.Schema({
   abilities: [{
     type: String,
     trim: true
+  }],
+  imagePath: {
+    type: String,
+    required: [true, 'A teddy must have an image path'],
+    trim: true
+  },
+  items: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Item'
   }]
 }, {
   timestamps: true
@@ -84,6 +93,40 @@ teddySchema.index({ name: 1 }, { unique: true });
 teddySchema.index({ rarity: 1 });
 // Additional compound index for efficient querying by attackDamage and health
 teddySchema.index({ attackDamage: 1, health: 1 });
+
+// Methods for teddy progression
+teddySchema.methods.addExperience = function(experience) {
+  this.experiencePoints += experience;
+  console.log(`Added ${experience} experience points to ${this.name}`);
+  // Check if the teddy has enough experience to level up
+  if (this.checkLevelUp()) {
+    this.applyLevelUp();
+  }
+};
+
+const levelUpThresholds = {
+  1: 100,
+  2: 200,
+  3: 300,
+  // Continue for additional levels
+};
+
+teddySchema.methods.checkLevelUp = function() {
+  const nextLevelThreshold = levelUpThresholds[this.level] || (this.level * 100);
+  return this.experiencePoints >= nextLevelThreshold;
+};
+
+teddySchema.methods.applyLevelUp = function() {
+  // Ensure that applyLevelUp is only called if the teddy is ready to level up
+  if (!this.checkLevelUp()) {
+    return;
+  }
+  const previousLevelThreshold = levelUpThresholds[this.level - 1] || ((this.level - 1) * 100);
+  this.level += 1;
+  this.experiencePoints -= previousLevelThreshold;
+  console.log(`${this.name} has leveled up to level ${this.level}`);
+  // TODO: Add logic to handle new abilities or stats increase
+};
 
 // Common error handling function for duplicate key errors
 function handleDuplicateKeyError(error, next) {

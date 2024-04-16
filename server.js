@@ -5,6 +5,8 @@ const MongoStore = require('connect-mongo');
 const path = require('path');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
+const Player = require('./models/Player'); // Assuming there's a Player model to fetch player details
+const itemRoutes = require('./routes/itemRoutes'); // Importing the item routes
 
 // Load environment variables from .env file
 dotenv.config();
@@ -12,6 +14,7 @@ dotenv.config();
 // Import route handlers
 const authRoutes = require('./routes/authRoutes');
 const gameRoutes = require('./routes/gameRoutes');
+const teddiesRoutes = require('./routes/teddiesRoutes'); // Importing the teddies routes
 
 // Initialize Express app
 const app = express();
@@ -47,14 +50,39 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Use routes with prefixes
 app.use('/auth', authRoutes);
 app.use('/game', gameRoutes);
+app.use('/teddies', teddiesRoutes); // Using the teddies routes
+app.use('/items', itemRoutes); // Using the item routes
 
-// Home page route
+// Redirect root route to game home
 app.get('/', (req, res) => {
-  try {
-    res.render('index');
-  } catch (error) {
-    console.error('Error rendering home page:', error.message, error.stack);
-    res.status(500).render('error', { error });
+  res.redirect('/game');
+});
+
+// Dashboard route
+app.get('/dashboard', async (req, res) => {
+  if (!req.session.userId) {
+    console.log('Access denied: User is not logged in');
+    res.status(401).redirect('/auth/login');
+  } else {
+    try {
+      const playerDetails = await Player.findOne({ userId: req.session.userId }).populate('unlockedTeddies').populate({
+        path: 'unlockedTeddies',
+        populate: {
+          path: 'items',
+          model: 'Item'
+        }
+      });
+      if (!playerDetails) {
+        console.log('Player details not found');
+        res.status(404).render('error', { message: 'Player details not found', error: {} });
+        return;
+      }
+      console.log('Rendering dashboard with player details');
+      res.render('dashboard', { playerDetails: playerDetails });
+    } catch (error) {
+      console.error('Error fetching player details:', error.message, error.stack);
+      res.status(500).render('error', { message: 'Failed to load dashboard', error: error });
+    }
   }
 });
 
@@ -63,9 +91,9 @@ app.use((err, req, res, next) => {
   console.error('Error:', err.message, err.stack);
   res.status(err.status || 500);
   if (err.status === 404) {
-    res.render('error', { error: { message: 'Page not found' } });
+    res.render('error', { message: 'Page not found', error: err });
   } else {
-    res.render('error', { error: err });
+    res.render('error', { message: err.message, error: err });
   }
 });
 
