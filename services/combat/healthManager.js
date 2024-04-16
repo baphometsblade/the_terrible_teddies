@@ -1,6 +1,6 @@
-// services/combat/healthManager.js
-
 class HealthManager {
+  constructor() {}
+
   adjustHealth(character, change) {
     try {
       character.health -= change;

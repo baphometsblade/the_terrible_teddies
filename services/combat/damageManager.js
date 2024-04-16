@@ -1,9 +1,13 @@
 // damageManager.js
 
 class DamageManager {
+  constructor() {}
+
   calculateDamage(attacker, defender) {
     try {
-      const damage = attacker.attackDamage; // Base damage from attacker
+      // Basic damage calculation could be just attacker's attack minus defender's defense
+      // This is a placeholder for more complex logic involving character stats, items, etc.
+      const damage = attacker.attackDamage - (defender.defense || 0);
       console.log(`${attacker.name} attacks ${defender.name} for ${damage} damage.`);
       return damage;
     } catch (error) {

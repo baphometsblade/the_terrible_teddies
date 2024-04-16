@@ -93,8 +93,6 @@ function displayTeddyCollection(teddies) {
 }
 
 function updateTeddyCollectionUI(teddyId, itemId) {
-    // Placeholder function to update the UI with the equipped item details
-    // This function should locate the teddy in the collection and update its display to show the equipped item
     console.log(`Updated UI for teddy ${teddyId} with item ${itemId}`);
     fetchTeddyCollection(); // Refresh the teddy collection to reflect the changes
 }
