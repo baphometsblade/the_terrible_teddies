@@ -48,11 +48,16 @@ router.post('/login', async (req, res) => {
       // Update session with user details using sessionUtils
       sessionUtils.updateSessionUser(req.session, user);
       // Ensure session is saved before redirecting
-      req.session.save(err => {
+      req.session.save(async err => {
         if (err) {
           console.error('Error saving session:', err.message, err.stack);
           res.status(500).render('login', { error: 'Error saving session' });
           return;
+        }
+        // Ensure a player profile exists for the logged-in user
+        let playerProfile = await Player.findOne({ userId: user._id });
+        if (!playerProfile) {
+          playerProfile = await Player.create({ userId: user._id, experiencePoints: 0, level: 1, unlockedTeddies: [], currency: 100 });
         }
         console.log(`User logged in: ${user.username}`);
         // Redirect to the original URL or dashboard after successful login

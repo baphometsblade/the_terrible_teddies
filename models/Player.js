@@ -96,6 +96,20 @@ playerSchema.statics.ensurePlayerProfile = async function(userId) {
   }
 };
 
+// Ensure all users have a player profile
+playerSchema.statics.createMissingPlayerProfiles = async function() {
+  const User = mongoose.model('User');
+  try {
+    const users = await User.find({});
+    for (const user of users) {
+      await this.ensurePlayerProfile(user._id);
+    }
+    console.log('Ensured all users have player profiles.');
+  } catch (error) {
+    console.error('Error creating missing player profiles:', error.message, error.stack);
+  }
+};
+
 const Player = mongoose.model('Player', playerSchema);
 
 module.exports = Player;

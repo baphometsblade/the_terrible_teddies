@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const Player = require('./models/Player'); // Assuming there's a Player model to fetch player details
 const itemRoutes = require('./routes/itemRoutes'); // Importing the item routes
+const User = require('./models/User'); // Importing the User model to check user existence
 
 // Load environment variables from .env file
 dotenv.config();
@@ -66,6 +67,11 @@ app.get('/dashboard', async (req, res) => {
     res.status(401).redirect('/auth/login');
   } else {
     try {
+      const userExists = await User.exists({ _id: req.session.userId });
+      if (!userExists) {
+        console.log('User not found');
+        return res.status(404).render('error', { message: 'User not found', error: {} });
+      }
       const playerDetails = await Player.findOne({ userId: req.session.userId }).populate('unlockedTeddies').populate({
         path: 'unlockedTeddies',
         populate: {
@@ -89,12 +95,12 @@ app.get('/dashboard', async (req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error('Error:', err.message, err.stack);
+  console.error('Unhandled Error:', err.message, err.stack);
   res.status(err.status || 500);
   if (err.status === 404) {
-    res.render('error', { message: 'Page not found', error: err });
+    res.render('error', { message: 'Page not found', error: err, stack: err.stack || 'No stack available' });
   } else {
-    res.render('error', { message: err.message, error: err });
+    res.render('error', { message: err.message || 'An unexpected error occurred', stack: err.stack || 'No stack available' });
   }
 });
 
