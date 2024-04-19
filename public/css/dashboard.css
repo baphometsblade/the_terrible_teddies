@@ -98,4 +98,8 @@ body {
     margin-right: 0;
     margin-bottom: 20px;
   }
+
+  .links-section a {
+    padding: 8px 12px; /* Adjust padding for better touch targets on smaller screens */
+  }
 }

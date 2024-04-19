@@ -7,12 +7,14 @@
   <main role="main">
     <div class="container mt-5 login-container">
       <h2 class="login-title">Login</h2>
-      <% if (typeof error !== 'undefined' && error) { %>
-        <div class="alert alert-danger" role="alert">
-          <%= error %>
-        </div>
-      <% } %>
-      <form action="/auth/login" method="POST" class="login-form">
+      <div id="errorMessages">
+        <% if (typeof error !== 'undefined' && error) { %>
+          <div class="alert alert-danger" role="alert">
+            <%= error %>
+          </div>
+        <% } %>
+      </div>
+      <form action="/auth/login" method="POST" class="login-form" id="loginForm">
         <div class="form-group">
           <label for="username" class="login-label">Username</label>
           <input type="text" id="username" name="username" placeholder="Enter your username" required class="form-control login-input">
@@ -32,6 +34,6 @@
     </div>
   </main>
 <%- include('partials/_footer.ejs') %>
-<script src="/js/validation/loginValidation.js"></script> <!-- Include client-side validation for login form -->
+<script src="/js/loginValidation.js"></script>
 </body>
 </html>

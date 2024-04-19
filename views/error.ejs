@@ -11,7 +11,7 @@
     <h1>Oops, something went wrong!</h1>
     <p>We encountered an error while processing your request.</p>
     <div class="alert alert-danger" role="alert">
-      <strong>Error Details:</strong> <%= message || 'An unexpected error has occurred.' %>
+      <strong>Error Details:</strong> <%= error && error.message ? error.message : 'An unexpected error has occurred.' %>
     </div>
     <a href="/" class="btn btn-primary">Go Home</a>
   </div>

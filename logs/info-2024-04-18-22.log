@@ -1,0 +1,10 @@
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-18 22:14:09"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-18 22:14:09"}
+{"level":"warn","message":"Access denied: User is not logged in","timestamp":"2024-04-18 22:14:14"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-18 22:17:30"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-18 22:17:30"}
+{"level":"warn","message":"Access denied: User is not logged in","timestamp":"2024-04-18 22:17:37"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-18 22:20:51"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-18 22:20:51"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-18 22:31:31"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-18 22:31:32"}

@@ -3,61 +3,36 @@ const { EventEmitter } = require('events');
 class CombatEvents extends EventEmitter {
   constructor() {
     super();
-    this.on('error', (error) => {
-      console.error('Error in CombatEvents:', error.message, error.stack);
-    });
-
-    // Registering combat-related events with their handlers
-    this.on('healthChange', (character, change) => {
-      console.log(`Event 'healthChange' triggered for ${character.name} with change: ${change}`);
-      // Implementing method call for health change
-      try {
-        character.adjustHealth(change);
-      } catch (error) {
-        console.error('Error adjusting health:', error.message, error.stack);
-      }
-    });
 
     this.on('attack', (attacker, defender) => {
-      console.log(`Event 'attack' triggered: ${attacker.name} attacks ${defender.name}`);
-      // Implementing method call for attack
-      try {
-        const damage = attacker.calculateDamage(defender);
-        defender.adjustHealth(-damage);
-      } catch (error) {
-        console.error('Error calculating or applying damage:', error.message, error.stack);
-      }
+      console.log(`${attacker.name} attacks ${defender.name}.`);
+      // Additional logic to handle attack event goes here
     });
 
-    this.on('specialMove', (attacker, defender, move) => {
-      console.log(`Event 'specialMove' triggered: ${attacker.name} uses ${move} on ${defender.name}`);
-      // Implementing method call for special move
-      try {
-        attacker.applySpecialMove(defender, move);
-      } catch (error) {
-        console.error('Error applying special move:', error.message, error.stack);
-      }
+    this.on('specialMove', (attacker, defender, moveName) => {
+      console.log(`${attacker.name} uses ${moveName} on ${defender.name}.`);
+      // Additional logic to handle special move event goes here
     });
 
-    this.on('aiMove', (aiTeddy, playerTeddy) => {
-      console.log(`Event 'aiMove' triggered: AI decides move for ${aiTeddy.name}`);
-      // Implementing AI decision making
-      try {
-        const move = aiTeddy.decideMove(playerTeddy);
-        this.emit(move, aiTeddy, playerTeddy);
-      } catch (error) {
-        console.error('Error in AI move decision:', error.message, error.stack);
-      }
+    this.on('healthChange', (character, amount) => {
+      console.log(`${character.name}'s health changes by ${amount}.`);
+      // Additional logic to handle health change event goes here
     });
 
     this.on('battleStart', (playerTeddy, aiTeddy) => {
-      console.log(`Event 'battleStart' triggered: Battle started between ${playerTeddy.name} and ${aiTeddy.name}`);
-      // Implementing battle start logic
-      try {
-        this.emit('aiMove', aiTeddy, playerTeddy); // Example of triggering an AI move at the start
-      } catch (error) {
-        console.error('Error starting battle:', error.message, error.stack);
-      }
+      console.log(`Battle starts between ${playerTeddy.name} and ${aiTeddy.name}.`);
+      // Additional logic to handle battle start event goes here
+    });
+
+    // Reintroducing error handling for robustness
+    this.on('error', (error) => {
+      console.error('Error in CombatEvents:', error);
+    });
+
+    // Reintroducing AI decision-making event for completeness
+    this.on('aiMove', (aiTeddy, playerTeddy) => {
+      console.log(`AI ${aiTeddy.name} decides its move against ${playerTeddy.name}`);
+      // Logic for AI to decide its move goes here
     });
   }
 }

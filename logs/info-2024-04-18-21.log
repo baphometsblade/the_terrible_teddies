@@ -1,0 +1,22 @@
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-18 21:01:39"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-18 21:01:39"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-18 21:12:19"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-18 21:12:19"}
+{"level":"warn","message":"Access denied: User is not logged in","timestamp":"2024-04-18 21:12:33"}
+{"level":"warn","message":"Access denied: User is not logged in","timestamp":"2024-04-18 21:12:38"}
+{"level":"warn","message":"Access denied: User is not logged in","timestamp":"2024-04-18 21:13:23"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-18 21:23:34"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-18 21:23:35"}
+{"level":"warn","message":"Access denied: User is not logged in","timestamp":"2024-04-18 21:23:41"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-18 21:37:03"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-18 21:37:03"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-18 21:39:43"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-18 21:39:44"}
+{"level":"warn","message":"Access denied: User is not logged in","timestamp":"2024-04-18 21:39:50"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-18 21:42:36"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-18 21:42:37"}
+{"level":"warn","message":"Access denied: User is not logged in","timestamp":"2024-04-18 21:42:46"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-18 21:47:10"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-18 21:47:10"}
+{"level":"warn","message":"Access denied: User is not logged in","timestamp":"2024-04-18 21:50:22"}
+{"level":"warn","message":"Access denied: User is not logged in","timestamp":"2024-04-18 21:58:47"}

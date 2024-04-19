@@ -5,6 +5,8 @@ const combinedAuthMiddleware = require('../middleware/combinedAuthMiddleware'); 
 const Teddy = require('../models/Teddy');
 const Player = require('../models/Player');
 const sessionUtils = require('../utils/sessionUtils'); // Import session utilities
+const rateLimit = require('express-rate-limit'); // INPUT_REQUIRED {Install express-rate-limit package}
+const { body, validationResult } = require('express-validator'); // INPUT_REQUIRED {Install express-validator package}
 
 // Helper function to validate MongoDB Object IDs
 const isValidObjectId = (id) => {
@@ -17,25 +19,41 @@ const isValidPlayerMove = (move) => {
   return validPlayerMoves.includes(move);
 };
 
+// Apply rate limiting to all game routes as a basic abuse prevention measure
+const gameRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again after 15 minutes"
+});
+
+router.use(gameRateLimiter);
+
 // Route for the home page
 router.get('/', (req, res) => {
   try {
     const sessionUser = sessionUtils.getSessionUser(req.session);
+    if (!sessionUser || !sessionUser.userId) {
+      console.log('getSessionUser: Missing session or userId');
+      return res.redirect('/login'); // Redirect to login if session or userId is missing
+    }
     res.render('index', { userId: sessionUser.userId });
   } catch (error) {
     console.error('Error rendering home page:', error.message, error.stack);
-    res.status(500).render('error', { error });
+    res.status(500).render('error', { error: 'Error rendering home page. Please try again later.', stack: error.stack });
   }
 });
 
 // Route to choose a lineup of teddies
-router.post('/game/choose-lineup', combinedAuthMiddleware, async (req, res) => {
+router.post('/game/choose-lineup', combinedAuthMiddleware, [
+  body('lineup.*').isMongoId().withMessage('Each teddy ID must be a valid MongoDB ObjectId')
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
     const teddyLineup = req.body.lineup;
-    if (!teddyLineup || !Array.isArray(teddyLineup) || teddyLineup.length === 0 || !teddyLineup.every(isValidObjectId)) {
-      console.log('Invalid lineup provided');
-      return res.status(400).json({ error: 'Invalid lineup provided. Please select valid teddies.' });
-    }
     const teddies = await Teddy.find({ '_id': { $in: teddyLineup } });
     req.session.teddyLineup = teddies;
     await req.session.save();
@@ -47,17 +65,23 @@ router.post('/game/choose-lineup', combinedAuthMiddleware, async (req, res) => {
 });
 
 // Route to initiate a battle
-router.post('/game/initiate-battle', combinedAuthMiddleware, async (req, res) => {
+router.post('/game/initiate-battle', combinedAuthMiddleware, [
+  body('selectedTeddyIds').custom((value) => {
+    const ids = value.split(',').map(id => id.trim());
+    if (!ids.every(isValidObjectId)) {
+      throw new Error('All teddy IDs must be valid MongoDB ObjectIds');
+    }
+    return true;
+  })
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
     const selectedTeddyIds = req.body.selectedTeddyIds.split(',').map(id => id.trim());
-    if (!selectedTeddyIds.every(isValidObjectId)) {
-      return res.status(400).json({ error: 'Invalid teddy IDs provided.' });
-    }
     const teddies = await Teddy.find({ '_id': { $in: selectedTeddyIds } });
-    if (teddies.length !== selectedTeddyIds.length) {
-      console.error(`One or more Teddies not found with provided ids: ${selectedTeddyIds.join(', ')}`);
-      return res.status(404).json({ error: `One or more Teddies not found.` });
-    }
     // Initialize battle state in the session
     req.session.battleState = {
       teddies: teddies,
@@ -73,17 +97,21 @@ router.post('/game/initiate-battle', combinedAuthMiddleware, async (req, res) =>
 });
 
 // Route to execute a player's turn
-router.post('/game/execute-turn', combinedAuthMiddleware, async (req, res) => {
+router.post('/game/execute-turn', combinedAuthMiddleware, [
+  body('move').isIn(validPlayerMoves).withMessage('Invalid move provided')
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
     const { move } = req.body;
     const battleState = req.session.battleState;
-    if (!battleState || !isValidPlayerMove(move)) {
-      return res.status(400).json({ error: 'Invalid battle state or move.' });
-    }
+    console.log('Executing turn with move:', move);
     // Placeholder for actual move execution logic
     // Placeholder for updating the battle state
     // Placeholder for saving the session
-    console.log('Executing turn');
     res.status(200).json({ message: 'Turn executed', battleState: battleState });
   } catch (error) {
     console.error('Error executing turn:', error.message, error.stack);

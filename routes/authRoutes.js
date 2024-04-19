@@ -4,12 +4,21 @@ const Player = require('../models/Player'); // Import Player model to handle pla
 const bcrypt = require('bcrypt');
 const router = express.Router();
 const sessionUtils = require('../utils/sessionUtils'); // Import session utilities
+const { body, validationResult } = require('express-validator'); // Import express-validator for input validation
 
 router.get('/register', (req, res) => {
   res.render('register', { error: null });
 });
 
-router.post('/register', async (req, res) => {
+router.post('/register', [
+  body('username').isLength({ min: 5 }).withMessage('Username must be at least 5 characters long'),
+  body('password').isStrongPassword().withMessage('Password must be strong')
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).render('register', { error: errors.array()[0].msg });
+  }
+
   try {
     const { username, password } = req.body;
     const existingUser = await User.findOne({ username: username });
@@ -34,7 +43,15 @@ router.get('/login', (req, res) => {
   res.render('login', { error: null });
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', [
+  body('username').notEmpty().withMessage('Username is required'),
+  body('password').notEmpty().withMessage('Password is required')
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).render('login', { error: errors.array()[0].msg });
+  }
+
   try {
     const { username, password } = req.body;
     const user = await User.findOne({ username: username });

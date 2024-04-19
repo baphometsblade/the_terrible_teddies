@@ -2,9 +2,27 @@ const express = require('express');
 const router = express.Router();
 const Teddy = require('../models/Teddy');
 const Item = require('../models/Item');
+const { body, validationResult } = require('express-validator');
 
-// Route to equip an item
-router.post('/equip', async (req, res) => {
+// Middleware for input validation
+const validateEquip = [
+  body('teddyId').isMongoId().withMessage('Invalid Teddy ID format'),
+  body('itemId').isMongoId().withMessage('Invalid Item ID format'),
+];
+
+// Middleware for input validation
+const validateUnequip = [
+  body('teddyId').isMongoId().withMessage('Invalid Teddy ID format'),
+  body('itemId').isMongoId().withMessage('Invalid Item ID format'),
+];
+
+// Route to equip an item with input validation
+router.post('/equip', validateEquip, async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
     const { teddyId, itemId } = req.body;
     const item = await Item.findById(itemId);
@@ -31,8 +49,13 @@ router.post('/equip', async (req, res) => {
   }
 });
 
-// Route to unequip an item
-router.post('/unequip', async (req, res) => {
+// Route to unequip an item with input validation
+router.post('/unequip', validateUnequip, async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
     const { teddyId, itemId } = req.body;
     const teddy = await Teddy.findById(teddyId);

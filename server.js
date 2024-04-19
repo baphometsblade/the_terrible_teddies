@@ -5,9 +5,13 @@ const MongoStore = require('connect-mongo');
 const path = require('path');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
-const Player = require('./models/Player'); // Assuming there's a Player model to fetch player details
-const itemRoutes = require('./routes/itemRoutes'); // Importing the item routes
-const User = require('./models/User'); // Importing the User model to check user existence
+const Player = require('./models/Player');
+const itemRoutes = require('./routes/itemRoutes');
+const User = require('./models/User');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const compression = require('compression');
+const logger = require('./utils/logger');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -16,15 +20,16 @@ dotenv.config();
 const authRoutes = require('./routes/authRoutes');
 const gameRoutes = require('./routes/gameRoutes');
 const teddiesRoutes = require('./routes/teddiesRoutes'); // Importing the teddies routes
+const loginRoutes = require('./routes/loginRoutes'); // Importing the login routes
 
 // Initialize Express app
 const app = express();
 
 // Connect to MongoDB
 mongoose.connect(process.env.DATABASE_URL)
-  .then(() => console.log('Connected to MongoDB'))
+  .then(() => logger.info('Connected to MongoDB'))
   .catch(err => {
-    console.error('Error connecting to MongoDB:', err.message, err.stack);
+    logger.error('Error connecting to MongoDB:', err.message, err.stack);
     process.exit(1);
   });
 
@@ -32,13 +37,19 @@ mongoose.connect(process.env.DATABASE_URL)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+// Enhance app security with Helmet
+app.use(helmet());
+
+// Use compression to improve performance for supported requests
+app.use(compression());
+
 // Set up session handling
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({ mongoUrl: process.env.DATABASE_URL }),
-  cookie: { maxAge: 3600000 } // Session expires after 1 hour of inactivity
+  cookie: { maxAge: 3600000, secure: process.env.NODE_ENV === 'production', httpOnly: true } // Session expires after 1 hour of inactivity, secure flag set based on environment
 }));
 
 // Set the view engine to EJS
@@ -49,30 +60,39 @@ app.set('views', path.join(__dirname, 'views'));
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Apply rate limiting to all requests
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use(limiter);
+
 // Use routes with prefixes
 app.use('/auth', authRoutes);
+app.use('/login', loginRoutes); // Changed the route prefix for loginRoutes to '/login'
 app.use('/game', gameRoutes);
-app.use('/teddies', teddiesRoutes); // Using the teddies routes
-app.use('/items', itemRoutes); // Using the item routes
+app.use('/teddies', teddiesRoutes);
+app.use('/items', itemRoutes);
 
-// Redirect root route to game home
+// Redirect root route to login
 app.get('/', (req, res) => {
-  res.redirect('/game');
+  res.redirect('/login');
 });
 
 // Dashboard route
 app.get('/dashboard', async (req, res) => {
   if (!req.session.userId) {
-    console.log('Access denied: User is not logged in');
-    res.status(401).redirect('/auth/login');
+    logger.warn('Access denied: User is not logged in');
+    res.status(401).redirect('/login');
   } else {
     try {
       const userExists = await User.exists({ _id: req.session.userId });
       if (!userExists) {
-        console.log('User not found');
+        logger.warn('User not found');
         return res.status(404).render('error', { message: 'User not found', error: {} });
       }
-      const playerDetails = await Player.findOne({ userId: req.session.userId }).populate('unlockedTeddies').populate({
+      let playerDetails = await Player.findOne({ userId: req.session.userId }).populate('unlockedTeddies').populate({
         path: 'unlockedTeddies',
         populate: {
           path: 'items',
@@ -80,14 +100,14 @@ app.get('/dashboard', async (req, res) => {
         }
       });
       if (!playerDetails) {
-        console.log('Player details not found');
-        res.status(404).render('error', { message: 'Player details not found', error: {} });
-        return;
+        logger.info('Player details not found');
+        playerDetails = { unlockedTeddies: [], items: [] }; // Corrected property name from 'teddies' to 'unlockedTeddies'
+        return res.render('dashboard', { playerDetails: playerDetails });
       }
-      console.log('Rendering dashboard with player details');
+      logger.info('Rendering dashboard with player details');
       res.render('dashboard', { playerDetails: playerDetails });
     } catch (error) {
-      console.error('Error fetching player details:', error.message, error.stack);
+      logger.error('Error fetching player details:', error.message, error.stack);
       res.status(500).render('error', { message: 'Failed to load dashboard', error: error });
     }
   }
@@ -95,15 +115,15 @@ app.get('/dashboard', async (req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error('Unhandled Error:', err.message, err.stack);
+  logger.error('Unhandled Error:', err.message, err.stack);
   res.status(err.status || 500);
   if (err.status === 404) {
     res.render('error', { message: 'Page not found', error: err, stack: err.stack || 'No stack available' });
   } else {
-    res.render('error', { message: err.message || 'An unexpected error occurred', stack: err.stack || 'No stack available' });
+    res.render('error', { message: err.message || 'An unexpected error occurred', error: err, stack: err.stack || 'No stack available' });
   }
 });
 
 // Start the server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
