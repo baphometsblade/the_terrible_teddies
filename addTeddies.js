@@ -566,5 +566,3 @@ async function addTeddies() {
     mongoose.connection.close(() => {
       console.log('MongoDB connection closed');
     });
-  }
-}

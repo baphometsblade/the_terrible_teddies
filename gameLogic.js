@@ -3,9 +3,15 @@
 const Teddy = require('./models/Teddy');
 const Player = require('./models/Player'); // Import Player model to handle player details
 const { EXPERIENCE_BASE } = require('./constants');
+const mongoose = require('mongoose');
 
 // Function to update teddy's progression after a battle
 async function updateTeddyProgression(teddyId, opponentLevel) {
+  if (!mongoose.Types.ObjectId.isValid(teddyId)) {
+    console.error(`Invalid Teddy ID: ${teddyId}`);
+    return;
+  }
+
   try {
     const teddy = await Teddy.findById(teddyId);
     if (!teddy) {
@@ -28,6 +34,11 @@ async function updateTeddyProgression(teddyId, opponentLevel) {
 
 // Function to ensure player profile exists for a given userId
 async function ensurePlayerProfile(userId) {
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    console.error(`Invalid User ID: ${userId}`);
+    return;
+  }
+
   try {
     let player = await Player.findOne({ userId: userId });
     if (!player) {

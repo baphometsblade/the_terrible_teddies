@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node server.js",
     "test": "jest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "populateTeddies": "node ./scripts/populateTeddiesDatabase.js"
   },
   "keywords": [],
   "author": "",

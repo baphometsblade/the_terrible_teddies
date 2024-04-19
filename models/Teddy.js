@@ -77,7 +77,6 @@ const teddySchema = new mongoose.Schema({
   }],
   imagePath: {
     type: String,
-    required: [true, 'A teddy must have an image path'],
     trim: true
   },
   items: [{

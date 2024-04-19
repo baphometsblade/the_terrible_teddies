@@ -30,16 +30,23 @@ $(document).ready(function() {
 
     // Function to update the battle UI based on the current state
     function updateBattleUI(battleState) {
-        // Placeholder for updating the battle UI with the current state
-        console.log('Updating battle UI', battleState);
-        // This should include updating health bars, displaying current moves, etc.
+        // Update health bars
+        $('#playerHealth').css('width', battleState.playerHealth + '%').attr('aria-valuenow', battleState.playerHealth);
+        $('#opponentHealth').css('width', battleState.opponentHealth + '%').attr('aria-valuenow', battleState.opponentHealth);
+
+        // Display current moves
+        $('#playerMove').text(battleState.playerMove);
+        $('#opponentMove').text(battleState.opponentMove);
+
+        console.log('Battle UI updated with current state:', battleState);
     }
 
     // Function to display chat messages in the battle arena
     function displayChatMessage(message) {
-        // Placeholder for displaying chat messages in the UI
-        console.log('Displaying chat message', message);
-        // This should append the message to a chat window or similar UI element.
+        const chatWindow = $('#chatWindow');
+        chatWindow.append(`<div>${message}</div>`);
+        chatWindow.scrollTop(chatWindow.prop("scrollHeight"));
+        console.log('Displaying chat message:', message);
     }
 
     // Event handler for sending chat messages
@@ -62,8 +69,6 @@ $(document).ready(function() {
     // Function to execute a player move and send it to the server
     function executePlayerMove(move) {
         console.log(`Executing player move: ${move}`);
-        // Placeholder for sending the player move to the server
-        // This should include sending the move type and any other relevant information
         socket.send(JSON.stringify({ type: 'playerMove', move: move }));
     }
 
@@ -72,5 +77,6 @@ $(document).ready(function() {
         console.log('Received battle update', data);
         // Placeholder for handling battle updates
         // This should update the UI based on the received battle state
+        updateBattleUI(data);
     }
 });

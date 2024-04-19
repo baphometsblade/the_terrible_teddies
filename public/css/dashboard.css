@@ -1,24 +1,29 @@
 /* Dashboard Page Styles */
 
 body {
-  background-color: #f0f2f5;
-  font-family: 'Arial', sans-serif;
+  background-color: #ebf4f8; /* Lighter shade to match Adventure Time Card Wars theme */
+  font-family: 'Comic Sans MS', cursive, sans-serif; /* More playful font choice */
 }
 
 .dashboard-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  background-color: #ffffff; /* Adding a solid background color for contrast */
+  border-radius: 10px; /* Rounded corners for a softer look */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Enhanced shadow for depth */
 }
 
 .dashboard-header {
   text-align: center;
   padding: 20px 0;
+  background-color: #79a7d3; /* Blue shade header to match theme */
+  border-radius: 10px 10px 0 0; /* Rounded corners at the top */
 }
 
 .dashboard-header h1 {
-  font-size: 2.5rem;
-  color: #333;
+  font-size: 3rem; /* Larger font size for emphasis */
+  color: #fff; /* White color for contrast */
 }
 
 .dashboard-content {
@@ -30,7 +35,8 @@ body {
 .teddy-collection-overview, .recent-battles {
   flex: 1;
   margin-right: 20px;
-  background: #fff;
+  background: #f9fafb; /* Lighter background for sections */
+  border: 2px solid #79a7d3; /* Border to match header */
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   padding: 20px;
@@ -41,15 +47,15 @@ body {
 }
 
 .teddy-collection-overview h2, .recent-battles h2 {
-  font-size: 1.5rem;
-  color: #555;
+  font-size: 1.8rem; /* Slightly larger for readability */
+  color: #333;
   margin-bottom: 15px;
 }
 
 .teddy-item, .battle-item {
   margin-bottom: 10px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #ccc; /* Slightly darker for visibility */
 }
 
 .teddy-item:last-child, .battle-item:last-child {
@@ -59,8 +65,8 @@ body {
 }
 
 .teddy-item img, .battle-item img {
-  width: 50px;
-  height: 50px;
+  width: 60px; /* Larger for emphasis */
+  height: 60px;
   border-radius: 50%;
   margin-right: 10px;
   vertical-align: middle;
@@ -68,6 +74,7 @@ body {
 
 .teddy-item span, .battle-item span {
   vertical-align: middle;
+  font-size: 1.2rem; /* Larger font size for readability */
 }
 
 .links-section {
@@ -83,10 +90,12 @@ body {
   border-radius: 5px;
   text-decoration: none;
   margin: 0 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Adding shadow for depth */
 }
 
 .links-section a:hover {
   background: #0056b3;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* Enhanced shadow for hover effect */
 }
 
 @media (max-width: 768px) {

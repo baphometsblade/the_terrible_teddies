@@ -24,6 +24,12 @@ This project leverages Node.js and Express for the backend, MongoDB for data per
 - **In-Game Chat:** Real-time chat feature for players to communicate during battles.
 - **Battle History:** Feature for users to view a history of their battles.
 - **Profile Setup:** New users can set up their player profile upon registration.
+- **Battle Arena Improvements:** Enhanced battle arena with real-time updates, animations, and interactive gameplay elements for an engaging user experience.
+- **Tutorial and Guides:** Comprehensive tutorials and guides to help new players understand game mechanics and strategies.
+- **Social Features:** New social features allowing players to form alliances, participate in team battles, and engage in community-driven events.
+- **Marketplace:** A secure in-game marketplace for players to trade teddies and items.
+- **Customization Options:** New customization options for teddies, including skins and accessories to personalize player experiences.
+- **End-Game Content:** Additional challenges and content for players who have completed the main storyline or reached the maximum teddy level.
 
 ## Getting Started
 

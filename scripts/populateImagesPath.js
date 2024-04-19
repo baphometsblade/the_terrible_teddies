@@ -18,7 +18,7 @@ fs.readdir(imagesDirectory, (err, files) => {
   }
   files.forEach(file => {
     const imageName = file.split('.')[0];
-    Teddy.findOneAndUpdate({ name: imageName }, { imagePath: `./images/teddies/${file}` }, { new: true })
+    Teddy.findOneAndUpdate({ name: imageName }, { imagePath: `/images/teddies/${file}` }, { new: true })
       .then(updatedTeddy => {
         if (updatedTeddy) {
           console.log(`Updated imagePath for ${updatedTeddy.name}`);

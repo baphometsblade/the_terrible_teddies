@@ -5,8 +5,8 @@ const combinedAuthMiddleware = require('../middleware/combinedAuthMiddleware'); 
 const Teddy = require('../models/Teddy');
 const Player = require('../models/Player');
 const sessionUtils = require('../utils/sessionUtils'); // Import session utilities
-const rateLimit = require('express-rate-limit'); // INPUT_REQUIRED {Install express-rate-limit package}
-const { body, validationResult } = require('express-validator'); // INPUT_REQUIRED {Install express-validator package}
+const rateLimit = require('express-rate-limit'); //
+const { body, validationResult } = require('express-validator'); // 
 
 // Helper function to validate MongoDB Object IDs
 const isValidObjectId = (id) => {
@@ -143,6 +143,31 @@ router.get('/game/battle-arena', combinedAuthMiddleware, async (req, res) => {
     console.error('Error rendering battle arena:', error.message, error.stack);
     res.status(500).json({ error: 'Internal Server Error: Unable to render battle arena.' });
   }
+});
+
+// Route to render the dashboard view
+router.get('/dashboard', combinedAuthMiddleware, async (req, res) => {
+  try {
+    const sessionUser = sessionUtils.getSessionUser(req.session);
+    if (!sessionUser || !sessionUser.userId) {
+      console.log('getSessionUser: Missing session or userId, redirecting to login');
+      return res.redirect('/login');
+    }
+    const playerDetails = await Player.findOne({ userId: sessionUser.userId });
+    if (!playerDetails) {
+      console.log('No player details found, redirecting to setup profile');
+      return res.redirect('/setup-profile');
+    }
+    res.render('dashboard', { sessionUser: sessionUser, playerDetails: playerDetails });
+  } catch (error) {
+    console.error('Error rendering dashboard:', error.message, error.stack);
+    res.status(500).render('error', { error: 'Error rendering dashboard. Please try again later.', stack: error.stack });
+  }
+});
+
+// Route for the tutorial page
+router.get('/tutorial', (req, res) => {
+  res.render('tutorial');
 });
 
 module.exports = router;

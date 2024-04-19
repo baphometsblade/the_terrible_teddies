@@ -8,35 +8,38 @@
   flex-direction: column;
   align-items: center;
   padding: 20px;
+  background-color: #fffff0; /* Light yellow background similar to Adventure Time theme */
 }
 
 .dashboard-header {
   font-size: 24px;
-  color: #333;
+  color: #4b0082; /* Indigo color for headers, inspired by Adventure Time's vibrant palette */
   margin-bottom: 20px;
 }
 
 .teddy-collection-overview, .recent-battles {
   width: 100%;
   margin-bottom: 20px;
+  background-color: #f0e68c; /* Khaki background for sections, adding a playful touch */
 }
 
 .teddy-card, .battle-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 10px;
+  border: 2px solid #dda0dd; /* Plum border for cards, adding a magical feel */
+  border-radius: 12px; /* Rounded corners for a softer look */
+  padding: 15px;
   margin: 10px;
   display: inline-block;
   width: calc(50% - 20px);
+  background-color: #fafad2; /* Light Goldenrod Yellow background for cards, enhancing readability */
 }
 
 /* Teddies Showcase Improvements */
 .teddy-card {
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.3s ease-in-out;
 }
 
 .teddy-card:hover {
-  transform: scale(1.05);
+  transform: scale(1.1); /* Slightly larger scale on hover for emphasis */
   cursor: pointer;
 }
 
@@ -47,34 +50,34 @@
 }
 
 .teddy-search {
-  border: 1px solid #ccc;
-  border-radius: 20px;
-  padding: 5px 15px;
+  border: 2px solid #dda0dd; /* Plum border for the search bar */
+  border-radius: 25px; /* More pronounced rounded corners for the search bar */
+  padding: 8px 18px;
 }
 
 /* General Styles */
 .btn {
-  background-color: #007bff;
+  background-color: #6a5acd; /* Slate Blue background for buttons, inspired by Adventure Time's fantasy theme */
   color: white;
-  padding: 10px 20px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px; /* Slightly rounded corners for buttons */
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.3s ease-in-out;
 }
 
 .btn:hover {
-  background-color: #0056b3;
+  background-color: #483d8b; /* Dark Slate Blue for button hover, adding depth */
 }
 
 .error-message {
-  color: red;
-  font-size: 14px;
+  color: #ff4500; /* Orange Red color for error messages, ensuring visibility */
+  font-size: 16px;
 }
 
 .success-message {
-  color: green;
-  font-size: 14px;
+  color: #32cd32; /* Lime Green color for success messages, signaling positivity */
+  font-size: 16px;
 }
 
 /* Responsive Design */
@@ -84,7 +87,7 @@
   }
 
   .dashboard-container {
-    padding: 10px;
+    padding: 15px;
   }
 
   .teddy-filter {
@@ -92,103 +95,120 @@
   }
 
   .teddy-search {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
   }
 }
 
 /* Navigation Bar Enhancements */
 .navbar {
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: #add8e6; /* Light Blue background for the navbar, adding a serene touch */
+  border-bottom: 2px solid #b0c4de; /* Light Steel Blue border for a subtle separation */
 }
 
 .nav-link {
-  color: #007bff;
-  transition: color 0.2s ease-in-out;
+  color: #6a5acd; /* Slate Blue color for navigation links, maintaining consistency with buttons */
+  transition: color 0.3s ease-in-out;
 }
 
 .nav-link:hover {
-  color: #0056b3;
+  color: #483d8b; /* Dark Slate Blue for link hover, enhancing user interaction */
 }
 
 /* Login and Registration Forms */
 .login-container, .register-container {
   max-width: 400px;
   margin: auto;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background-color: #f9f9f9;
+  padding: 25px;
+  border: 2px solid #dda0dd; /* Plum border for forms, adding a touch of enchantment */
+  border-radius: 12px; /* Rounded corners for a friendly interface */
+  background-color: #fafad2; /* Light Goldenrod Yellow background for forms, ensuring readability */
 }
 
 .login-input, .register-input {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 /* Footer Enhancements */
 .footer {
-  background-color: #f8f9fa;
-  padding: 20px;
+  background-color: #add8e6; /* Light Blue background for the footer, for a calming effect */
+  padding: 25px;
   text-align: center;
-  border-top: 1px solid #e0e0e0;
+  border-top: 2px solid #b0c4de; /* Light Steel Blue border for a clean finish */
 }
 
 /* Typography Enhancements */
 h1, h2, h3, h4, h5, h6 {
-  color: #333;
+  color: #4b0082; /* Indigo color for headings, drawing inspiration from Adventure Time's vivid scenes */
 }
 
 p, li {
-  color: #666;
+  color: #696969; /* Dim Gray color for text, ensuring legibility while adding a modern touch */
 }
 
 /* Button Enhancements */
 .btn-primary {
-  background-color: #007bff;
-  border-color: #007bff;
+  background-color: #6a5acd; /* Slate Blue background for primary buttons */
+  border-color: #6a5acd; /* Slate Blue border to match */
 }
 
 .btn-primary:hover {
-  background-color: #0056b3;
-  border-color: #004085;
+  background-color: #483d8b; /* Dark Slate Blue for primary button hover */
+  border-color: #483d8b; /* Dark Slate Blue border to match */
 }
 
 /* Form Control Enhancements */
 .form-control {
-  border-radius: 4px;
-  border: 1px solid #ced4da;
+  border-radius: 6px; /* Slightly rounded corners for form controls */
+  border: 2px solid #ced4da; /* Solid border for a defined edge */
 }
 
 /* Card Enhancements */
 .card {
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  transition: box-shadow 0.2s ease-in-out;
+  box-shadow: 0 5px 7px rgba(0,0,0,0.12); /* Slightly larger shadow for depth */
+  transition: box-shadow 0.3s ease-in-out;
 }
 
 .card:hover {
-  box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 7px 10px rgba(0,0,0,0.18); /* Increased shadow on hover for emphasis */
 }
 
 /* Modal Enhancements */
 .modal-content {
-  border-radius: 8px;
+  border-radius: 12px; /* Rounded corners for modals, softening the overall look */
 }
 
 /* Tooltip Enhancements */
 .tooltip-inner {
-  background-color: #007bff;
+  background-color: #6a5acd; /* Slate Blue background for tooltips, keeping the theme consistent */
   color: white;
 }
 
 /* Alert Enhancements */
 .alert {
-  border-radius: 4px;
-  padding: 10px;
-  margin-bottom: 20px;
+  border-radius: 6px; /* Slightly rounded corners for alerts */
+  padding: 12px; /* Increased padding for better readability */
+  margin-bottom: 25px; /* Increased margin for better separation */
 }
 
 /* Badge Enhancements */
 .badge {
-  padding: 5px 10px;
-  border-radius: 20px;
+  padding: 7px 14px; /* Increased padding for a more substantial appearance */
+  border-radius: 25px; /* More pronounced rounded corners for badges */
+}
+
+/* Tutorial Enhancements */
+#combat-tutorial, #item-tutorial, #leveling-tutorial {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f9f9f9; /* Light grey background for sections, adding a clean touch */
+}
+
+#interactive-combat-example, #interactive-item-example, #interactive-leveling-example {
+  height: 200px;
+  background-color: #e3e3e3; /* Light grey background for interactive examples */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-top: 10px;
 }

@@ -52,6 +52,16 @@ app.use(session({
   cookie: { maxAge: 3600000, secure: process.env.NODE_ENV === 'production', httpOnly: true } // Session expires after 1 hour of inactivity, secure flag set based on environment
 }));
 
+// Middleware to attach session user to response locals
+app.use((req, res, next) => {
+  if (req.session.user) {
+    res.locals.sessionUser = req.session.user;
+  } else {
+    res.locals.sessionUser = null;
+  }
+  next();
+});
+
 // Set the view engine to EJS
 app.set('view engine', 'ejs');
 // Set the views directory
@@ -82,17 +92,17 @@ app.get('/', (req, res) => {
 
 // Dashboard route
 app.get('/dashboard', async (req, res) => {
-  if (!req.session.userId) {
+  if (!req.session.user) {
     logger.warn('Access denied: User is not logged in');
     res.status(401).redirect('/login');
   } else {
     try {
-      const userExists = await User.exists({ _id: req.session.userId });
+      const userExists = await User.exists({ _id: req.session.user.userId });
       if (!userExists) {
         logger.warn('User not found');
         return res.status(404).render('error', { message: 'User not found', error: {} });
       }
-      let playerDetails = await Player.findOne({ userId: req.session.userId }).populate('unlockedTeddies').populate({
+      let playerDetails = await Player.findOne({ userId: req.session.user.userId }).populate('unlockedTeddies').populate({
         path: 'unlockedTeddies',
         populate: {
           path: 'items',

@@ -3,7 +3,6 @@ const User = require('../models/User');
 const Player = require('../models/Player'); // Import Player model to handle player details
 const bcrypt = require('bcrypt');
 const router = express.Router();
-const sessionUtils = require('../utils/sessionUtils'); // Import session utilities
 const { body, validationResult } = require('express-validator'); // Import express-validator for input validation
 
 router.get('/register', (req, res) => {
@@ -62,26 +61,17 @@ router.post('/login', [
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (isMatch) {
-      // Update session with user details using sessionUtils
-      sessionUtils.updateSessionUser(req.session, user);
-      // Ensure session is saved before redirecting
-      req.session.save(async err => {
-        if (err) {
-          console.error('Error saving session:', err.message, err.stack);
-          res.status(500).render('login', { error: 'Error saving session' });
-          return;
-        }
-        // Ensure a player profile exists for the logged-in user
-        let playerProfile = await Player.findOne({ userId: user._id });
-        if (!playerProfile) {
-          playerProfile = await Player.create({ userId: user._id, experiencePoints: 0, level: 1, unlockedTeddies: [], currency: 100 });
-        }
-        console.log(`User logged in: ${user.username}`);
-        // Redirect to the original URL or dashboard after successful login
-        const redirectUrl = req.session.originalUrl || '/dashboard';
-        req.session.originalUrl = null;
-        res.redirect(redirectUrl);
-      });
+      req.session.user = { userId: user._id, username: user.username }; // Store user details in session
+      console.log(`User logged in: ${user.username}`);
+      // Ensure a player profile exists for the logged-in user
+      let playerProfile = await Player.findOne({ userId: user._id });
+      if (!playerProfile) {
+        playerProfile = await Player.create({ userId: user._id, experiencePoints: 0, level: 1, unlockedTeddies: [], currency: 100 });
+      }
+      // Redirect to the original URL or dashboard after successful login
+      const redirectUrl = req.session.originalUrl || '/dashboard';
+      req.session.originalUrl = null;
+      res.redirect(redirectUrl);
     } else {
       console.log('Login attempt failed: Password is incorrect');
       res.status(400).render('login', { error: 'Password is incorrect' });
@@ -109,15 +99,15 @@ router.get('/logout', (req, res) => {
 // Add a route for the dashboard
 router.get('/dashboard', async (req, res) => {
   // Check if the user is logged in
-  if (!req.session.userId) {
+  if (!req.session.user) {
     console.log('Access denied: User is not logged in');
     res.status(401).redirect('/auth/login');
   } else {
     try {
       // Retrieve player details based on the userId from the session
-      const playerDetails = await Player.findOne({ userId: req.session.userId }).populate('unlockedTeddies');
+      const playerDetails = await Player.findOne({ userId: req.session.user.userId }).populate('unlockedTeddies');
       if (!playerDetails) {
-        console.log('Player details not found for userId:', req.session.userId);
+        console.log('Player details not found for userId:', req.session.user.userId);
         // Redirect to a setup or information page instead of rendering an error
         res.redirect('/setup'); // Assuming '/setup' is a route that guides users on how to create or update their player profile
         return;

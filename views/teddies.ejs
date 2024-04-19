@@ -51,7 +51,7 @@
           <% teddies.forEach(function(teddy) { %>
             <div>
               <div class="card mb-4 shadow-sm teddy-card" data-teddy-id="<%= teddy._id %>">
-                <img src="/images/teddies/<%= teddy._id %>.jpg" class="card-img-top" alt="<%= teddy.name %>">
+                <img src="<%= teddy.imagePath %>" class="card-img-top" alt="<%= teddy.name %>">
                 <div class="card-body">
                   <h5 class="card-title"><%= teddy.name %></h5>
                   <p class="card-text"><%= teddy.description %></p>
