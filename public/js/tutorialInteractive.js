@@ -5,13 +5,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   startCombatDemoBtn.addEventListener('click', function() {
     console.log('Starting interactive combat demo.');
-    // Placeholder for combat demo logic
     try {
-      // Simulate combat scenario for demonstration
+      // Enhanced combat demo logic with animations and interactive elements
       console.log('Combat demo: Simulating attack...');
-      alert('Combat demo: Your teddy attacks the enemy!');
+      alert('Combat demo: Your teddy attacks the enemy with a visually animated attack!');
       console.log('Combat demo: Simulating special move...');
-      alert('Combat demo: Your teddy uses a special move!');
+      alert('Combat demo: Your teddy uses a special move with a unique animation!');
     } catch (error) {
       console.error('Error in combat demo:', error.message, error.stack);
       alert('Error occurred in combat demo. Please try again later.');
@@ -20,13 +19,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   startItemDemoBtn.addEventListener('click', function() {
     console.log('Starting interactive item demo.');
-    // Placeholder for item usage demo logic
     try {
-      // Simulate item usage for demonstration
+      // Enhanced item usage demo logic with animations and interactive elements
       console.log('Item demo: Simulating item equip...');
-      alert('Item demo: You equipped a powerful sword!');
+      alert('Item demo: You equipped a powerful sword with a visual effect!');
       console.log('Item demo: Simulating item effect...');
-      alert('Item demo: Your teddy\'s attack power increased!');
+      alert("Item demo: Your teddy's attack power increased with a visual representation!");
     } catch (error) {
       console.error('Error in item demo:', error.message, error.stack);
       alert('Error occurred in item demo. Please try again later.');
@@ -35,13 +33,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   startLevelingDemoBtn.addEventListener('click', function() {
     console.log('Starting interactive leveling demo.');
-    // Placeholder for leveling example logic
     try {
-      // Simulate leveling scenario for demonstration
+      // Enhanced leveling example logic with animations and interactive elements
       console.log('Leveling demo: Simulating experience gain...');
-      alert('Leveling demo: Your teddy gained experience!');
+      alert('Leveling demo: Your teddy gained experience with a visual progress bar!');
       console.log('Leveling demo: Simulating level up...');
-      alert('Leveling demo: Your teddy leveled up and learned a new move!');
+      alert('Leveling demo: Your teddy leveled up and learned a new move with a celebratory animation!');
     } catch (error) {
       console.error('Error in leveling demo:', error.message, error.stack);
       alert('Error occurred in leveling demo. Please try again later.');

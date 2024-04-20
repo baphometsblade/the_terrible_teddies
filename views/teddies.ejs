@@ -5,6 +5,7 @@
     <title>Terrible Teddies - Your Collection</title>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick.css"/>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick-theme.css"/>
+    <link rel="stylesheet" href="/css/adventureTimeTheme.css"> <!-- Link to the Adventure Time theme CSS -->
     <style>
       .teddy-background {
         position: absolute;
@@ -14,6 +15,8 @@
         height: 100%;
         z-index: -1;
         opacity: 0.3;
+        background: url('/images/adventure-time-background.jpg') no-repeat center center fixed; /* Adventure Time background */
+        background-size: cover;
       }
       /* Additional styles for UI improvements */
       .container {
@@ -22,27 +25,39 @@
       .teddy-card {
         cursor: pointer;
         transition: transform 0.3s ease;
+        border: 2px solid transparent; /* Default state border */
+        background-color: #f4d03f; /* Adventure Time card background color */
+        color: #8e44ad; /* Adventure Time card text color */
       }
       .teddy-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        transform: scale(1.05);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.5);
       }
       .teddy-card.selected {
-        border: 2px solid #007bff; /* Highlight selected teddy */
+        border: 2px solid #3498db; /* Highlight selected teddy with Adventure Time blue */
       }
       #lineup-form {
         margin-top: 20px;
         text-align: center;
       }
       .error-message {
-        color: red;
+        color: #e74c3c;
         text-align: center;
         margin-top: 10px;
+      }
+      /* Adventure Time specific styles */
+      .btn-primary {
+        background-color: #16a085; /* Adventure Time button color */
+        border-color: #16a085;
+      }
+      .btn-primary:hover {
+        background-color: #1abc9c;
+        border-color: #1abc9c;
       }
     </style>
   </head>
   <body>
-    <img src="/images/teddy-background.jpg" alt="Game Background" class="teddy-background">
+    <img src="/images/adventure-time-background.jpg" alt="Adventure Time Game Background" class="teddy-background">
     <%- include('partials/_nav.ejs') %>
     <main role="main" class="container">
       <h1>Your Teddies</h1>

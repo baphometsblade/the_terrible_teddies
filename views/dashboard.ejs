@@ -3,29 +3,30 @@
 <head>
   <%- include('partials/_head.ejs') %>
   <link rel="stylesheet" href="/css/dashboard.css"> <!-- Include custom CSS for the dashboard -->
+  <link rel="stylesheet" href="/css/guiImprovements.css"> <!-- Additional styles to match Adventure Time Card Wars theme -->
   <title>Dashboard - The Terrible Teddies</title>
 </head>
 <body>
   <%- include('partials/_header.ejs', { isAuthenticated: !!sessionUser.userId }) %>
 
-  <div class="container mt-4" style="background-color: #fff8dc; border-radius: 10px; padding: 20px;">
-    <h1 style="color: #5f9ea0;">Welcome to your Dashboard<% if (playerDetails && playerDetails.level) { %>, <%= playerDetails.level %> Level Player<% } %>!</h1>
-    <p style="color: #483d8b;">Here's your teddy collection and available challenges:</p>
+  <div class="container mt-4 adventure-time-dashboard">
+    <h1>Welcome to your Dashboard<% if (playerDetails && playerDetails.level) { %>, <%= playerDetails.level %> Level Player<% } %>!</h1>
+    <p>Here's your teddy collection and available challenges:</p>
     <% if (playerDetails && playerDetails.unlockedTeddies && playerDetails.challenges) { %>
       <div class="row">
         <div class="col-md-6">
-          <h3 style="color: #2e8b57;">Your Teddies:</h3>
-          <ul style="list-style-type: none;">
+          <h3>Your Teddies:</h3>
+          <ul class="teddy-list">
             <% playerDetails.unlockedTeddies.forEach(function(teddy) { %>
-              <li style="margin-bottom: 10px; background-color: #f0e68c; padding: 10px; border-radius: 5px;"><%= teddy.name %> - Health: <%= teddy.health %>, Attack: <%= teddy.attackDamage %></li>
+              <li><%= teddy.name %> - Health: <%= teddy.health %>, Attack: <%= teddy.attackDamage %></li>
             <% }); %>
           </ul>
         </div>
         <div class="col-md-6">
-          <h3 style="color: #2e8b57;">Available Challenges:</h3>
-          <ul style="list-style-type: none;">
+          <h3>Available Challenges:</h3>
+          <ul class="challenge-list">
             <% playerDetails.challenges.forEach(function(challenge) { %>
-              <li style="margin-bottom: 10px; background-color: #f0e68c; padding: 10px; border-radius: 5px;"><%= challenge.specialMove %> - Unlock at Level: <%= challenge.level %></li>
+              <li><%= challenge.specialMove %> - Unlock at Level: <%= challenge.level %></li>
             <% }); %>
           </ul>
         </div>
@@ -35,7 +36,7 @@
     <% } %>
     <div class="row mt-4">
       <div class="col-md-12">
-        <h3 style="color: #2e8b57;">Manage Your Teddies' Items:</h3>
+        <h3>Manage Your Teddies' Items:</h3>
         <form action="/auth/items/equip" method="post">
           <label for="teddySelect">Select Teddy:</label>
           <select id="teddySelect" name="teddyId" required>
@@ -53,21 +54,27 @@
               <option>No items available</option>
             <% } %>
           </select>
-          <button type="submit" class="btn btn-primary" style="background-color: #6a5acd; border-color: #6a5acd;">Equip Item</button>
+          <button type="submit" class="btn adventure-time-btn">Equip Item</button>
         </form>
       </div>
     </div>
     <!-- Feedback Form Section -->
     <div class="feedback-form-section mt-4">
-      <h2 style="color: #daa520;">Feedback</h2>
+      <h2>Feedback</h2>
       <p>Your feedback is important to us. Please let us know how we can improve your experience.</p>
       <form action="/auth/feedback/submit" method="POST">
         <div class="form-group">
           <label for="feedbackText">Feedback:</label>
           <textarea id="feedbackText" name="feedbackText" rows="4" class="form-control" required></textarea>
         </div>
-        <button type="submit" class="btn btn-primary" style="background-color: #6a5acd; border-color: #6a5acd;">Submit Feedback</button>
+        <button type="submit" class="btn adventure-time-btn">Submit Feedback</button>
       </form>
+    </div>
+    <!-- Tutorial Link Section -->
+    <div class="tutorial-link-section mt-4">
+      <h2>Learn to Play</h2>
+      <p>Get the most out of your teddies by learning how to play.</p>
+      <a href="/tutorial" class="btn adventure-time-btn">Game Tutorial</a>
     </div>
   </div>
 
