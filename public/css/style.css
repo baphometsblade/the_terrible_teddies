@@ -134,6 +134,7 @@
   padding: 25px;
   text-align: center;
   border-top: 2px solid #b0c4de; /* Light Steel Blue border for a clean finish */
+  margin-bottom: 40px; /* Added margin to ensure content is not obscured by the footer */
 }
 
 /* Typography Enhancements */
@@ -211,4 +212,5 @@ p, li {
   justify-content: center;
   font-weight: bold;
   margin-top: 10px;
+  margin-bottom: 60px; /* Added margin to ensure the button under the last tutorial is visible */
 }

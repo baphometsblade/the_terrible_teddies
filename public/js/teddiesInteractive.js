@@ -10,27 +10,30 @@ $(document).ready(function() {
         autoplaySpeed: 2000, // Added for Adventure Time theme
     });
 
+    // Initialize an array to track selected teddy IDs
+    let selectedTeddyIds = [];
+
     // Handle teddy selection for battle with Adventure Time theme enhancements
-    $('.select-teddy').click(function() {
-        const teddyCard = $(this).closest('.teddy-card');
+    $('.teddy-card').click(function() {
+        const teddyCard = $(this);
         const teddyId = teddyCard.data('teddy-id');
-        let selectedTeddyIds = $('#selectedTeddyIds').val();
 
         if (teddyCard.hasClass('selected')) {
             teddyCard.removeClass('selected');
-            selectedTeddyIds = selectedTeddyIds.replace(`${teddyId};`, '');
+            selectedTeddyIds = selectedTeddyIds.filter(id => id !== teddyId);
         } else {
-            teddyCard.addClass('selected');
-            selectedTeddyIds += `${teddyId};`;
+            if (selectedTeddyIds.length < 2) {
+                teddyCard.addClass('selected');
+                selectedTeddyIds.push(teddyId);
+            }
         }
 
-        $('#selectedTeddyIds').val(selectedTeddyIds);
+        $('#selectedTeddyIds').val(selectedTeddyIds.join(';'));
     });
 
     // AJAX call to initiate battle with selected teddies with Adventure Time theme enhancements
     $('#lineup-form').submit(function(event) {
         event.preventDefault();
-        const selectedTeddyIds = $('#selectedTeddyIds').val().split(';').filter(Boolean);
 
         if (selectedTeddyIds.length < 2) {
             $('#error-message').text('Please select at least two teddies to initiate battle.').show();

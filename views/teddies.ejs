@@ -6,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick.css"/>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick-theme.css"/>
     <link rel="stylesheet" href="/css/adventureTimeTheme.css"> <!-- Link to the Adventure Time theme CSS -->
+    <link rel="stylesheet" href="/css/improvedGuiStyles.css"> <!-- Link to the new GUI improvements CSS -->
     <style>
       .teddy-background {
         position: absolute;
@@ -100,29 +101,42 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/slick-carousel/slick/slick.min.js"></script>
     <script src="/js/main.js"></script>
-    <script src="/js/teddiesInteractive.js"></script> <!-- Updated to use the new interactive JS file -->
+    <script src="/js/teddiesInteractive.js"></script>
     <script>
-      // Attach event handler to the form submission
-      $('#lineup-form').on('submit', function(event) {
-        event.preventDefault(); // Prevent the default form submission
-        var selectedTeddyIds = $('#selectedTeddyIds').val();
-        if (!selectedTeddyIds) {
-          $('#error-message').text('Please select at least one teddy to initiate battle.').show();
-          return;
-        }
-        $.ajax({
-          url: '/game/initiate-battle',
-          type: 'POST',
-          contentType: 'application/x-www-form-urlencoded',
-          data: { selectedTeddyIds: selectedTeddyIds },
-          success: function(response) {
-            window.location.href = '/game/battle-arena'; // Redirect to the battle arena on success
-          },
-          error: function(xhr, status, error) {
-            var errorMessage = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'An error occurred while initiating the battle. Please try again.';
-            $('#error-message').text(errorMessage).show(); // Display the error message
-            console.error("Error initiating battle: " + errorMessage + ". Status: " + status + ". Error: " + error); // Log the error details
+      $(document).ready(function() {
+        $('.teddy-card').click(function() {
+          var teddyId = $(this).data('teddy-id');
+          var selectedTeddyIds = $('#selectedTeddyIds').val();
+          if (selectedTeddyIds) {
+            selectedTeddyIds += ',' + teddyId;
+          } else {
+            selectedTeddyIds = teddyId.toString();
           }
+          $('#selectedTeddyIds').val(selectedTeddyIds);
+          $(this).toggleClass('selected');
+        });
+
+        $('#lineup-form').on('submit', function(event) {
+          event.preventDefault(); // Prevent the default form submission
+          var selectedTeddyIds = $('#selectedTeddyIds').val();
+          if (!selectedTeddyIds) {
+            $('#error-message').text('Please select at least one teddy to initiate battle.').show();
+            return;
+          }
+          $.ajax({
+            url: '/game/initiate-battle',
+            type: 'POST',
+            contentType: 'application/x-www-form-urlencoded',
+            data: { selectedTeddyIds: selectedTeddyIds },
+            success: function(response) {
+              window.location.href = '/game/battle-arena'; // Redirect to the battle arena on success
+            },
+            error: function(xhr, status, error) {
+              var errorMessage = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'An error occurred while initiating the battle. Please try again.';
+              $('#error-message').text(errorMessage).show(); // Display the error message
+              console.error("Error initiating battle: " + errorMessage + ". Status: " + status + ". Error: " + error); // Log the error details
+            }
+          });
         });
       });
     </script>

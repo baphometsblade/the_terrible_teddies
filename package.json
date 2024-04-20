@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@lottiefiles/lottie-player": "^2.0.4",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "chart.js": "^4.4.1",

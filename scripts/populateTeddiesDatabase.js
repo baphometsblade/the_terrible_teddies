@@ -13,17 +13,23 @@ const populateTeddies = async () => {
     const teddiesDataPath = path.join(__dirname, '..', 'data', 'teddies.json');
     const teddiesData = JSON.parse(fs.readFileSync(teddiesDataPath, 'utf8'));
 
+    let addedCount = 0;
+    let skippedCount = 0;
+
     for (const teddyData of teddiesData.teddies) {
       const teddyExists = await Teddy.findOne({ name: teddyData.name });
       if (!teddyExists) {
         const newTeddy = new Teddy(teddyData);
         await newTeddy.save();
         console.log(`Teddy ${newTeddy.name} added to the database.`);
+        addedCount++;
       } else {
         console.log(`Teddy ${teddyData.name} already exists in the database.`);
+        skippedCount++;
       }
     }
-    console.log('All teddies have been processed.');
+    console.log(`${addedCount} teddies have been added to the database.`);
+    console.log(`${skippedCount} teddies were skipped because they already exist.`);
   } catch (error) {
     console.error('Error populating teddies to the database:', error.message, error.stack);
   } finally {

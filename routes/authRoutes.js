@@ -31,7 +31,7 @@ router.post('/register', [
     // Create a new Player profile for the registered user
     const newPlayer = await Player.create({ userId: newUser._id, experiencePoints: 0, level: 1, unlockedTeddies: [], currency: 100 }); // Initialized with default values
     console.log(`New user registered: ${newUser.username}, Player profile created: ${newPlayer._id}`);
-    res.redirect('/auth/login');
+    res.redirect('/tutorial');
   } catch (error) {
     console.error('Registration error:', error.message, error.stack);
     res.status(500).render('register', { error: 'An error occurred during registration.' });
@@ -67,11 +67,17 @@ router.post('/login', [
       let playerProfile = await Player.findOne({ userId: user._id });
       if (!playerProfile) {
         playerProfile = await Player.create({ userId: user._id, experiencePoints: 0, level: 1, unlockedTeddies: [], currency: 100 });
+        req.session.firstLogin = true; // Set a flag for first login
       }
-      // Redirect to the original URL or dashboard after successful login
-      const redirectUrl = req.session.originalUrl || '/dashboard';
-      req.session.originalUrl = null;
-      res.redirect(redirectUrl);
+      if (req.session.firstLogin) {
+        delete req.session.firstLogin; // Remove the flag after redirecting
+        res.redirect('/tutorial');
+      } else {
+        // Redirect to the original URL or dashboard after successful login
+        const redirectUrl = req.session.originalUrl || '/dashboard';
+        req.session.originalUrl = null;
+        res.redirect(redirectUrl);
+      }
     } else {
       console.log('Login attempt failed: Password is incorrect');
       res.status(400).render('login', { error: 'Password is incorrect' });

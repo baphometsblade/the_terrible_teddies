@@ -12,6 +12,8 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const compression = require('compression');
 const logger = require('./utils/logger');
+const feedbackRoutes = require('./routes/feedbackRoutes'); // Import feedback routes
+const tutorialRoutes = require('./routes/tutorialRoutes'); // Import tutorial routes
 
 // Load environment variables from .env file
 dotenv.config();
@@ -24,6 +26,9 @@ const loginRoutes = require('./routes/loginRoutes'); // Importing the login rout
 
 // Initialize Express app
 const app = express();
+
+// Trust the first proxy in front of the app to ensure rate limiting works correctly in all environments
+app.set('trust proxy', 1);
 
 // Connect to MongoDB
 mongoose.connect(process.env.DATABASE_URL)
@@ -84,6 +89,8 @@ app.use('/login', loginRoutes); // Changed the route prefix for loginRoutes to '
 app.use('/game', gameRoutes);
 app.use('/teddies', teddiesRoutes);
 app.use('/items', itemRoutes);
+app.use('/feedback', feedbackRoutes); // Use feedback routes
+app.use('/tutorial', tutorialRoutes); // Use tutorial routes
 
 // Redirect root route to login
 app.get('/', (req, res) => {
