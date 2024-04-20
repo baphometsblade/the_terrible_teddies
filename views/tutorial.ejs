@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('partials/_head.ejs') %>
+  <body>
+    <%- include('partials/_nav.ejs') %>
+    <main role="main" class="container mt-4">
+      <h1>Game Tutorial</h1>
+      <p>Welcome to the Terrible Teddies tutorial! Here you'll learn how to master game mechanics, use items effectively, and level up your teddies.</p>
+      <section id="combat-tutorial">
+        <h2>Combat Mechanics</h2>
+        <p>Learn how to engage in battles with your teddies. This section covers attack strategies, special moves, and defense tactics.</p>
+        <p>Combat in Terrible Teddies involves selecting the right teddy for the battle, using attack and special moves strategically, and understanding the opponent's weaknesses. Each teddy has unique abilities that can turn the tide of battle. Pay attention to the health and attack damage stats to choose your moves wisely.</p>
+        <img src="/tutorials/combat-example.png" alt="Combat Example" class="img-fluid">
+        <p>Watch this video to see a combat demo in action:</p>
+        <video controls>
+          <source src="/tutorials/combat-demo.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </section>
+      <section id="item-tutorial">
+        <h2>Using Items</h2>
+        <p>Items can give your teddies the edge they need. Learn how to equip and use items in battle.</p>
+        <p>Items provide significant advantages in battles. From health potions that restore your teddy's health to attack boosters that increase your damage output for a few turns, using items effectively can be the key to victory. Items can be equipped from the dashboard before entering a battle.</p>
+        <img src="/tutorials/item-example.png" alt="Item Example" class="img-fluid">
+        <p>Here's a quick guide on how to use items effectively:</p>
+        <video controls>
+          <source src="/tutorials/item-usage-demo.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </section>
+      <section id="leveling-tutorial">
+        <h2>Leveling Up</h2>
+        <p>Leveling up your teddies is crucial for success. Discover how to gain experience and unlock powerful abilities.</p>
+        <p>As your teddies participate in battles, they gain experience points. Accumulating enough experience points will level up a teddy, improving its stats and sometimes unlocking new special moves. Keep your teddies active in battles to level them up faster and make them stronger.</p>
+        <img src="/tutorials/leveling-example.png" alt="Leveling Example" class="img-fluid">
+        <p>Check out this video for tips on leveling up your teddies:</p>
+        <video controls>
+          <source src="/tutorials/leveling-demo.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </section>
+    </main>
+    <%- include('partials/_footer.ejs') %>
+    <script src="/js/tutorialInteractive.js"></script>
+  </body>
+</html>

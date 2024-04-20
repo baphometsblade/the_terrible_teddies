@@ -6,20 +6,35 @@
     <main role="main">
       <div class="container mt-5">
         <h2>Register</h2>
-        <form action="/auth/register" method="POST">
+        <% if (typeof error !== 'undefined' && error) { %>
+          <div class="alert alert-danger" role="alert">
+            <%= error %>
+          </div>
+        <% } %>
+        <form action="/auth/register" method="POST" id="registerForm">
           <div class="mb-3">
-            <input type="text" name="username" placeholder="Username" required class="form-control">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" id="username" name="username" placeholder="Username" required class="form-control">
           </div>
           <div class="mb-3">
-            <input type="password" name="password" placeholder="Password" required class="form-control">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" id="password" name="password" placeholder="Password" required class="form-control">
+          </div>
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" required class="form-control">
           </div>
           <div class="mb-3">
             <button type="submit" class="btn btn-primary mr-2">Register</button>
             Already have an account? <a href="/auth/login">Login</a>
           </div>
         </form>
+        <div class="text-center mt-4">
+          <img src="/images/register-teddy.png" alt="Register Teddy" class="img-fluid">
+        </div>
       </div>
     </main>
+    <script src="/js/registerValidation.js"></script>
   </body>
 <%- include('partials/_footer.ejs') %>
 </html>

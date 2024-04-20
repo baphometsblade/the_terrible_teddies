@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Manage Teddies</title>
+    <link rel="stylesheet" href="/css/style.css"> <!-- Ensure this path is correct -->
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Panel - Manage Teddies</h1>
+        <p>Here you can add, edit, or remove teddies from the game.</p>
+        <div>
+            <h2>Add New Teddy</h2>
+            <form action="/admin/teddies/add" method="post">
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="attackDamage">Attack Damage:</label>
+                    <input type="number" id="attackDamage" name="attackDamage" required>
+                </div>
+                <div class="form-group">
+                    <label for="health">Health:</label>
+                    <input type="number" id="health" name="health" required>
+                </div>
+                <div class="form-group">
+                    <label for="specialMove">Special Move:</label>
+                    <input type="text" id="specialMove" name="specialMove" required>
+                </div>
+                <div class="form-group">
+                    <label for="rarity">Rarity:</label>
+                    <select id="rarity" name="rarity" required>
+                        <option value="Common">Common</option>
+                        <option value="Uncommon">Uncommon</option>
+                        <option value="Rare">Rare</option>
+                        <option value="Legendary">Legendary</option>
+                        <option value="Mythic">Mythic</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="imagePath">Image Path:</label>
+                    <input type="text" id="imagePath" name="imagePath" required>
+                </div>
+                <button type="submit" class="btn">Add Teddy</button>
+            </form>
+        </div>
+        <div>
+            <h2>Existing Teddies</h2>
+            <!-- Dynamically list existing teddies here with options to edit or remove -->
+            <!-- Placeholder for dynamic content, ensure server-side rendering handles this -->
+        </div>
+    </div>
+    <script src="/js/admin.js"></script> <!-- Ensure this path is correct and implement necessary JavaScript for admin functionalities -->
+</body>
+</html>

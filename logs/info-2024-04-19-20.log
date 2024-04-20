@@ -1,0 +1,19 @@
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-19 20:27:25"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-19 20:27:25"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-19 20:30:02"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-19 20:30:03"}
+{"level":"info","message":"Rendering dashboard with player details","timestamp":"2024-04-19 20:30:12"}
+{"level":"error","message":"Unhandled Error:","timestamp":"2024-04-19 20:30:12"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-19 20:33:44"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-19 20:33:45"}
+{"level":"info","message":"Rendering dashboard with player details","timestamp":"2024-04-19 20:33:47"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-19 20:51:29"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-19 20:51:29"}
+{"level":"info","message":"Rendering dashboard with player details","timestamp":"2024-04-19 20:51:40"}
+{"level":"info","message":"Rendering dashboard with player details","timestamp":"2024-04-19 20:51:50"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-19 20:55:08"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-19 20:55:09"}
+{"level":"info","message":"Rendering dashboard with player details","timestamp":"2024-04-19 20:55:17"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2024-04-19 20:57:12"}
+{"level":"info","message":"Connected to MongoDB","timestamp":"2024-04-19 20:57:13"}
+{"level":"info","message":"Rendering dashboard with player details","timestamp":"2024-04-19 20:57:22"}

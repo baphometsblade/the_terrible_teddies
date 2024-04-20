@@ -1,127 +1,148 @@
-// Load environment variables
-require("dotenv").config();
-const mongoose = require("mongoose");
-const express = require("express");
-const session = require("express-session");
+const express = require('express');
+const mongoose = require('mongoose');
+const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const authRoutes = require("./routes/authRoutes");
-const gameRoutes = require('./routes/gameRoutes'); // Include game routes
+const path = require('path');
+const bodyParser = require('body-parser');
+const dotenv = require('dotenv');
+const Player = require('./models/Player');
+const itemRoutes = require('./routes/itemRoutes');
+const teamRoutes = require('./routes/teamRoutes'); // Import team routes
+const User = require('./models/User');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
+const compression = require('compression');
+const logger = require('./utils/logger');
+const feedbackRoutes = require('./routes/feedbackRoutes'); // Import feedback routes
+const tutorialRoutes = require('./routes/tutorialRoutes'); // Import tutorial routes
 
-if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET) {
-  console.error("Error: config environment variables not set. Please create/edit .env configuration file.");
-  process.exit(-1);
-}
+// Load environment variables from .env file
+dotenv.config();
 
+// Import route handlers
+const authRoutes = require('./routes/authRoutes');
+const gameRoutes = require('./routes/gameRoutes');
+const teddiesRoutes = require('./routes/teddiesRoutes'); // Importing the teddies routes
+const loginRoutes = require('./routes/loginRoutes'); // Importing the login routes
+
+// Initialize Express app
 const app = express();
-const port = process.env.PORT || 3000;
 
-// Middleware to parse request bodies
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+// Trust the first proxy in front of the app to ensure rate limiting works correctly in all environments
+app.set('trust proxy', 1);
 
-// Setting the templating engine to EJS
-app.set("view engine", "ejs");
-
-// Serve static files
-app.use(express.static("public"));
-
-let server;
-
-// Database connection
-mongoose
-  .connect(process.env.DATABASE_URL)
-  .then(() => {
-    console.log("Database connected successfully");
-    // Start the server after successful database connection
-    server = app.listen(port, () => {
-      console.log(`Server running at http://localhost:${port}`);
-    });
-  })
-  .catch((err) => {
-    console.error(`Database connection error: ${err.message}`);
-    console.error(err.stack);
+// Connect to MongoDB
+mongoose.connect(process.env.DATABASE_URL)
+  .then(() => logger.info('Connected to MongoDB'))
+  .catch(err => {
+    logger.error('Error connecting to MongoDB:', err.message, err.stack);
     process.exit(1);
   });
 
-// Session configuration with connect-mongo
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({ 
-      mongoUrl: process.env.DATABASE_URL
-    }),
-    cookie: { secure: process.env.NODE_ENV === 'production' && app.get('env') === 'production' }
-  }),
-);
+// Middleware to parse request bodies
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-// MongoDB event listeners
-mongoose.connection.on('connected', () => {
-  console.log('Mongoose default connection open');
-});
+// Enhance app security with Helmet
+app.use(helmet());
 
-mongoose.connection.on('error', (err) => {
-  console.error(`Mongoose default connection error: ${err.message}`);
-  console.error(err.stack);
-});
+// Use compression to improve performance for supported requests
+app.use(compression());
 
-mongoose.connection.on('disconnected', () => {
-  console.log('Mongoose default connection disconnected');
-});
+// Set up session handling
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({ mongoUrl: process.env.DATABASE_URL }),
+  cookie: { maxAge: 3600000, secure: process.env.NODE_ENV === 'production', httpOnly: true } // Session expires after 1 hour of inactivity, secure flag set based on environment
+}));
 
-process.on('SIGINT', () => {
-  console.log('SIGINT signal received: closing HTTP server');
-  server.close(() => {
-    console.log('HTTP server closed');
-    mongoose.connection.close(() => {
-      console.log('Mongoose default connection disconnected through app termination');
-      process.exit(0);
-    });
-  });
-});
-
-app.on("error", (error) => {
-  console.error(`Server error: ${error.message}`);
-  console.error(error.stack);
-});
-
-// Logging session creation and destruction
+// Middleware to attach session user to response locals
 app.use((req, res, next) => {
-  const sess = req.session;
-  // Make session available to all views
-  res.locals.session = sess;
-  if (!sess.views) {
-    sess.views = 1;
-    console.log("Session created at: ", new Date().toISOString());
+  if (req.session.user) {
+    res.locals.sessionUser = req.session.user;
   } else {
-    sess.views++;
-    console.log(
-      `Session accessed again at: ${new Date().toISOString()}, Views: ${sess.views}, User ID: ${sess.userId || '(unauthenticated)'}`,
-    );
+    res.locals.sessionUser = null;
   }
   next();
 });
 
-// Authentication Routes
-app.use(authRoutes);
+// Set the view engine to EJS
+app.set('view engine', 'ejs');
+// Set the views directory
+app.set('views', path.join(__dirname, 'views'));
 
-// Game Interaction Routes
-app.use(gameRoutes);
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Root path response
-app.get("/", (req, res) => {
-  res.render("index");
+// Apply rate limiting to all requests
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use(limiter);
+
+// Use routes with prefixes
+app.use('/auth', authRoutes);
+app.use('/login', loginRoutes); // Changed the route prefix for loginRoutes to '/login'
+app.use('/game', gameRoutes);
+app.use('/teddies', teddiesRoutes);
+app.use('/items', itemRoutes);
+app.use('/teams', teamRoutes); // Use team routes
+app.use('/feedback', feedbackRoutes); // Use feedback routes
+app.use('/tutorial', tutorialRoutes); // Use tutorial routes
+
+// Redirect root route to login
+app.get('/', (req, res) => {
+  res.redirect('/login');
 });
 
-// If no routes handled the request, it's a 404
-app.use((req, res, next) => {
-  res.status(404).send("Page not found.");
+// Dashboard route
+app.get('/dashboard', async (req, res) => {
+  if (!req.session.user) {
+    logger.warn('Access denied: User is not logged in');
+    res.status(401).redirect('/login');
+  } else {
+    try {
+      const userExists = await User.exists({ _id: req.session.user.userId });
+      if (!userExists) {
+        logger.warn('User not found');
+        return res.status(404).render('error', { message: 'User not found', error: {} });
+      }
+      let playerDetails = await Player.findOne({ userId: req.session.user.userId }).populate('unlockedTeddies').populate({
+        path: 'unlockedTeddies',
+        populate: {
+          path: 'items',
+          model: 'Item'
+        }
+      });
+      if (!playerDetails) {
+        logger.info('Player details not found');
+        playerDetails = { unlockedTeddies: [], items: [] }; // Corrected property name from 'teddies' to 'unlockedTeddies'
+        return res.render('dashboard', { playerDetails: playerDetails });
+      }
+      logger.info('Rendering dashboard with player details');
+      res.render('dashboard', { playerDetails: playerDetails });
+    } catch (error) {
+      logger.error('Error fetching player details:', error.message, error.stack);
+      res.status(500).render('error', { message: 'Failed to load dashboard', error: error });
+    }
+  }
 });
 
-// Error handling
+// Error handler
 app.use((err, req, res, next) => {
-  console.error(`Unhandled application error: ${err.message}`);
-  console.error(err.stack);
-  res.status(500).send("There was an error serving your request.");
+  logger.error('Unhandled Error:', err.message, err.stack);
+  res.status(err.status || 500);
+  if (err.status === 404) {
+    res.render('error', { message: 'Page not found', error: err, stack: err.stack || 'No stack available' });
+  } else {
+    res.render('error', { message: err.message || 'An unexpected error occurred', error: err, stack: err.stack || 'No stack available' });
+  }
 });
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));

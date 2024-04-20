@@ -1,0 +1,17 @@
+<div class="teddy-card">
+  <h3 class="teddy-name"><%= teddy.name %></h3>
+  <p class="teddy-description"><%= teddy.description %></p>
+  <ul class="teddy-attributes">
+    <li>Attack Damage: <%= teddy.attackDamage %></li>
+    <li>Health: <%= teddy.health %></li>
+    <li>Special Move: <%= teddy.specialMove %></li>
+    <li>Rarity: <%= teddy.rarity %></li>
+    <li>Theme: <%= teddy.theme %></li>
+    <li>Humor Style: <%= teddy.humorStyle %></li>
+    <li>Role: <%= teddy.role %></li>
+    <li>Interaction Style: <%= teddy.interactionStyle %></li>
+    <li>Voice Line: <%= teddy.voiceLine %></li>
+    <li>Collectibility Factor: <%= teddy.collectibilityFactor %></li>
+  </ul>
+  <button class="select-teddy" data-teddy-id="<%= teddy._id %>">Select Teddy</button>
+</div>

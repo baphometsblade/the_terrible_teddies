@@ -6,18 +6,38 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true }
 });
 
-userSchema.pre('save', function(next) {
-  const user = this;
-  if (!user.isModified('password')) return next();
-  bcrypt.hash(user.password, 10, (err, hash) => {
-    if (err) {
-      console.error('Error hashing password:', err);
-      return next(err);
+userSchema.pre('save', async function(next) {
+  if (this.isModified('password')) {
+    try {
+      const hash = await bcrypt.hash(this.password, 10);
+      this.password = hash;
+      next();
+    } catch (err) {
+      console.error('Error hashing password:', err.message, err.stack);
+      next(err);
     }
-    user.password = hash;
+  } else {
     next();
-  });
+  }
 });
+
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  try {
+    return await bcrypt.compare(candidatePassword, this.password);
+  } catch (err) {
+    console.error('Error comparing password:', err.message, err.stack);
+    throw err;
+  }
+};
+
+userSchema.statics.findByUsername = async function(username) {
+  try {
+    return await this.findOne({ username: username });
+  } catch (err) {
+    console.error('Error finding user by username:', err.message, err.stack);
+    throw err;
+  }
+};
 
 const User = mongoose.model('User', userSchema);
 

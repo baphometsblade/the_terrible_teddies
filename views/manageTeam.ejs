@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/_head.ejs') %>
+  <title>Manage Team - Terrible Teddies</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <%- include('partials/_nav.ejs') %>
+  <div class="container">
+    <h1>Manage Your Team</h1>
+    <form id="createTeamForm" action="/teams/create" method="post">
+      <div class="form-group">
+        <label for="teamName">Team Name:</label>
+        <input type="text" class="form-control" id="teamName" name="name" placeholder="Enter team name" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Create Team</button>
+    </form>
+    <hr>
+    <h2>Add Member to Team</h2>
+    <form id="addMemberForm" action="#" method="post">
+      <div class="form-group">
+        <label for="teamId">Team ID:</label>
+        <input type="text" class="form-control" id="teamId" name="teamId" placeholder="Enter team ID" required>
+      </div>
+      <div class="form-group">
+        <label for="memberId">Member ID:</label>
+        <input type="text" class="form-control" id="memberId" name="memberId" placeholder="Enter member ID" required>
+      </div>
+      <button type="submit" class="btn btn-secondary">Add Member</button>
+    </form>
+  </div>
+  <%- include('partials/_footer.ejs') %>
+  <script src="/js/jquery.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#addMemberForm').submit(function(e) {
+        e.preventDefault();
+        const teamId = $('#teamId').val();
+        const memberId = $('#memberId').val();
+        $.post(`/teams/${teamId}/addMember`, { memberId: memberId })
+          .done(function(response) {
+            alert('Member added successfully');
+            console.log('Member added successfully:', response);
+          })
+          .fail(function(error) {
+            alert('Error adding member');
+            console.error('Error adding member:', error.responseText);
+          });
+      });
+    });
+  </script>
+</body>
+</html>

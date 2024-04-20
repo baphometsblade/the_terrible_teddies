@@ -1,46 +1,35 @@
 $(document).ready(function() {
-  var selectedTeddies = [];
+    // Attach click event listener to all select buttons for teddies
+    $('.select-teddy-button').on('click', function() {
+        const teddyId = $(this).data('teddy-id');
+        if (!teddyId) {
+            console.error('Teddy ID not found.');
+            return;
+        }
 
-  // Update the teddy selection logic to toggle the 'selected' class and update the array of selected teddies
-  $('.select-teddy').click(function() {
-    var teddyId = $(this).data('teddy-id');
-    if (selectedTeddies.includes(teddyId)) {
-      selectedTeddies = selectedTeddies.filter(id => id !== teddyId);
-      $(this).removeClass('btn-secondary').addClass('btn-primary');
-      console.log('Teddy deselected:', teddyId);
-    } else {
-      if (selectedTeddies.length < 2) { // Limit the number of selectable teddies to 2
-        selectedTeddies.push(teddyId);
-        $(this).removeClass('btn-primary').addClass('btn-secondary');
-        console.log('Teddy selected:', teddyId);
-      } else {
-        console.log('Cannot select more than 2 teddies.');
-        alert('You can only select 2 teddies for the battle.');
-      }
-    }
-  });
+        // Highlight the selected teddy visually
+        $('.select-teddy-button').not(this).removeClass('selected');
+        $(this).addClass('selected');
 
-  // Submit the selected teddies for battle initiation
-  $('#lineup-form').submit(function(event) {
-    event.preventDefault();
-    if (selectedTeddies.length < 2) {
-      console.log('Attempted to initiate battle without selecting 2 teddies.');
-      alert('Please select 2 teddies to initiate battle.');
-      return;
-    }
-    $.ajax({
-      url: '/game/choose-lineup',
-      method: 'POST',
-      contentType: 'application/json',
-      data: JSON.stringify({ lineup: selectedTeddies }),
-      success: function(response) {
-        console.log('Battle initiated with lineup:', response);
-        window.location.href = '/game/battle'; // Redirect to the battle page
-      },
-      error: function(xhr, status, error) {
-        console.error('Error initiating battle:', error);
-        alert('Error initiating battle. Please try again.');
-      }
+        // AJAX request to add the selected teddy to the player's lineup
+        $.ajax({
+            url: '/game/select-teddy', // Replaced placeholder with actual URL
+            type: 'POST',
+            data: { teddyId: teddyId },
+            success: function(response) {
+                console.log('Teddy selected successfully', response);
+                if (response && response.teddy && response.teddy.name) {
+                    // Update the user hand visually with the selected teddy
+                    $('#user-hand').html(`<div class="teddy-selected">Teddy ${response.teddy.name} selected</div>`);
+                } else {
+                    console.error('Invalid response structure:', response);
+                }
+                // Redirect to the battle setup or confirmation page
+                window.location.href = '/game/battle-setup'; // Replaced placeholder with actual URL
+            },
+            error: function(xhr, status, error) {
+                console.error('Error selecting teddy:', error.toString());
+            }
+        });
     });
-  });
 });

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/_head.ejs') %>
+  <title>Battle Arena - Terrible Teddies</title>
+  <link rel="stylesheet" href="/css/battleArenaImprove.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <!-- Additional styles to match Adventure Time Card Wars theme -->
+  <link rel="stylesheet" href="/css/adventureTimeTheme.css">
+  <link rel="stylesheet" href="/css/improvedGuiStyles.css"> <!-- Link to the new GUI improvements CSS -->
+</head>
+<body>
+  <%- include('partials/_nav.ejs') %>
+  <main role="main" class="container adventure-time-theme">
+    <h1 class="adventure-time-title">Battle Arena</h1>
+    <div id="battle-arena" class="battle-arena adventure-time-battle">
+      <div id="player-hand" class="player-hand adventure-time-hand">
+        <h2 class="adventure-time-subtitle">Your Hand</h2>
+        <% if (battleState && battleState.playerTeddy) { %>
+          <div class="teddy-card adventure-time-card">
+            <h3 class="adventure-time-teddy-name"><%= battleState.playerTeddy.name %></h3>
+            <div class="health-bar adventure-time-health-bar">
+              <div class="health-bar-filled adventure-time-health-bar-filled" style="width: <%= (battleState.playerTeddy.currentHealth / battleState.playerTeddy.health) * 100 %>%;"></div>
+            </div>
+            <p class="adventure-time-text">Health: <%= battleState.playerTeddy.currentHealth %></p>
+            <p class="adventure-time-text">Attack Damage: <%= battleState.playerTeddy.attackDamage %></p>
+            <p class="adventure-time-text">Special Move: <%= battleState.playerTeddy.specialMove %></p>
+            <img src="/images/teddies/<%= battleState.playerTeddy._id %>.jpg" alt="<%= battleState.playerTeddy.name %>" class="teddy-image adventure-time-image">
+          </div>
+        <% } else { %>
+          <p class="adventure-time-text">No teddy selected.</p>
+        <% } %>
+      </div>
+      <div id="battle-field" class="battle-field adventure-time-field">
+        <h2 class="adventure-time-subtitle">Playing Field</h2>
+        <% if (battleState) { %>
+          <p class="battle-turn adventure-time-text">Turn: <%= battleState.turn %></p>
+          <% if (battleState.winner) { %>
+            <p class="adventure-time-text">Winner: <%= battleState.winner %></p>
+          <% } else { %>
+            <p class="adventure-time-text">Status: Ongoing</p>
+          <% } %>
+        <% } %>
+      </div>
+      <div id="opponent-hand" class="opponent-hand adventure-time-hand">
+        <h2 class="adventure-time-subtitle">Opponent's Hand</h2>
+        <% if (battleState && battleState.opponentTeddy) { %>
+          <div class="teddy-card adventure-time-card">
+            <h3 class="adventure-time-teddy-name"><%= battleState.opponentTeddy.name %></h3>
+            <div class="health-bar adventure-time-health-bar">
+              <div class="health-bar-filled adventure-time-health-bar-filled" style="width: <%= (battleState.opponentTeddy.currentHealth / battleState.opponentTeddy.health) * 100 %>%;"></div>
+            </div>
+            <p class="adventure-time-text">Health: <%= battleState.opponentTeddy.currentHealth %></p>
+            <p class="adventure-time-text">Attack Damage: <%= battleState.opponentTeddy.attackDamage %></p>
+            <p class="adventure-time-text">Special Move: <%= battleState.opponentTeddy.specialMove %></p>
+            <img src="/images/teddies/<%= battleState.opponentTeddy._id %>.jpg" alt="<%= battleState.opponentTeddy.name %>" class="teddy-image adventure-time-image">
+          </div>
+        <% } else { %>
+          <p class="adventure-time-text">No opponent teddy selected.</p>
+        <% } %>
+      </div>
+    </div>
+    <div id="battle-controls" class="battle-controls adventure-time-controls">
+      <% if (battleState && battleState.playerTeddy && battleState.opponentTeddy && !battleState.winner) { %>
+        <button id="attack-button" class="btn btn-danger attack-btn adventure-time-btn">Attack</button>
+        <button id="special-move-button" class="btn btn-warning special-move-btn adventure-time-btn">Special Move</button>
+      <% } else if (battleState && battleState.winner) { %>
+        <p class="adventure-time-text">Battle Over. Winner: <%= battleState.winner %></p>
+        <a href="/teddies" class="btn btn-primary adventure-time-btn">Return to Teddies</a>
+      <% } else { %>
+        <p class="adventure-time-text">Select teddies to see battle controls.</p>
+      <% } %>
+      <!-- Additional battle controls can be added here -->
+    </div>
+  </main>
+  <%- include('partials/_footer.ejs') %>
+  <script src="/js/battleArena.js"></script>
+  <!-- Include additional JavaScript for animations and dynamic interactions to match Adventure Time Card Wars theme -->
+  <script src="/js/adventureTimeAnimations.js"></script>
+</body>
+</html>
