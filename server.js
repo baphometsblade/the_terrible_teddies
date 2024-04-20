@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const Player = require('./models/Player');
 const itemRoutes = require('./routes/itemRoutes');
+const teamRoutes = require('./routes/teamRoutes'); // Import team routes
 const User = require('./models/User');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
@@ -89,6 +90,7 @@ app.use('/login', loginRoutes); // Changed the route prefix for loginRoutes to '
 app.use('/game', gameRoutes);
 app.use('/teddies', teddiesRoutes);
 app.use('/items', itemRoutes);
+app.use('/teams', teamRoutes); // Use team routes
 app.use('/feedback', feedbackRoutes); // Use feedback routes
 app.use('/tutorial', tutorialRoutes); // Use tutorial routes
 
