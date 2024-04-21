@@ -6,11 +6,9 @@ const session = require("express-session");
 const MongoStore = require('connect-mongo');
 const authRoutes = require("./routes/authRoutes");
 const gameRoutes = require('./routes/gameRoutes'); // Include game routes
-
-if (!process.env.DATABASE_URL || !process.env.SESSION_SECRET) {
-  console.error("Error: config environment variables not set. Please create/edit .env configuration file.");
-  process.exit(-1);
-}
+const teamRoutes = require('./routes/teamRoutes'); // Include team management routes
+const marketRoutes = require('./routes/marketRoutes'); // Include marketplace routes
+const { handleErrors } = require('./middleware/errorHandlers'); // Include error handling middleware
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -81,47 +79,37 @@ process.on('SIGINT', () => {
   });
 });
 
-app.on("error", (error) => {
-  console.error(`Server error: ${error.message}`);
-  console.error(error.stack);
-});
-
-// Logging session creation and destruction
-app.use((req, res, next) => {
-  const sess = req.session;
-  // Make session available to all views
-  res.locals.session = sess;
-  if (!sess.views) {
-    sess.views = 1;
-    console.log("Session created at: ", new Date().toISOString());
-  } else {
-    sess.views++;
-    console.log(
-      `Session accessed again at: ${new Date().toISOString()}, Views: ${sess.views}, User ID: ${sess.userId || '(unauthenticated)'}`,
-    );
-  }
-  next();
-});
-
 // Authentication Routes
 app.use(authRoutes);
 
 // Game Interaction Routes
 app.use(gameRoutes);
 
+// Team Management Routes
+app.use('/teams', teamRoutes);
+
+// Marketplace Routes
+app.use(marketRoutes);
+
 // Root path response
 app.get("/", (req, res) => {
-  res.render("index");
+  console.log("Rendering the index page."); // Log the rendering action
+  res.render("index", (err, html) => {
+    if (err) {
+      console.error(`Error rendering index page: ${err.message}`);
+      console.error(err.stack);
+      res.status(500).send("Error rendering page.");
+    } else {
+      res.send(html);
+    }
+  });
 });
 
 // If no routes handled the request, it's a 404
 app.use((req, res, next) => {
+  console.log("Handling 404 error.");
   res.status(404).send("Page not found.");
 });
 
 // Error handling
-app.use((err, req, res, next) => {
-  console.error(`Unhandled application error: ${err.message}`);
-  console.error(err.stack);
-  res.status(500).send("There was an error serving your request.");
-});
+app.use(handleErrors);
