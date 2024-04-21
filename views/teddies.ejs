@@ -1,41 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
-<%- include('partials/_head.ejs') %>
+  <head>
+    <%- include('partials/_head.ejs') %>
+    <title>Terrible Teddies - Your Collection</title>
+  </head>
   <body>
-    <%- include('partials/_header.ejs') %>
-    <main role="main" class="container mt-4">
-      <h1>Select Your Teddies</h1>
-      <form id="lineup-form">
-        <div class="row">
-          <% if (teddies.length === 0) { %>
-            <p>No teddies available. Please check back later.</p>
-          <% } else { %>
-            <% teddies.forEach(function(teddy) { %>
-              <div class="col-md-4 mb-3">
-                <div class="card h-100">
-                  <% var imageName = teddy.name.toLowerCase().replace(/\s/g, '-') + '.jpg'; %>
-                  <% var imagePath = '/images/teddies/' + imageName; %>
-                  <img src="<%= imagePath %>" onerror="this.onerror=null; this.src='/images/teddies/default.jpg'" class="card-img-top" alt="<%= teddy.name %>">
-                  <div class="card-body d-flex flex-column">
-                    <h5 class="card-title"><%= teddy.name %></h5>
-                    <p class="card-text"><%= teddy.description %></p>
-                    <ul class="list-unstyled mt-auto">
-                      <li>Attack Damage: <%= teddy.attackDamage %></li>
-                      <li>Health: <%= teddy.health %></li>
-                      <li>Special Move: <%= teddy.specialMove %></li>
-                      <li>Rarity: <%= teddy.rarity %></li>
-                    </ul>
-                    <button type="button" class="btn btn-primary select-teddy mt-auto" data-teddy-id="<%= teddy._id %>">Select</button>
+    <%- include('partials/_nav.ejs') %>
+    <main role="main" class="container">
+      <h1>Your Teddies</h1>
+      <div id="teddies-collection" class="row">
+        <% teddies.forEach(function(teddy) { %>
+          <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+              <img src="/images/teddies/<%= teddy._id %>.jpg" class="card-img-top" alt="<%= teddy.name %>">
+              <div class="card-body">
+                <h5 class="card-title"><%= teddy.name %></h5>
+                <p class="card-text"><%= teddy.description %></p>
+                <ul class="list-unstyled">
+                  <li>Attack Damage: <%= teddy.attackDamage %></li>
+                  <li>Health: <%= teddy.health %></li>
+                  <li>Special Move: <%= teddy.specialMove %></li>
+                  <li>Rarity: <%= teddy.rarity %></li>
+                </ul>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary select-teddy" data-teddy-id="<%= teddy._id %>">Select</button>
                   </div>
+                  <small class="text-muted"><%= teddy.rarity %> Rarity</small>
                 </div>
               </div>
-            <% }); %>
-          <% } %>
-        </div>
-        <button type="submit" class="btn btn-success mt-3">Initiate Battle</button>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+      <form id="lineup-form" action="/battle" method="post">
+        <input type="hidden" name="selectedTeddyIds" id="selectedTeddyIds" value="">
+        <button type="submit" class="btn btn-primary">Initiate Battle</button>
       </form>
     </main>
     <%- include('partials/_footer.ejs') %>
-    <script src="/js/teddies.js"></script>
+    <script src="/js/main.js"></script>
+    <script>
+      $(document).ready(function() {
+        $('.select-teddy').click(function() {
+          var teddyId = $(this).data('teddy-id');
+          var selectedTeddyIds = $('#selectedTeddyIds').val();
+          if (selectedTeddyIds) {
+            selectedTeddyIds = selectedTeddyIds.split(',');
+          } else {
+            selectedTeddyIds = [];
+          }
+          if (!selectedTeddyIds.includes(teddyId)) {
+            selectedTeddyIds.push(teddyId);
+            $('#selectedTeddyIds').val(selectedTeddyIds.join(','));
+            $(this).addClass('btn-success').removeClass('btn-outline-secondary');
+          } else {
+            selectedTeddyIds = selectedTeddyIds.filter(id => id !== teddyId);
+            $('#selectedTeddyIds').val(selectedTeddyIds.join(','));
+            $(this).addClass('btn-outline-secondary').removeClass('btn-success');
+          }
+        });
+
+        $('#lineup-form').submit(function(event) {
+          var selectedTeddyIds = $('#selectedTeddyIds').val();
+          if (!selectedTeddyIds) {
+            event.preventDefault();
+            alert('Please select at least one teddy to battle.');
+          }
+        });
+      });
+    </script>
   </body>
 </html>

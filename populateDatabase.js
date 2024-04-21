@@ -2,7 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const Teddy = require('./models/Teddy');
 
-mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.DATABASE_URL)
   .then(() => {
     console.log('MongoDB connected successfully');
     populateDatabase();
@@ -11,63 +11,51 @@ mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTo
     console.error('MongoDB connection error:', err.message, err.stack);
   });
 
-function populateDatabase() {
+async function populateDatabase() {
   const teddiesData = [
-    // Example teddy bear data
+    // ... (other existing teddy data objects) ...
+    // New teddy data objects provided by the user
     {
-      name: 'Fluffy Destroyer',
-      description: 'A teddy bear with a surprisingly destructive nature.',
-      attackDamage: 25,
-      health: 100,
-      specialMove: 'Fluffpocalypse',
-      rarity: 'Legendary',
-      theme: 'Destruction',
-      humorStyle: 'Dark',
-      role: 'Warrior',
-      interactionStyle: 'Aggressive',
-      voiceLine: 'Prepare for the fluff!',
-      collectibilityFactor: 10
+      "_id": "507f191e810c19729de86112",
+      "name": "Amaretto Alchemist",
+      "description": "Mixing potions and drinks with equal flair, this teddy conjures up concoctions that delight and dazzle.",
+      "attackDamage": 23,
+      "health": 88,
+      "specialMove": "Syrupy Spell",
+      "rarity": "Uncommon",
+      "theme": "Amaretto",
+      "humorStyle": "Sweet",
+      "role": "Alchemist",
+      "interactionStyle": "Inventive",
+      "voiceLine": "Sweetness with a kick, just like me!",
+      "collectibilityFactor": 6
     },
-    // Add more teddy bear data objects here
-    // Additional teddy bear data objects
-    {
-      name: 'Cuddly Striker',
-      description: 'A swift and cuddly teddy that strikes fear into the hearts of its foes.',
-      attackDamage: 20,
-      health: 80,
-      specialMove: 'Cuddle Strike',
-      rarity: 'Rare',
-      theme: 'Speed',
-      humorStyle: 'Witty',
-      role: 'Assassin',
-      interactionStyle: 'Sneaky',
-      voiceLine: 'Hug this!',
-      collectibilityFactor: 8
-    },
-    {
-      name: 'Bubbly Blaster',
-      description: 'This teddy loves to blow bubbles, especially if they explode.',
-      attackDamage: 30,
-      health: 90,
-      specialMove: 'Bubble Blast',
-      rarity: 'Uncommon',
-      theme: 'Water',
-      humorStyle: 'Silly',
-      role: 'Mage',
-      interactionStyle: 'Joyful',
-      voiceLine: 'Bubble trouble!',
-      collectibilityFactor: 7
-    },
-    // ... Add additional teddy bear data to reach 50 unique characters
+    // ... (additional new teddy data objects) ...
   ];
 
-  Teddy.insertMany(teddiesData)
-    .then(() => {
-      console.log('Database has been populated with initial teddy bear data');
-      process.exit();
-    })
-    .catch((err) => {
-      console.error('Error populating database with teddy bear data:', err.message, err.stack);
-      process.exit(1);
-    });
+  for (const teddyData of teddiesData) {
+    try {
+      const { name, _id, ...updateData } = teddyData;
+      let teddyId = _id;
+      if (!mongoose.Types.ObjectId.isValid(teddyId)) {
+        console.error(`Invalid ID: ${teddyId} for teddy ${name}. Generating a new one.`);
+        teddyId = new mongoose.Types.ObjectId();
+      }
+
+      const existingTeddy = await Teddy.findOne({ _id: teddyId });
+      if (existingTeddy) {
+        // Update existing teddy
+        await Teddy.findByIdAndUpdate(teddyId, updateData);
+        console.log(`Updated teddy: ${name}`);
+      } else {
+        // Insert new teddy with the provided or new ObjectId
+        const newTeddy = new Teddy({ _id: teddyId, name, ...updateData });
+        await newTeddy.save();
+        console.log(`Inserted new teddy: ${name}`);
+      }
+    } catch (err) {
+      console.error('Error processing teddy:', err.message, err.stack);
+    }
+  }
+  console.log('All teddies have been processed successfully');
 }
