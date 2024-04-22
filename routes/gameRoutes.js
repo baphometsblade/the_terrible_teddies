@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { isAuthenticated } = require('./middleware/authMiddleware');
 const { initiateBattle, executeTurn, determineBattleOutcome, loadTeddiesByIds, saveTeddyProgress } = require('../gameLogic');
+const { loadEndGameContent } = require('../services/endGameService');
 const Teddy = require('../models/Teddy'); // Import the Teddy model
 
 // Route to start a new game session
@@ -100,6 +101,51 @@ router.get('/game/battle', isAuthenticated, async (req, res) => {
   } catch (error) {
     console.error('Error rendering battle view:', error.message, error.stack);
     res.status(500).send('Error rendering battle view');
+  }
+});
+
+// Route to customize a teddy
+router.post('/api/teddies/customize', async (req, res) => {
+  const { teddyId, skinId, accessoryId } = req.body;
+  try {
+    await Teddy.findByIdAndUpdate(teddyId, {
+      $push: {
+        skins: skinId,
+        accessories: accessoryId
+      }
+    });
+    console.log('Customization updated for teddy:', teddyId);
+    res.status(200).send('Customization updated');
+  } catch (error) {
+    console.error('Error customizing teddy:', error.message, error.stack);
+    res.status(500).send('Error customizing teddy');
+  }
+});
+
+// Route to load end-game content
+router.get('/game/end-game', isAuthenticated, async (req, res) => {
+  try {
+    const content = await loadEndGameContent();
+    if (!content.arenas.length || !content.bosses.length) {
+      console.log('No end game arenas or bosses found in the database.');
+      return res.status(404).json({ message: 'No end game content available at this moment.' });
+    }
+    res.json(content);
+  } catch (error) {
+    console.error('Error loading end-game content:', error.message, error.stack);
+    res.status(500).send('Failed to load end-game content');
+  }
+});
+
+// Route to initiate an end-game battle
+router.post('/game/initiate-end-game-battle', isAuthenticated, async (req, res) => {
+  try {
+    const { playerTeddyId, arenaId } = req.body;
+    const battleSetup = await initiateEndGameBattle(playerTeddyId, arenaId);
+    res.json(battleSetup);
+  } catch (error) {
+    console.error('Error initiating end-game battle:', error.message, error.stack);
+    res.status(500).send('Failed to initiate end-game battle');
   }
 });
 

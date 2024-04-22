@@ -25,6 +25,22 @@ const challenges = [
     difficulty: "hard",
     reward: 500,
     isActive: true
+  },
+  {
+    title: "Collector's Call",
+    description: "Collect 5 different teddies",
+    type: "daily",
+    difficulty: "medium",
+    reward: 150,
+    isActive: true
+  },
+  {
+    title: "Ultimate Strategist",
+    description: "Win a battle without losing any teddies",
+    type: "weekly",
+    difficulty: "medium",
+    reward: 300,
+    isActive: true
   }
 ];
 

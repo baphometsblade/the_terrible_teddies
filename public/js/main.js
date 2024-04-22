@@ -44,30 +44,6 @@ $(document).ready(function() {
         });
     });
 
-    // Handle turn execution during battle
-    $('.execute-turn').click(function() {
-        var moveId = $(this).data('move-id');
-        $.ajax({
-            url: '/api/execute-turn', // Updated URL to match server routes
-            type: 'POST',
-            data: { moveId: moveId },
-            success: function(response) {
-                // Update UI to reflect turn execution
-                if (response.success) {
-                    // Assuming there's a UI element to show the result of the turn
-                    $('#battle-log').append('<div>' + response.turnResult + '</div>');
-                } else {
-                    alert('Failed to execute turn: ' + response.message);
-                }
-                console.log('Turn executed:', response);
-            },
-            error: function(error) {
-                console.error('Error executing turn:', error.responseText, error.stack);
-                alert('Error executing turn. Please try again.');
-            }
-        });
-    });
-
     // Handle challenge completion
     $('.complete-challenge').click(function() {
         var challengeId = $(this).data('challenge-id');

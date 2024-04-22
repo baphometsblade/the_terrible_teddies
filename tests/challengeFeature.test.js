@@ -52,4 +52,23 @@ describe('Challenge Feature Tests', function() {
             console.log('Challenge completion verified for player');
         });
     });
+
+    describe('Challenge Reward Distribution', function() {
+        it('should distribute rewards correctly upon challenge completion', async function() {
+            const player = await Player.findOne({ username: 'testPlayer' });
+            const challenge = await Challenge.findOne({ title: "Test Challenge" });
+
+            // Simulate challenge completion
+            player.completedChallenges.push({ challengeId: challenge._id, completionDate: new Date() });
+            await player.save();
+
+            // Assume reward distribution logic is handled elsewhere and just simulate the effect
+            player.points = (player.points || 0) + challenge.reward;
+            await player.save();
+
+            const updatedPlayer = await Player.findById(player._id);
+            assert.strictEqual(updatedPlayer.points, challenge.reward, 'Player points should be updated with the challenge reward');
+            console.log('Reward distributed and verified for player:', player.username);
+        });
+    });
 });

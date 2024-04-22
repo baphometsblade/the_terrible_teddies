@@ -1,5 +1,4 @@
 const moment = require('moment');
-const lodash = require('lodash');
 const Challenge = require('../models/Challenge');
 const Player = require('../models/Player');
 
@@ -37,7 +36,7 @@ async function distributeRewards(playerId, challengeId) {
 
         if (challenge.isActive && !player.completedChallenges.some(ch => ch.challengeId.equals(challengeId))) {
             player.completedChallenges.push({ challengeId: challenge._id, completionDate: new Date() });
-            player.save();
+            await player.save();
             console.log(`Distributed reward of ${challenge.reward} to player ${player.username} for completing challenge ${challenge.title}`);
         } else {
             console.log('Challenge is not active or already completed by the player.');

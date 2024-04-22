@@ -56,7 +56,15 @@ const teddySchema = new mongoose.Schema({
   collectibilityFactor: {
     type: Number,
     min: [0, 'Collectibility factor cannot be negative']
-  }
+  },
+  skins: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Skin'
+  }],
+  accessories: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Accessory'
+  }]
 }, {
   timestamps: true
 });

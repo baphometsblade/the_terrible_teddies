@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Challenge = require('../models/Challenge');
 const Player = require('../models/Player');
+const challengeService = require('../services/challengeService'); // Importing challenge service
 
 // Route to retrieve active challenges
 router.get('/active', async (req, res) => {
@@ -38,16 +39,13 @@ router.post('/complete', async (req, res) => {
             return res.status(404).send('Player not found');
         }
 
-        // Check if the challenge is already completed by the player
-        const alreadyCompleted = player.completedChallenges.some(c => c.challengeId.equals(challengeId));
-        if (alreadyCompleted) {
+        // Utilize the challengeService to handle challenge completion logic
+        const completionResult = await challengeService.completeChallenge(player, challenge);
+        if (completionResult.alreadyCompleted) {
             console.log('Challenge already completed by player:', challengeId);
             return res.status(409).send('Challenge already completed');
         }
 
-        // Mark the challenge as completed
-        player.completedChallenges.push({ challengeId: challenge._id, completionDate: new Date() });
-        await player.save();
         console.log('Challenge marked as completed for player:', challengeId, userId);
 
         res.send('Challenge completed successfully');
