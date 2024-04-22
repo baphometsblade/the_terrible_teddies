@@ -82,7 +82,7 @@ router.get('/teddies', isAuthenticated, async (req, res) => {
       console.log('No teddies found in the database');
       return res.status(404).send('No teddies found');
     }
-    res.render('teddies', { teddies: teddies });
+    res.render('teddies', { teddies: teddies, user: req.session });
   } catch (error) {
     console.error('Error fetching teddies:', error.message, error.stack);
     res.status(500).send('Error fetching teddies');
@@ -96,7 +96,7 @@ router.get('/game/battle', isAuthenticated, async (req, res) => {
       console.log('No battle state found for user:', req.session.userId);
       return res.redirect('/teddies');
     }
-    res.render('battle', { battleState: req.session.battleState });
+    res.render('battle', { battleState: req.session.battleState, user: req.session });
   } catch (error) {
     console.error('Error rendering battle view:', error.message, error.stack);
     res.status(500).send('Error rendering battle view');

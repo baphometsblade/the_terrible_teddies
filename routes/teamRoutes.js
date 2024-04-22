@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Team = require('../models/Team');
-const combinedAuthMiddleware = require('../middleware/combinedAuthMiddleware');
+const { isAuthenticated } = require('./middleware/authMiddleware');
 const Player = require('../models/Player'); // Corrected import for Player model
 
 // Route to create a new team
-router.post('/create', combinedAuthMiddleware, async (req, res) => {
+router.post('/create', isAuthenticated, async (req, res) => {
   const { name, members } = req.body;
   try {
     const newTeam = new Team({ name, members });
@@ -19,7 +19,7 @@ router.post('/create', combinedAuthMiddleware, async (req, res) => {
 });
 
 // Route to add a member to a team
-router.post('/:teamId/addMember', combinedAuthMiddleware, async (req, res) => {
+router.post('/:teamId/addMember', isAuthenticated, async (req, res) => {
   const { teamId } = req.params;
   const { memberId } = req.body;
   

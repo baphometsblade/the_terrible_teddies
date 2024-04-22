@@ -8,7 +8,6 @@ const authRoutes = require("./routes/authRoutes");
 const gameRoutes = require('./routes/gameRoutes'); // Include game routes
 const teamRoutes = require('./routes/teamRoutes'); // Include team management routes
 const marketRoutes = require('./routes/marketRoutes'); // Include marketplace routes
-const { handleErrors } = require('./middleware/errorHandlers'); // Include error handling middleware
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -50,7 +49,10 @@ app.use(
     store: MongoStore.create({ 
       mongoUrl: process.env.DATABASE_URL
     }),
-    cookie: { secure: process.env.NODE_ENV === 'production' && app.get('env') === 'production' }
+    cookie: { 
+      secure: process.env.NODE_ENV === 'production' && app.get('env') === 'production',
+      maxAge: 86400000 // 24 hours
+    }
   }),
 );
 
@@ -107,9 +109,12 @@ app.get("/", (req, res) => {
 
 // If no routes handled the request, it's a 404
 app.use((req, res, next) => {
-  console.log("Handling 404 error.");
   res.status(404).send("Page not found.");
 });
 
 // Error handling
-app.use(handleErrors);
+app.use((err, req, res, next) => {
+  console.error(`Unhandled application error: ${err.message}`);
+  console.error(err.stack);
+  res.status(500).send("There was an error serving your request.");
+});
