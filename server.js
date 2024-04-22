@@ -8,6 +8,7 @@ const authRoutes = require("./routes/authRoutes");
 const gameRoutes = require('./routes/gameRoutes'); // Include game routes
 const teamRoutes = require('./routes/teamRoutes'); // Include team management routes
 const marketRoutes = require('./routes/marketRoutes'); // Include marketplace routes
+const challengeRoutes = require('./routes/challengeRoutes'); // Include challenge routes
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -92,6 +93,9 @@ app.use('/teams', teamRoutes);
 
 // Marketplace Routes
 app.use(marketRoutes);
+
+// Challenge Routes
+app.use('/challenges', challengeRoutes);
 
 // Root path response
 app.get("/", (req, res) => {

@@ -17,6 +17,7 @@ $(document).ready(function() {
                 console.log('Teddy selected:', response);
             },
             error: function(error) {
+                console.error('Error selecting teddy:', error.responseText, error.stack);
                 alert('Error selecting teddy. Please try again.');
             }
         });
@@ -37,6 +38,7 @@ $(document).ready(function() {
                 console.log('Battle initiated:', response);
             },
             error: function(error) {
+                console.error('Error initiating battle:', error.responseText, error.stack);
                 alert('Error initiating battle. Please try again.');
             }
         });
@@ -60,7 +62,31 @@ $(document).ready(function() {
                 console.log('Turn executed:', response);
             },
             error: function(error) {
+                console.error('Error executing turn:', error.responseText, error.stack);
                 alert('Error executing turn. Please try again.');
+            }
+        });
+    });
+
+    // Handle challenge completion
+    $('.complete-challenge').click(function() {
+        var challengeId = $(this).data('challenge-id');
+        $.ajax({
+            url: '/challenges/complete', // Updated URL to match server routes
+            type: 'POST',
+            data: { challengeId: challengeId },
+            success: function(response) {
+                if (response.success) {
+                    alert('Challenge completed! Rewards have been added to your account.');
+                    window.location.reload(); // Refresh the page to update the challenge list
+                } else {
+                    alert('Failed to complete challenge: ' + response.message);
+                }
+                console.log('Challenge completed:', response);
+            },
+            error: function(error) {
+                console.error('Error completing challenge:', error.responseText, error.stack);
+                alert('Failed to complete challenge. Please try again.');
             }
         });
     });

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/_head.ejs') %>
+    <title>Challenges - Terrible Teddies</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/_nav.ejs') %>
+    <main role="main" class="container">
+        <h1>Active Challenges</h1>
+        <div id="challenges-list" class="row">
+            <% if (challenges.length > 0) { %>
+                <% challenges.forEach(function(challenge) { %>
+                    <div class="col-md-4">
+                        <div class="card mb-4 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title"><%= challenge.title %></h5>
+                                <p class="card-text"><%= challenge.description %></p>
+                                <ul class="list-unstyled">
+                                    <li>Type: <%= challenge.type %></li>
+                                    <li>Difficulty: <%= challenge.difficulty %></li>
+                                    <li>Reward: <%= challenge.reward %> Points</li>
+                                </ul>
+                                <button type="button" class="btn btn-primary complete-challenge" data-challenge-id="<%= challenge._id %>">Complete Challenge</button>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <p>No active challenges available at the moment. Check back later!</p>
+            <% } %>
+        </div>
+    </main>
+    <%- include('partials/_footer.ejs') %>
+    <script src="/js/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.complete-challenge').on('click', function() {
+                const challengeId = $(this).data('challenge-id');
+                $.ajax({
+                    url: '/challenges/complete',
+                    type: 'POST',
+                    data: { challengeId: challengeId },
+                    success: function(response) {
+                        alert('Challenge completed! Rewards have been added to your account.');
+                        window.location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error completing challenge:', xhr.responseText, error.stack);
+                        alert('Failed to complete challenge. Please try again.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
