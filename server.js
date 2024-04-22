@@ -22,6 +22,7 @@ app.set("view engine", "ejs");
 
 // Serve static files
 app.use(express.static("public"));
+app.use('/assets', express.static('public/assets')); // Serve assets for game interactions
 
 let server;
 

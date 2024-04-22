@@ -76,6 +76,7 @@ teddySchema.index({ rarity: 1 });
 teddySchema.post('save', function(error, doc, next) {
   if (error.name === 'MongoError' && error.code === 11000) {
     console.error('Error saving document:', error);
+    console.error('Error stack:', error.stack);
     next(new Error('There was a duplicate key error'));
   } else {
     next(error);

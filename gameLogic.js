@@ -28,6 +28,9 @@ function executeTurn(battleState, playerMove) {
     // Switch turn
     battleState.turn = battleState.turn === 'player' ? 'opponent' : 'player';
     
+    // Check battle outcome after each turn
+    determineBattleOutcome(battleState);
+    
     return battleState;
 }
 
@@ -52,8 +55,13 @@ function determineBattleOutcome(battleState) {
 // Function to apply special moves. This can modify the game state in various ways.
 function applySpecialMove(attacker, defender) {
     console.log(`Applying special move from ${attacker.name} to ${defender.name}`);
-    // Placeholder for special move logic
-    // This would read the attacker's specialMove property and apply effects accordingly.
+    // Check if special move is valid and if defender can counter or mitigate the effect
+    if (attacker.specialMove && attacker.specialMove.power && !defender.isImmune) {
+        defender.currentHealth -= attacker.specialMove.power;
+        console.log(`Special move applied: ${attacker.specialMove.name}, reduced ${defender.name}'s health to ${defender.currentHealth}`);
+    } else {
+        console.log(`No effect from special move: ${attacker.specialMove.name} on ${defender.name}`);
+    }
 }
 
 // Function to load teddies for a player's lineup from the database

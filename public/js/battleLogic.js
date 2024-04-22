@@ -14,12 +14,12 @@ document.addEventListener('DOMContentLoaded', function() {
         let selectedIds = selectedTeddyIdsInput.value ? selectedTeddyIdsInput.value.split(',') : [];
         if (selectedIds.includes(teddyId)) {
             selectedIds = selectedIds.filter(id => id !== teddyId);
-            teddyCard.classList.remove('selected');
-            teddyCard.classList.remove('selected-teddy'); // Remove visual indication for selection
+            teddyCard.classList.toggle('selected');
+            teddyCard.classList.toggle('selected-teddy'); // Toggle visual indication for selection
         } else {
             selectedIds.push(teddyId);
-            teddyCard.classList.add('selected');
-            teddyCard.classList.add('selected-teddy'); // Add visual indication for selection
+            teddyCard.classList.toggle('selected');
+            teddyCard.classList.toggle('selected-teddy'); // Toggle visual indication for selection
         }
         selectedTeddyIdsInput.value = selectedIds.join(',');
         console.log(`Updated selected teddies: ${selectedTeddyIdsInput.value}`);

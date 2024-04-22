@@ -3,6 +3,12 @@
   <head>
     <%- include('partials/_head.ejs') %>
     <title>Terrible Teddies - Your Collection</title>
+    <style>
+      .teddy-card:hover {
+        transform: scale(1.05);
+        transition: transform 0.3s ease-in-out;
+      }
+    </style>
   </head>
   <body>
     <%- include('partials/_nav.ejs') %>
@@ -12,7 +18,7 @@
         <% teddies.forEach(function(teddy) { %>
           <div class="col-md-4">
             <div class="card mb-4 shadow-sm teddy-card" data-teddy-id="<%= teddy._id %>">
-              <img id="img-<%= teddy._id %>" src="/assets/images/<%= teddy._id %>.jpg" class="card-img-top" alt="<%= teddy.name %>">
+              <img id="img-<%= teddy._id %>" src="/assets/images/<%= teddy._id %>.jpg" class="card-img-top" alt="<%= teddy.name %>" onerror="this.onerror=null;this.src='/images/default.jpg';">
               <div class="card-body">
                 <h5 class="card-title"><%= teddy.name %></h5>
                 <p class="card-text"><%= teddy.description %></p>
@@ -41,5 +47,35 @@
     <%- include('partials/_footer.ejs') %>
     <script src="/js/main.js"></script>
     <script src="/js/battleLogic.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const teddies = document.querySelectorAll('.card');
+        teddies.forEach(teddy => {
+          teddy.addEventListener('click', () => {
+            const teddyId = teddy.getAttribute('data-teddy-id');
+            const image = document.querySelector(`#img-${teddyId}`);
+            const audio = new Audio(`/assets/sounds/${teddyId}.wav`);
+            const animationCSS = `/assets/animations/${teddyId}.css`;
+
+            // Load and apply the CSS for animation
+            if (!document.getElementById(`css-${teddyId}`)) {
+              const head = document.head;
+              const link = document.createElement('link');
+
+              link.id = `css-${teddyId}`;
+              link.rel = 'stylesheet';
+              link.type = 'text/css';
+              link.href = animationCSS;
+              link.media = 'all';
+              head.appendChild(link);
+            }
+
+            // Start animation and sound
+            image.classList.add(`${teddyId}-animation`);
+            audio.play().catch(error => console.error('Error playing audio:', error)); // Error handling for audio playback
+          });
+        });
+      });
+    </script>
   </body>
 </html>

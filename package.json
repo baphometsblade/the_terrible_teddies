@@ -26,5 +26,9 @@
     "moment": "^2.30.1",
     "mongoose": "^8.3.2",
     "wav": "^1.0.2"
+  },
+  "devDependencies": {
+    "@actions/github": "^6.0.0",
+    "github-actions": "^0.9.0"
   }
 }
