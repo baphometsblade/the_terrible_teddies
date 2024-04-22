@@ -1,0 +1,10 @@
+
+      @keyframes rock-The Little Mermaid's Whisper {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .The Little Mermaid's Whisper-animation {
+        animation: rock-The Little Mermaid's Whisper 1s infinite;
+      }
+      

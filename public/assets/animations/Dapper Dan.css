@@ -1,0 +1,10 @@
+
+      @keyframes rock-Dapper Dan {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Dapper Dan-animation {
+        animation: rock-Dapper Dan 1s infinite;
+      }
+      

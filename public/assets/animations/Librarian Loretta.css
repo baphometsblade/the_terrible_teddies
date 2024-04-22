@@ -1,0 +1,10 @@
+
+      @keyframes rock-Librarian Loretta {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Librarian Loretta-animation {
+        animation: rock-Librarian Loretta 1s infinite;
+      }
+      

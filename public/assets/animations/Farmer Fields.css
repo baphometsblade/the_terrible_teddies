@@ -1,0 +1,10 @@
+
+      @keyframes rock-Farmer Fields {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Farmer Fields-animation {
+        animation: rock-Farmer Fields 1s infinite;
+      }
+      

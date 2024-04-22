@@ -1,0 +1,10 @@
+
+      @keyframes rock-Cabaret Cara {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Cabaret Cara-animation {
+        animation: rock-Cabaret Cara 1s infinite;
+      }
+      

@@ -53,10 +53,6 @@
   background-color: #e6b800; /* Darker yellow on hover */
 }
 
-.select-teddy.btn-secondary {
-  background-color: #4CAF50; /* Green color to indicate selection */
-}
-
 .btn-success {
   background-color: #64dd17; /* Bright green color for initiate battle button */
   border-color: #64dd17;
@@ -65,6 +61,13 @@
 .btn-success:hover {
   background-color: #57c300; /* Darker green on hover */
   border-color: #57c300;
+}
+
+/* Additional styles for selected teddy */
+.selected-teddy {
+  border: 2px solid #4CAF50; /* Green border for selected teddy */
+  transform: scale(1.05); /* Slightly increase size to indicate selection */
+  transition: transform 0.3s ease-in-out;
 }
 
 /* Add additional custom styles as needed for the game's aesthetic */

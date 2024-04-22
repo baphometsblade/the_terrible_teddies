@@ -1,0 +1,10 @@
+
+      @keyframes rock-Detective Charm {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Detective Charm-animation {
+        animation: rock-Detective Charm 1s infinite;
+      }
+      

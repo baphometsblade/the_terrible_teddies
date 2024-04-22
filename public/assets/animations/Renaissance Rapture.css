@@ -1,0 +1,10 @@
+
+      @keyframes rock-Renaissance Rapture {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Renaissance Rapture-animation {
+        animation: rock-Renaissance Rapture 1s infinite;
+      }
+      

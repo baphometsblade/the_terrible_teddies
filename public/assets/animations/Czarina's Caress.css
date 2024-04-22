@@ -1,0 +1,10 @@
+
+      @keyframes rock-Czarina's Caress {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Czarina's Caress-animation {
+        animation: rock-Czarina's Caress 1s infinite;
+      }
+      

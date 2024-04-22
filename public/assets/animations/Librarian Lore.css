@@ -1,0 +1,10 @@
+
+      @keyframes rock-Librarian Lore {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Librarian Lore-animation {
+        animation: rock-Librarian Lore 1s infinite;
+      }
+      

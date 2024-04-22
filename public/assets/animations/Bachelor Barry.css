@@ -1,0 +1,10 @@
+
+      @keyframes rock-Bachelor Barry {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Bachelor Barry-animation {
+        animation: rock-Bachelor Barry 1s infinite;
+      }
+      

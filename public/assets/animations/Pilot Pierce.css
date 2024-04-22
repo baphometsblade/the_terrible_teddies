@@ -1,0 +1,10 @@
+
+      @keyframes rock-Pilot Pierce {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Pilot Pierce-animation {
+        animation: rock-Pilot Pierce 1s infinite;
+      }
+      

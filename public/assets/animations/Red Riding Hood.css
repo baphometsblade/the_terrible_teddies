@@ -1,0 +1,10 @@
+
+      @keyframes rock-Red Riding Hood {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Red Riding Hood-animation {
+        animation: rock-Red Riding Hood 1s infinite;
+      }
+      

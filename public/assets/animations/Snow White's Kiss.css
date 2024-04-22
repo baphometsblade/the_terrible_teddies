@@ -1,0 +1,10 @@
+
+      @keyframes rock-Snow White's Kiss {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Snow White's Kiss-animation {
+        animation: rock-Snow White's Kiss 1s infinite;
+      }
+      

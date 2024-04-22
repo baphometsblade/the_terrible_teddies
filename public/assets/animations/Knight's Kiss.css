@@ -1,0 +1,10 @@
+
+      @keyframes rock-Knight's Kiss {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Knight's Kiss-animation {
+        animation: rock-Knight's Kiss 1s infinite;
+      }
+      

@@ -1,0 +1,10 @@
+
+      @keyframes rock-Jack and the Beanstalk {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Jack and the Beanstalk-animation {
+        animation: rock-Jack and the Beanstalk 1s infinite;
+      }
+      

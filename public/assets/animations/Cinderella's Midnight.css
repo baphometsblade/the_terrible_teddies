@@ -1,0 +1,10 @@
+
+      @keyframes rock-Cinderella's Midnight {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Cinderella's Midnight-animation {
+        animation: rock-Cinderella's Midnight 1s infinite;
+      }
+      

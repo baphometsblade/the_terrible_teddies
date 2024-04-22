@@ -1,0 +1,10 @@
+
+      @keyframes rock-Sailor Seamus {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Sailor Seamus-animation {
+        animation: rock-Sailor Seamus 1s infinite;
+      }
+      

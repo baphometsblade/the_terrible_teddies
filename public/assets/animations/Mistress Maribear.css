@@ -1,0 +1,10 @@
+
+      @keyframes rock-Mistress Maribear {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Mistress Maribear-animation {
+        animation: rock-Mistress Maribear 1s infinite;
+      }
+      

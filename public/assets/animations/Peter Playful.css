@@ -1,0 +1,10 @@
+
+      @keyframes rock-Peter Playful {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Peter Playful-animation {
+        animation: rock-Peter Playful 1s infinite;
+      }
+      

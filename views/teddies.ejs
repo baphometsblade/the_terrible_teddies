@@ -11,8 +11,8 @@
       <div id="teddies-collection" class="row">
         <% teddies.forEach(function(teddy) { %>
           <div class="col-md-4">
-            <div class="card mb-4 shadow-sm">
-              <img src="/images/teddies/<%= teddy._id %>.jpg" class="card-img-top" alt="<%= teddy.name %>">
+            <div class="card mb-4 shadow-sm teddy-card" data-teddy-id="<%= teddy._id %>">
+              <img id="img-<%= teddy._id %>" src="/assets/images/<%= teddy._id %>.jpg" class="card-img-top" alt="<%= teddy.name %>">
               <div class="card-body">
                 <h5 class="card-title"><%= teddy.name %></h5>
                 <p class="card-text"><%= teddy.description %></p>
@@ -40,35 +40,6 @@
     </main>
     <%- include('partials/_footer.ejs') %>
     <script src="/js/main.js"></script>
-    <script>
-      $(document).ready(function() {
-        $('.select-teddy').click(function() {
-          var teddyId = $(this).data('teddy-id');
-          var selectedTeddyIds = $('#selectedTeddyIds').val();
-          if (selectedTeddyIds) {
-            selectedTeddyIds = selectedTeddyIds.split(',');
-          } else {
-            selectedTeddyIds = [];
-          }
-          if (!selectedTeddyIds.includes(teddyId)) {
-            selectedTeddyIds.push(teddyId);
-            $('#selectedTeddyIds').val(selectedTeddyIds.join(','));
-            $(this).addClass('btn-success').removeClass('btn-outline-secondary');
-          } else {
-            selectedTeddyIds = selectedTeddyIds.filter(id => id !== teddyId);
-            $('#selectedTeddyIds').val(selectedTeddyIds.join(','));
-            $(this).addClass('btn-outline-secondary').removeClass('btn-success');
-          }
-        });
-
-        $('#lineup-form').submit(function(event) {
-          var selectedTeddyIds = $('#selectedTeddyIds').val();
-          if (!selectedTeddyIds) {
-            event.preventDefault();
-            alert('Please select at least one teddy to battle.');
-          }
-        });
-      });
-    </script>
+    <script src="/js/battleLogic.js"></script>
   </body>
 </html>

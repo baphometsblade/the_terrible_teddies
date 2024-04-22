@@ -1,0 +1,10 @@
+
+      @keyframes rock-Architect Armand {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+
+      .Architect Armand-animation {
+        animation: rock-Architect Armand 1s infinite;
+      }
+      
