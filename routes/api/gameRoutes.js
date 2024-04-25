@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { isAuthenticated } = require('./middleware/authMiddleware');
-const { initiateBattle, executeTurn, determineBattleOutcome, loadTeddiesByIds, saveTeddyProgress } = require('../gameLogic');
+const { initiateBattle, executeTurn, determineBattleOutcome, loadTeddiesByIds, saveTeddyProgress, levelUpTeddy } = require('../gameLogic');
 const { loadEndGameContent } = require('../services/endGameService');
 const Teddy = require('../models/Teddy'); // Import the Teddy model
 
@@ -160,6 +160,22 @@ router.get('/game/end-game', isAuthenticated, async (req, res) => {
     console.error('Error loading end-game content:', error.message, error.stack);
     res.status(500).send('Failed to load end-game content');
   }
+});
+
+// Route to level up a teddy
+router.post('/api/progress/level-up', isAuthenticated, async (req, res) => {
+    const { teddyId, experiencePoints } = req.body;
+    if (!teddyId || experiencePoints === undefined) {
+        return res.status(400).json({ message: "Teddy ID and experience points are required." });
+    }
+
+    try {
+        const updatedTeddy = await levelUpTeddy(teddyId, experiencePoints);
+        res.status(200).json({ message: 'Teddy leveled up successfully', teddy: updatedTeddy });
+    } catch (error) {
+        console.error('Error leveling up teddy:', error.message, error.stack);
+        res.status(500).json({ message: error.message });
+    }
 });
 
 module.exports = router;
