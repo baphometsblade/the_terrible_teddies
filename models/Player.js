@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const handleMongoError = require('../utils/dbErrorHandler'); // Import the utility function for handling MongoDB errors
 
 const playerSchema = new mongoose.Schema({
   username: {
@@ -37,14 +38,7 @@ playerSchema.pre('save', function(next) {
   next();
 });
 
-playerSchema.post('save', function(error, doc, next) {
-  if (error.name === 'MongoError' && error.code === 11000) {
-    console.error('Error saving player:', error);
-    next(new Error('There was a duplicate key error'));
-  } else {
-    next();
-  }
-});
+playerSchema.post('save', handleMongoError); // Use the shared error handling utility
 
 const Player = mongoose.model('Player', playerSchema);
 

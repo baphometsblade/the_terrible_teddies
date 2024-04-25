@@ -1,17 +1,29 @@
 // gameLogic.js
 
 const Teddy = require('./models/Teddy');
+const Player = require('./models/Player'); // Assuming Player model path is correct
 
 // Function to initiate a battle. This should set up the initial state for a battle.
-function initiateBattle(playerTeddy, opponentTeddy) {
-    console.log('Initiating battle between', playerTeddy.name, 'and', opponentTeddy.name);
-    // Initialize battle state
-    return {
-        playerTeddy: {...playerTeddy, currentHealth: playerTeddy.health},
-        opponentTeddy: {...opponentTeddy, currentHealth: opponentTeddy.health},
-        turn: 'player', // 'player' or 'opponent'
-        winner: null // 'player', 'opponent', or null if the battle is ongoing
-    };
+async function initiateBattle(playerTeddyId) {
+    try {
+        const playerTeddy = await Teddy.findById(playerTeddyId);
+        const opponentTeddy = await selectOpponent(playerTeddy);
+        return {
+            playerTeddy: { ...playerTeddy.toObject(), currentHealth: playerTeddy.health },
+            opponentTeddy: { ...opponentTeddy.toObject(), currentHealth: opponentTeddy.health },
+            turn: Math.random() < 0.5 ? 'player' : 'opponent', // Randomly decide who starts
+            winner: null
+        };
+    } catch (error) {
+        console.error('Error initiating battle:', error.message, error.stack);
+        throw error;
+    }
+}
+
+// Function to select an opponent (for simplicity, this function will randomly select an opponent)
+async function selectOpponent(playerTeddy) {
+    const potentialOpponents = await Teddy.find({ _id: { $ne: playerTeddy._id } });
+    return potentialOpponents[Math.floor(Math.random() * potentialOpponents.length)];
 }
 
 // Function to execute a turn. This will process the player's move and the opponent's move.
@@ -96,11 +108,32 @@ async function saveTeddyProgress(teddy) {
     }
 }
 
+// Function to level up a teddy based on experience points
+async function levelUpTeddy(teddyId, experiencePoints) {
+    const teddy = await Teddy.findById(teddyId);
+    if (!teddy) {
+        throw new Error('Teddy not found');
+    }
+
+    // Simulating level up logic
+    teddy.experience += experiencePoints;
+    if (teddy.experience >= 100) { // Assuming 100 XP needed to level up
+        teddy.level = (teddy.level || 1) + 1;
+        teddy.health += 10; // Increase health by 10 on each level up
+        teddy.attackDamage += 5; // Increase attack by 5 on each level up
+        teddy.experience = 0; // Reset experience after level up
+    }
+
+    await teddy.save();
+    return teddy;
+}
+
 module.exports = {
     initiateBattle,
     executeTurn,
     determineBattleOutcome,
     applySpecialMove,
     loadTeddiesByIds,
-    saveTeddyProgress
+    saveTeddyProgress,
+    levelUpTeddy
 };

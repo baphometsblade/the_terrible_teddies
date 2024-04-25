@@ -9,6 +9,18 @@ const isAuthenticated = (req, res, next) => {
   }
 };
 
+// Middleware to check if the user is an admin
+const isAdmin = (req, res, next) => {
+  if (req.session.user && req.session.user.isAdmin) {
+    console.log(`Admin access granted for user ID: ${req.session.user.userId}`);
+    next(); // Proceed if user is admin
+  } else {
+    console.error("Access denied. Admins only.");
+    res.status(403).send("Access denied. Admins only.");
+  }
+};
+
 module.exports = {
-  isAuthenticated
+  isAuthenticated,
+  isAdmin
 };

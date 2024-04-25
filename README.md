@@ -1,19 +1,18 @@
 # The Terrible Teddies
 
-The Terrible Teddies is an engaging and strategic game featuring a collection of 50 unique teddy bear characters, each with its own set of attributes and abilities. Players can battle, trade, and customize their teddies in various gameplay modes, including challenging turn-based combat arenas.
+The Terrible Teddies is a strategic and interactive card-based game where players battle using teddy bears with unique abilities. Each teddy bear character in the game has a distinct set of attributes, special moves, and rarity, making every battle unique and engaging.
 
 ## Overview
 
-The game is built on a robust platform using Node.js for the backend, Express.js for the server logic, and MongoDB for data persistence. The frontend leverages EJS for templating and jQuery for dynamic content management. The game's architecture is designed to handle real-time interactions and complex game mechanics, ensuring a seamless user experience.
+The game is developed using Node.js and Express for the backend, with MongoDB as the database for persistent storage of game data and player progress. The frontend utilizes EJS for rendering views and jQuery for dynamic interactions. The game features a turn-based combat system, a card collection mechanism, and an engaging user interface for managing teddy collections and battling other players.
 
 ## Features
 
-- **Character Customization:** Players can customize their teddies with different skins and accessories to enhance their abilities.
-- **Battle System:** A turn-based combat system where players can challenge each other using strategic moves based on their teddies' unique abilities.
-- **Progression System:** Players can level up their teddies, unlocking new abilities and increasing their power.
-- **Marketplace:** A trading system where players can buy or sell teddies or items using in-game currency.
-- **End-Game Challenges:** Special arenas and boss fights that offer high rewards but also present significant challenges.
-- **Feedback Mechanism:** Players can provide feedback directly through the game interface, helping to improve and evolve the game based on user input.
+- **Character Development:** Players can collect and customize teddy bears with unique abilities and attributes.
+- **Battle System:** A robust turn-based system where players use their teddies' special moves to battle against others.
+- **Progression System:** Players can level up their teddies, unlocking new abilities and features.
+- **Player Interaction:** Features include trading cards, forming teams, and participating in community challenges.
+- **End-Game Content:** Special events and boss fights provide challenging gameplay for advanced players.
 
 ## Getting Started
 
@@ -27,24 +26,9 @@ The game is built on a robust platform using Node.js for the backend, Express.js
 
 1. Clone the repository to your local machine.
 2. Install dependencies with `npm install`.
-3. Set up your MongoDB database and update the `.env` file with your database URL. // INPUT_REQUIRED {Provide your MongoDB connection string}
+3. Set up your MongoDB database and update the `.env` file with your database URL.
 4. Start the server with `npm start`.
 5. Access the game through `http://localhost:3000` in your web browser.
-
-## Modular Architecture
-
-The application is structured into modular components to enhance maintainability and scalability:
-- **Server Setup (`app.js`)**: Configures the server and integrates middleware.
-- **Database Connection (`database.js`)**: Manages MongoDB connections and handles connection events.
-- **Route Management (`routes/index.js`)**: Centralizes route handling, improving route organization and error management.
-
-## Continuous Integration and Deployment
-
-The project includes a CI/CD pipeline setup using GitHub Actions to automate testing, linting, and deployment processes, ensuring that each build is consistent and stable.
-
-## Documentation and Developer Guides
-
-Comprehensive documentation is available to assist developers in understanding the game mechanics, architecture, and contributing guidelines. This includes detailed setup instructions, feature descriptions, and a change log for tracking modifications.
 
 ## License
 

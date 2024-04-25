@@ -9,6 +9,7 @@ const gameRoutes = require('./routes/gameRoutes'); // Include game routes
 const teamRoutes = require('./routes/teamRoutes'); // Include team management routes
 const marketRoutes = require('./routes/marketRoutes'); // Include marketplace routes
 const challengeRoutes = require('./routes/challengeRoutes'); // Include challenge routes
+const { isAdmin } = require('./middleware/authMiddleware'); // Include isAdmin middleware
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -98,6 +99,20 @@ app.use(marketRoutes);
 // Challenge Routes
 app.use('/challenges', challengeRoutes);
 
+// Route to render the feedback dashboard
+app.get('/feedback-summary', isAdmin, (req, res) => {
+    console.log("Rendering the feedback summary dashboard.");
+    res.render('feedbackDashboard', (err, html) => {
+      if (err) {
+        console.error(`Error rendering feedback summary dashboard: ${err.message}`);
+        console.error(err.stack);
+        res.status(500).send("Error rendering feedback summary dashboard.");
+      } else {
+        res.send(html);
+      }
+    });
+});
+
 // Root path response
 app.get("/", (req, res) => {
   console.log("Rendering the index page."); // Log the rendering action
@@ -114,6 +129,7 @@ app.get("/", (req, res) => {
 
 // If no routes handled the request, it's a 404
 app.use((req, res, next) => {
+  console.log("Page not found.");
   res.status(404).send("Page not found.");
 });
 

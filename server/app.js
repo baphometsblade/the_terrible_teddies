@@ -9,6 +9,7 @@ const gameRoutes = require('./routes/gameRoutes'); // Include game routes
 const teamRoutes = require('./routes/teamRoutes'); // Include team management routes
 const marketRoutes = require('./routes/marketRoutes'); // Include marketplace routes
 const challengeRoutes = require('./routes/challengeRoutes'); // Include challenge routes
+const apiGameRoutes = require('./routes/api/gameRoutes'); // Include API game routes
 
 const app = express();
 const port = process.env.PORT || 3000; // INPUT_REQUIRED {Set the desired port number or leave as default}
@@ -96,6 +97,9 @@ app.use(marketRoutes);
 
 // Challenge Routes
 app.use('/challenges', challengeRoutes);
+
+// API Game Routes
+app.use('/api/game', apiGameRoutes);
 
 // Root path response
 app.get("/", (req, res) => {

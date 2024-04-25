@@ -64,7 +64,25 @@ const teddySchema = new mongoose.Schema({
   accessories: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Accessory'
-  }]
+  }],
+  strategyLevel: {
+    type: Number,
+    required: [true, 'A teddy must have a strategy level'],
+    min: [1, 'Strategy level must be at least 1'],
+    max: [100, 'Strategy level cannot exceed 100']
+  },
+  friendliness: {
+    type: Number,
+    required: [true, 'A teddy must have a friendliness rating'],
+    min: [1, 'Friendliness must be at least 1'],
+    max: [100, 'Friendliness cannot exceed 100']
+  },
+  adaptability: {
+    type: Number,
+    required: [true, 'A teddy must have an adaptability rating'],
+    min: [1, 'Adaptability must be at least 1'],
+    max: [100, 'Adaptability cannot exceed 100']
+  }
 }, {
   timestamps: true
 });
