@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const express = require("express");
 const session = require("express-session");
 const MongoStore = require('connect-mongo');
-const authRoutes = require("./routes/authRoutes");
+const authRoutes = require("./routes/authRoutes"); // Restored the original path to authRoutes
 const gameRoutes = require('./routes/gameRoutes'); // Include game routes
 const teamRoutes = require('./routes/teamRoutes'); // Include team management routes
 const marketRoutes = require('./routes/marketRoutes'); // Include marketplace routes
@@ -117,7 +117,16 @@ app.get("/", (req, res) => {
 
 // If no routes handled the request, it's a 404
 app.use((req, res, next) => {
-  res.status(404).send("Page not found.");
+  console.log(`Requested route not found: ${req.originalUrl}`); // Log the 404 error with the requested URL
+  res.status(404).render('404', (err, html) => { // Render a dedicated 404 page
+    if (err) {
+      console.error(`Error rendering 404 page: ${err.message}`);
+      console.error(err.stack);
+      res.status(500).send("Error rendering 404 page.");
+    } else {
+      res.send(html);
+    }
+  });
 });
 
 // Error handling

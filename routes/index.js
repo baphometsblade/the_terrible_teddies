@@ -30,9 +30,17 @@ router.get('/', (req, res) => {
 });
 
 // Handle 404 errors for undefined routes
-router.use((req, res, next) => {
-  console.log('Requested route not found, sending 404 response.');
-  res.status(404).send("Page not found.");
+router.get('*', (req, res) => {
+  console.log(`Requested route not found: ${req.originalUrl}`);
+  res.status(404).render('404', (err, html) => {
+    if (err) {
+      console.error(`Error rendering 404 page: ${err.message}`);
+      console.error(err.stack);
+      res.status(500).send("Error rendering 404 page.");
+    } else {
+      res.send(html);
+    }
+  });
 });
 
 // Central error handling
