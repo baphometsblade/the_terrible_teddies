@@ -92,14 +92,8 @@ async function loadTeddiesByIds(teddyIds) {
 async function saveTeddyProgress(teddy) {
     try {
         const updateData = {
-            health: teddy.currentHealth,
-            // Add other teddy attributes that need to be saved after a battle
-            // Example: experience: teddy.experience
+            health: teddy.currentHealth
         };
-        // Update the example attribute if it exists
-        if (teddy.experience) {
-            updateData.experience = teddy.experience;
-        }
         await Teddy.findByIdAndUpdate(teddy._id, updateData);
         console.log(`Saved teddy progress for ${teddy.name}`);
     } catch (error) {

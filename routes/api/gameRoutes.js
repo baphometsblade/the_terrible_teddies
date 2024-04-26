@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { isAuthenticated } = require('./middleware/authMiddleware');
 const { initiateBattle, executeTurn, determineBattleOutcome, loadTeddiesByIds, saveTeddyProgress, levelUpTeddy } = require('../gameLogic');
-const { loadEndGameContent } = require('../services/endGameService');
 const Teddy = require('../models/Teddy'); // Import the Teddy model
 
 // Route to start a new game session
