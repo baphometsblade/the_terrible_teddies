@@ -16,19 +16,6 @@ router.use('/teams', teamRoutes);
 router.use(marketRoutes);
 router.use('/challenges', challengeRoutes);
 
-router.get('/', (req, res) => {
-  console.log('Rendering the index page.');
-  res.render('index', (err, html) => {
-    if (err) {
-      console.error(`Error rendering index page: ${err.message}`);
-      console.error(err.stack);
-      res.status(500).send("Error rendering page.");
-    } else {
-      res.send(html);
-    }
-  });
-});
-
 // Handle 404 errors for undefined routes
 router.get('*', (req, res) => {
   console.log(`Requested route not found: ${req.originalUrl}`);

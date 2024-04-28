@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <%- include('partials/_nav.ejs') %>
+    <%- include('partials/_nav.ejs', {user: user}) %>
     <main role="main" class="container">
         <h1>Active Challenges</h1>
         <div id="challenges-list" class="row">

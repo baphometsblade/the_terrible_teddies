@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { isAuthenticated } = require('./middleware/authMiddleware');
-const { initiateBattle, executeTurn, determineBattleOutcome, loadTeddiesByIds, saveTeddyProgress, levelUpTeddy } = require('../gameLogic');
-const Teddy = require('../models/Teddy'); // Import the Teddy model
+const { isAuthenticated } = require('../../middleware/authMiddleware');
+const { initiateBattle, executeTurn, determineBattleOutcome, loadTeddiesByIds, saveTeddyProgress, levelUpTeddy } = require('../../gameLogic');
+const Teddy = require('../../models/Teddy');
 
 // Route to start a new game session
 router.post('/game/session', isAuthenticated, (req, res) => {
@@ -146,35 +146,20 @@ router.post('/api/trade', isAuthenticated, async (req, res) => {
   }
 });
 
-// Route to load end-game content
-router.get('/game/end-game', isAuthenticated, async (req, res) => {
-  try {
-    const content = await loadEndGameContent();
-    if (!content.arenas.length || !content.bosses.length) {
-      console.log('No end game arenas or bosses found in the database.');
-      return res.status(404).json({ message: 'No end game content available at this moment.' });
-    }
-    res.json(content);
-  } catch (error) {
-    console.error('Error loading end-game content:', error.message, error.stack);
-    res.status(500).send('Failed to load end-game content');
-  }
-});
-
 // Route to level up a teddy
 router.post('/api/progress/level-up', isAuthenticated, async (req, res) => {
-    const { teddyId, experiencePoints } = req.body;
-    if (!teddyId || experiencePoints === undefined) {
-        return res.status(400).json({ message: "Teddy ID and experience points are required." });
-    }
+  const { teddyId, experiencePoints } = req.body;
+  if (!teddyId || experiencePoints === undefined) {
+    return res.status(400).json({ message: "Teddy ID and experience points are required." });
+  }
 
-    try {
-        const updatedTeddy = await levelUpTeddy(teddyId, experiencePoints);
-        res.status(200).json({ message: 'Teddy leveled up successfully', teddy: updatedTeddy });
-    } catch (error) {
-        console.error('Error leveling up teddy:', error.message, error.stack);
-        res.status(500).json({ message: error.message });
-    }
+  try {
+    const updatedTeddy = await levelUpTeddy(teddyId, experiencePoints);
+    res.status(200).json({ message: 'Teddy leveled up successfully', teddy: updatedTeddy });
+  } catch (error) {
+    console.error('Error leveling up teddy:', error.message, error.stack);
+    res.status(500).json({ message: error.message });
+  }
 });
 
 module.exports = router;

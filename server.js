@@ -4,15 +4,16 @@ const mongoose = require("mongoose");
 const express = require("express");
 const session = require("express-session");
 const MongoStore = require('connect-mongo');
-const authRoutes = require("./routes/authRoutes");
+const authRoutes = require("./routes/authRoutes"); // Restored the original path to authRoutes
 const gameRoutes = require('./routes/gameRoutes'); // Include game routes
 const teamRoutes = require('./routes/teamRoutes'); // Include team management routes
 const marketRoutes = require('./routes/marketRoutes'); // Include marketplace routes
 const challengeRoutes = require('./routes/challengeRoutes'); // Include challenge routes
-const { isAdmin } = require('./middleware/authMiddleware'); // Include isAdmin middleware
+const apiGameRoutes = require('./routes/api/gameRoutes'); // Include API game routes
+const Teddy = require('./models/Teddy'); // Import Teddy model for stats aggregation
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000; // INPUT_REQUIRED {Set the desired port number or leave as default}
 
 // Middleware to parse request bodies
 app.use(express.urlencoded({ extended: true }));
@@ -23,13 +24,12 @@ app.set("view engine", "ejs");
 
 // Serve static files
 app.use(express.static("public"));
-app.use('/assets', express.static('public/assets')); // Serve assets for game interactions
 
 let server;
 
 // Database connection
 mongoose
-  .connect(process.env.DATABASE_URL)
+  .connect(process.env.DATABASE_URL) // INPUT_REQUIRED {Set your MongoDB connection string in the .env file}
   .then(() => {
     console.log("Database connected successfully");
     // Start the server after successful database connection
@@ -46,7 +46,7 @@ mongoose
 // Session configuration with connect-mongo
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET, // INPUT_REQUIRED {Set your session secret in the .env file}
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ 
@@ -84,6 +84,12 @@ process.on('SIGINT', () => {
   });
 });
 
+// Root route to render index.ejs
+app.get('/', (req, res) => {
+  console.log("Rendering the home page.");
+  res.render('index', { user: req.session.user });
+});
+
 // Authentication Routes
 app.use(authRoutes);
 
@@ -99,38 +105,35 @@ app.use(marketRoutes);
 // Challenge Routes
 app.use('/challenges', challengeRoutes);
 
-// Route to render the feedback dashboard
-app.get('/feedback-summary', isAdmin, (req, res) => {
-    console.log("Rendering the feedback summary dashboard.");
-    res.render('feedbackDashboard', (err, html) => {
-      if (err) {
-        console.error(`Error rendering feedback summary dashboard: ${err.message}`);
-        console.error(err.stack);
-        res.status(500).send("Error rendering feedback summary dashboard.");
-      } else {
-        res.send(html);
-      }
-    });
-});
+// API Game Routes
+app.use('/api/game', apiGameRoutes);
 
-// Root path response
-app.get("/", (req, res) => {
-  console.log("Rendering the index page."); // Log the rendering action
-  res.render("index", (err, html) => {
-    if (err) {
-      console.error(`Error rendering index page: ${err.message}`);
-      console.error(err.stack);
-      res.status(500).send("Error rendering page.");
-    } else {
-      res.send(html);
-    }
-  });
+// Define a new API endpoint for fetching latest teddy stats
+app.get("/api/game/latest-teddy-stats", async (req, res) => {
+  try {
+    console.log("Fetching latest teddy stats.");
+    const stats = await Teddy.aggregate([
+      { $group: { _id: null, totalHealth: { $sum: "$health" }, averageDamage: { $avg: "$attackDamage" } } }
+    ]);
+    res.json(stats);
+  } catch (error) {
+    console.error('Failed to fetch teddy stats:', error);
+    res.status(500).json({ message: 'Failed to fetch teddy stats' });
+  }
 });
 
 // If no routes handled the request, it's a 404
 app.use((req, res, next) => {
-  console.log("Page not found.");
-  res.status(404).send("Page not found.");
+  console.log(`Requested route not found: ${req.originalUrl}`); // Log the 404 error with the requested URL
+  res.status(404).render('404', (err, html) => { // Render a dedicated 404 page
+    if (err) {
+      console.error(`Error rendering 404 page: ${err.message}`);
+      console.error(err.stack);
+      res.status(500).send("Error rendering 404 page.");
+    } else {
+      res.send(html);
+    }
+  });
 });
 
 // Error handling

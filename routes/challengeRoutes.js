@@ -55,4 +55,17 @@ router.post('/complete', async (req, res) => {
     }
 });
 
+// Route to retrieve all challenges
+router.get('/', async (req, res) => {
+    try {
+        const challenges = await Challenge.find({});
+        const user = req.session.user; // Assuming user session is managed and user info is stored in session
+        console.log('Retrieved all challenges');
+        res.render('challenges', { challenges, user }); // Pass user to the view
+    } catch (error) {
+        console.error('Error retrieving challenges:', error.message, error.stack);
+        res.status(500).send('Failed to retrieve challenges');
+    }
+});
+
 module.exports = router;
