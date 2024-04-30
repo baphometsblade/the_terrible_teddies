@@ -1,18 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const Event = require('../models/Event'); // Corrected path to match the project's directory structure
-const logger = require('../config/loggingConfig');
+const Event = require('../../models/Event'); // Corrected path to match the project's directory structure
+const logger = require('../../config/loggingConfig'); // Corrected path to loggingConfig
+const Boss = require('../../models/Boss'); // Ensure Boss model is required for boss fight logic
+const Teddy = require('../../models/Teddy'); // Ensure Teddy model is required for player attack calculation
 
 // Route to fetch and return a list of available special events from the database
 router.get('/events', async (req, res) => {
   try {
-    const events = await Event.find({ isActive: true });
+    const now = new Date();
+    const events = await Event.find({ isActive: true, startDate: { $lte: now }, endDate: { $gte: now } });
     if (events.length === 0) {
       return res.status(404).json({ message: 'No events found' });
     }
     res.json(events);
   } catch (error) {
-    logger.error('Failed to fetch events:', error.message + ' ' + error.stack);
+    logger.error('Failed to fetch events: %s %s', error.message, error.stack);
     res.status(500).json({ message: 'Failed to fetch events', error: error.message });
   }
 });
@@ -37,7 +40,7 @@ router.get('/boss-fight', async (req, res) => {
       res.json({ victory: false, message: `You were defeated by ${boss.name}...` });
     }
   } catch (error) {
-    logger.error('Error initiating boss fight:', error.message + ' ' + error.stack);
+    logger.error('Error initiating boss fight: %s %s', error.message, error.stack);
     res.status(500).json({ message: 'Error initiating boss fight', error: error.message });
   }
 });
