@@ -82,6 +82,21 @@ const teddySchema = new mongoose.Schema({
     required: [true, 'A teddy must have an adaptability rating'],
     min: [1, 'Adaptability must be at least 1'],
     max: [100, 'Adaptability cannot exceed 100']
+  },
+  experience: {
+    type: Number,
+    default: 0,
+    min: [0, 'Experience cannot be negative']
+  },
+  level: {
+    type: Number,
+    default: 1,
+    min: [1, 'Level must be at least 1']
+  },
+  imageUrl: {
+    type: String,
+    trim: true,
+    default: ''
   }
 }, {
   timestamps: true

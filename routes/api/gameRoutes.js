@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { isAuthenticated } = require('../../middleware/authMiddleware');
 const { initiateBattle, executeTurn, determineBattleOutcome, loadTeddiesByIds, saveTeddyProgress, levelUpTeddy } = require('../../gameLogic');
-const Teddy = require('../../models/Teddy');
+const { loadEndGameContent } = require('../../services/endGameService'); // Corrected the path to endGameService
+const Teddy = require('../../models/Teddy'); // Corrected the path to Teddy model
 
 // Route to start a new game session
 router.post('/game/session', isAuthenticated, (req, res) => {
