@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { isAuthenticated } = require('../../middleware/authMiddleware');
-const { initiateBattle, executeTurn, determineBattleOutcome, loadTeddiesByIds, saveTeddyProgress, levelUpTeddy } = require('../../gameLogic');
+const { initiateBattle, executeTurn, determineBattleOutcome, loadTeddiesByIds, saveTeddyProgress, levelUpTeddy, initiateBossFight } = require('../../gameLogic');
 const { loadEndGameContent } = require('../../services/endGameService'); // Corrected the path to endGameService
 const Teddy = require('../../models/Teddy'); // Corrected the path to Teddy model
 
@@ -160,6 +160,29 @@ router.post('/api/progress/level-up', isAuthenticated, async (req, res) => {
   } catch (error) {
     console.error('Error leveling up teddy:', error.message, error.stack);
     res.status(500).json({ message: error.message });
+  }
+});
+
+// Route to fetch and return a list of available special events
+router.get('/api/events', isAuthenticated, async (req, res) => {
+  try {
+    const events = await loadEndGameContent(); // Assuming this function is already implemented
+    res.json(events);
+  } catch (error) {
+    console.error('Error loading end-game content:', error.message, error.stack);
+    res.status(500).send('Error loading end-game content');
+  }
+});
+
+// Route to initiate a boss fight
+router.post('/api/boss-fight', isAuthenticated, async (req, res) => {
+  const { playerId, bossId } = req.body;
+  try {
+    const result = await initiateBossFight(playerId, bossId);
+    res.json(result);
+  } catch (error) {
+    console.error('Error initiating boss fight:', error.message, error.stack);
+    res.status(500).send('Error initiating boss fight');
   }
 });
 

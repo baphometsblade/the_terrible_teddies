@@ -10,6 +10,7 @@ const teamRoutes = require('./routes/teamRoutes'); // Include team management ro
 const marketRoutes = require('./routes/marketRoutes'); // Include marketplace routes
 const challengeRoutes = require('./routes/challengeRoutes'); // Include challenge routes
 const apiGameRoutes = require('./routes/api/gameRoutes'); // Include API game routes
+const eventRoutes = require('./routes/api/eventRoutes'); // Include API event routes
 const Teddy = require('./models/Teddy'); // Import Teddy model for stats aggregation
 
 const app = express();
@@ -108,19 +109,8 @@ app.use('/challenges', challengeRoutes);
 // API Game Routes
 app.use('/api/game', apiGameRoutes);
 
-// Define a new API endpoint for fetching latest teddy stats
-app.get("/api/game/latest-teddy-stats", async (req, res) => {
-  try {
-    console.log("Fetching latest teddy stats.");
-    const stats = await Teddy.aggregate([
-      { $group: { _id: null, totalHealth: { $sum: "$health" }, averageDamage: { $avg: "$attackDamage" } } }
-    ]);
-    res.json(stats);
-  } catch (error) {
-    console.error('Failed to fetch teddy stats:', error);
-    res.status(500).json({ message: 'Failed to fetch teddy stats' });
-  }
-});
+// API Event Routes
+app.use('/api', eventRoutes); // Mount the event routes
 
 // If no routes handled the request, it's a 404
 app.use((req, res, next) => {

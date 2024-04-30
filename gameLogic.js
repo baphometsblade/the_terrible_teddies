@@ -1,5 +1,6 @@
 // gameLogic.js
 const Teddy = require('./models/Teddy');
+const Boss = require('./models/Boss');
 const logger = require('./config/loggingConfig');
 
 async function levelUpTeddy(teddyId, experiencePoints) {
@@ -29,6 +30,39 @@ async function levelUpTeddy(teddyId, experiencePoints) {
   }
 }
 
+// Function to initiate a boss fight
+async function initiateBossFight(playerId, bossId) {
+  try {
+    const boss = await Boss.findById(bossId).populate('arena');
+    if (!boss) {
+      throw new Error('Boss not found');
+    }
+
+    // Simplified fight logic, real implementation would be more complex
+    const playerAttack = await Promise.all(boss.teddies.map(async (teddyId) => {
+      const teddy = await Teddy.findById(teddyId);
+      if (!teddy) {
+        throw new Error(`Teddy with ID ${teddyId} not found`);
+      }
+      return teddy.attackDamage;
+    })).then(damages => damages.reduce((acc, damage) => acc + damage, 0));
+
+    if (playerAttack > boss.health) {
+      // Player wins
+      logger.info(`Boss ${boss.name} defeated!`);
+      return { victory: true, message: `You defeated ${boss.name}!` };
+    } else {
+      // Boss wins
+      logger.info(`Boss ${boss.name} stands victorious...`);
+      return { victory: false, message: `You were defeated by ${boss.name}...` };
+    }
+  } catch (error) {
+    logger.error('Error initiating boss fight:', error.message + ' ' + error.stack);
+    throw error;
+  }
+}
+
 module.exports = {
-  levelUpTeddy
+  levelUpTeddy,
+  initiateBossFight
 };
