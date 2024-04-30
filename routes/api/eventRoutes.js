@@ -1,15 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const Arena = require('../../models/Arena');
-const Boss = require('../../models/Boss');
-const Teddy = require('../../models/Teddy');
-const Event = require('../../models/Event'); // Assuming Event model exists for managing event data
-const logger = require('../../config/loggingConfig');
+const Event = require('../models/Event'); // Corrected path to match the project's directory structure
+const logger = require('../config/loggingConfig');
 
 // Route to fetch and return a list of available special events from the database
 router.get('/events', async (req, res) => {
   try {
-    const events = await Event.find({ isActive: true }); // Fetch active events from the database
+    const events = await Event.find({ isActive: true });
     if (events.length === 0) {
       return res.status(404).json({ message: 'No events found' });
     }
