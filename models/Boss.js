@@ -9,4 +9,5 @@ const bossSchema = new Schema({
   arena: { type: Schema.Types.ObjectId, ref: 'Arena' }
 });
 
-module.exports = mongoose.model('Boss', bossSchema);
+const Boss = mongoose.model('Boss', bossSchema);
+export default Boss;

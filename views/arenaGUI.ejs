@@ -1,37 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <% include partials/_head.ejs %>
-  <title>Arena GUI</title>
+  <link rel="stylesheet" href="/css/arenaStyle.css">
+  <title>Arena Challenges</title>
 </head>
 <body>
   <% include partials/_nav.ejs %>
-  <h1>End Game Challenges</h1>
-  <div id="endGameContent">
-    <h2>Arenas</h2>
-    <ul>
-      <% arenas.forEach(function(arena) { %>
-        <li>
-          <h3><%= arena.name %></h3>
-          <p>Difficulty: <%= arena.difficulty %></p>
-          <p>Environment: <%= arena.environment %></p>
-        </li>
-      <% }) %>
-    </ul>
-    <h2>Bosses</h2>
-    <ul>
-      <% bosses.forEach(function(boss) { %>
-        <li>
-          <h3><%= boss.name %></h3>
-          <p>Health: <%= boss.health %></p>
-          <p>Attack Damage: <%= boss.attackDamage %></p>
-          <p>Special Move: <%= boss.specialMove %></p>
-          <p>Arena: <%= boss.arena.name %></p>
-        </li>
-      <% }) %>
-    </ul>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">End Game Challenges</h1>
+    <div class="arena-section">
+      <h2>Arenas</h2>
+      <div class="row">
+        <% arenas.forEach(function(arena) { %>
+          <div class="col-md-4 mb-4">
+            <div class="card">
+              <div class="card-body">
+                <h3 class="card-title"><%= arena.name %></h3>
+                <p>Difficulty: <%= arena.difficulty %></p>
+                <p>Environment: <%= arena.environment %></p>
+                <% if(arena.imageUrl) { %>
+                  <img src="<%= arena.imageUrl %>" alt="<%= arena.name %>" class="img-fluid">
+                <% } %>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+    <div class="bosses-section mt-5">
+      <h2>Bosses</h2>
+      <div class="row">
+        <% bosses.forEach(function(boss) { %>
+          <div class="col-md-4 mb-4">
+            <div class="card">
+              <div class="card-body">
+                <h3 class="card-title"><%= boss.name %></h3>
+                <p>Health: <%= boss.health %></p>
+                <p>Attack Damage: <%= boss.attackDamage %></p>
+                <p>Special Move: <%= boss.specialMove %></p>
+                <p>Arena: <%= boss.arena.name %></p>
+                <% if(boss.imageUrl) { %>
+                  <img src="<%= boss.imageUrl %>" alt="<%= boss.name %>" class="img-fluid">
+                <% } %>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
   </div>
   <% include partials/_footer.ejs %>
-  <script src="/js/endGame.js"></script>
 </body>
 </html>
