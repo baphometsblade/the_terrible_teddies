@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { isAuthenticated } = require('../../middleware/authMiddleware');
 const { initiateBattle, executeTurn, determineBattleOutcome, loadTeddiesByIds, saveTeddyProgress, levelUpTeddy, initiateBossFight } = require('../../gameLogic');
-const { loadEndGameContent } = require('../../services/endGameService'); // Corrected the path to endGameService
+const { loadEndGameContent, loadActiveEvents } = require('../../services/endGameService'); // Corrected the path to endGameService and added loadActiveEvents
 const Teddy = require('../../models/Teddy'); // Corrected the path to Teddy model
+const Arena = require('../../models/Arena'); // Added to access Arena model
+const Boss = require('../../models/Boss'); // Added to access Boss model
 
 // Route to start a new game session
 router.post('/game/session', isAuthenticated, (req, res) => {
@@ -166,11 +168,11 @@ router.post('/api/progress/level-up', isAuthenticated, async (req, res) => {
 // Route to fetch and return a list of available special events
 router.get('/api/events', isAuthenticated, async (req, res) => {
   try {
-    const events = await loadEndGameContent(); // Assuming this function is already implemented
+    const events = await loadActiveEvents(); // Updated to use loadActiveEvents
     res.json(events);
   } catch (error) {
-    console.error('Error loading end-game content:', error.message, error.stack);
-    res.status(500).send('Error loading end-game content');
+    console.error('Error loading active events:', error.message, error.stack);
+    res.status(500).send('Error loading active events');
   }
 });
 
@@ -183,6 +185,18 @@ router.post('/api/boss-fight', isAuthenticated, async (req, res) => {
   } catch (error) {
     console.error('Error initiating boss fight:', error.message, error.stack);
     res.status(500).send('Error initiating boss fight');
+  }
+});
+
+// New route to render the arena GUI for debugging
+router.get('/api/arena-gui', isAuthenticated, async (req, res) => {
+  try {
+    const arenas = await Arena.find({});
+    const bosses = await Boss.find({}).populate('arena');
+    res.render('arenaGUI', { arenas: arenas, bosses: bosses, user: req.session });
+  } catch (error) {
+    console.error('Error loading arena GUI:', error.message, error.stack);
+    res.status(500).send('Error loading arena GUI');
   }
 });
 

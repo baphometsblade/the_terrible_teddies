@@ -1,6 +1,8 @@
 // gameLogic.js
 const Teddy = require('./models/Teddy');
 const Boss = require('./models/Boss');
+const Player = require('./models/Player');
+const Event = require('./models/Event');
 const logger = require('./config/loggingConfig');
 
 async function levelUpTeddy(teddyId, experiencePoints) {
@@ -30,7 +32,6 @@ async function levelUpTeddy(teddyId, experiencePoints) {
   }
 }
 
-// Function to initiate a boss fight
 async function initiateBossFight(playerId, bossId) {
   try {
     const boss = await Boss.findById(bossId).populate('arena');
@@ -62,7 +63,39 @@ async function initiateBossFight(playerId, bossId) {
   }
 }
 
+async function loadEndGameContent() {
+  try {
+    const arenas = await Arena.find({ isEndGame: true });
+    const bosses = await Boss.find().populate('arena');
+    if (!arenas.length || !bosses.length) {
+      logger.info('No end game arenas or bosses found in the database.');
+      return { arenas: [], bosses: [] };
+    }
+    return { arenas, bosses };
+  } catch (error) {
+    logger.error('Error loading end-game content:', error.message + ' ' + error.stack);
+    throw error;
+  }
+}
+
+async function loadActiveEvents() {
+  try {
+    const now = new Date();
+    const events = await Event.find({ isActive: true, startDate: { $lte: now }, endDate: { $gte: now } });
+    if (!events.length) {
+      logger.info('No active events found.');
+      return [];
+    }
+    return events;
+  } catch (error) {
+    logger.error('Error loading active events:', error.message + ' ' + error.stack);
+    throw error;
+  }
+}
+
 module.exports = {
   levelUpTeddy,
-  initiateBossFight
+  initiateBossFight,
+  loadEndGameContent,
+  loadActiveEvents
 };

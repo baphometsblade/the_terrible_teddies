@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <% include partials/_head.ejs %>
+  <title>Arena GUI</title>
+</head>
+<body>
+  <% include partials/_nav.ejs %>
+  <h1>End Game Challenges</h1>
+  <div id="endGameContent">
+    <h2>Arenas</h2>
+    <ul>
+      <% arenas.forEach(function(arena) { %>
+        <li>
+          <h3><%= arena.name %></h3>
+          <p>Difficulty: <%= arena.difficulty %></p>
+          <p>Environment: <%= arena.environment %></p>
+        </li>
+      <% }) %>
+    </ul>
+    <h2>Bosses</h2>
+    <ul>
+      <% bosses.forEach(function(boss) { %>
+        <li>
+          <h3><%= boss.name %></h3>
+          <p>Health: <%= boss.health %></p>
+          <p>Attack Damage: <%= boss.attackDamage %></p>
+          <p>Special Move: <%= boss.specialMove %></p>
+          <p>Arena: <%= boss.arena.name %></p>
+        </li>
+      <% }) %>
+    </ul>
+  </div>
+  <% include partials/_footer.ejs %>
+  <script src="/js/endGame.js"></script>
+</body>
+</html>
