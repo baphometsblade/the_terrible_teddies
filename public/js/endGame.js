@@ -1,15 +1,17 @@
-document.addEventListener('DOMContentLoaded', function() {
-  console.log("End Game JS loaded. Implement dynamic content loading or animations as needed.");
+document.addEventListener('DOMContentLoaded', function () {
+  console.log(
+    'End Game JS loaded. Implement dynamic content loading or animations as needed.'
+  );
 
   // Fetch arenas and bosses data from the server
   fetch('/api/end-game-data') // Assuming this is the correct endpoint URL for fetching end-game data
-    .then(response => {
+    .then((response) => {
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
       return response.json();
     })
-    .then(data => {
+    .then((data) => {
       console.log('Successfully fetched end game data:', data);
       // Assuming data contains { arenas: [], bosses: [] }
       const arenas = data.arenas;
@@ -19,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const arenasSection = document.querySelector('.arena-section .row');
       const bossesSection = document.querySelector('.bosses-section .row');
 
-      arenas.forEach(arena => {
+      arenas.forEach((arena) => {
         const colDiv = document.createElement('div');
         colDiv.className = 'col-md-4 mb-4';
         const cardDiv = document.createElement('div');
@@ -36,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
         arenasSection.appendChild(colDiv);
       });
 
-      bosses.forEach(boss => {
+      bosses.forEach((boss) => {
         const colDiv = document.createElement('div');
         colDiv.className = 'col-md-4 mb-4';
         const cardDiv = document.createElement('div');
@@ -55,7 +57,11 @@ document.addEventListener('DOMContentLoaded', function() {
         bossesSection.appendChild(colDiv);
       });
     })
-    .catch(error => {
-      console.error('Error fetching end game data:', error.message, error.stack);
+    .catch((error) => {
+      console.error(
+        'Error fetching end game data:',
+        error.message,
+        error.stack
+      );
     });
 });
