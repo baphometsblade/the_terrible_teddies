@@ -1,0 +1,70 @@
+/* Arena GUI Styles */
+
+/* General Layout */
+.arena-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #f0f0f0;
+}
+
+/* Header */
+.arena-header {
+    font-size: 2rem;
+    color: #333;
+    margin: 20px 0;
+}
+
+/* Arena Cards */
+.arena-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 300px;
+    margin: 10px;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.arena-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Arena Details */
+.arena-details {
+    font-size: 1rem;
+    color: #666;
+}
+
+/* Buttons */
+.arena-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.arena-button:hover {
+    background-color: #0056b3;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .arena-container {
+        flex-direction: column;
+    }
+
+    .arena-card {
+        width: 90%;
+    }
+}
