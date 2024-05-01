@@ -9,4 +9,4 @@ const arenaSchema = new mongoose.Schema({
 
 const Arena = mongoose.model('Arena', arenaSchema);
 
-export default Arena;
+module.exports = Arena;

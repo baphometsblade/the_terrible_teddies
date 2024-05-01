@@ -79,3 +79,42 @@
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+/* Enhancements for the menus interface */
+.navbar {
+  background-color: #007bff !important;
+}
+
+.navbar-light .navbar-nav .nav-link {
+  color: white !important;
+}
+
+.navbar-light .navbar-brand {
+  color: #fff !important;
+}
+
+.btn-outline-light {
+  margin-left: 10px;
+}
+
+.dropdown-menu {
+  display: none; /* Ensure dropdown is hidden by default */
+  position: absolute; /* Positioning relative to the parent */
+  background-color: #007bff;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1; /* Ensure dropdown is above other content */
+}
+
+.dropdown-menu.show {
+  display: block; /* Show dropdown when .show class is added */
+}
+
+.dropdown-item {
+  color: #fff !important;
+}
+
+.dropdown-item:hover {
+  background-color: #0056b3 !important;
+}
+
+/* JavaScript is required to toggle the .show class on the .dropdown-menu when the dropdown button is clicked. */

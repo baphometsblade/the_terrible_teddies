@@ -21,6 +21,8 @@
                 <p>Environment: <%= arena.environment %></p>
                 <% if(arena.imageUrl) { %>
                   <img src="<%= arena.imageUrl %>" alt="<%= arena.name %>" class="img-fluid">
+                <% } else { %>
+                  <img src="/assets/images/default.jpg" alt="Default Image" class="img-fluid"> <!-- Default image when specific asset is not found -->
                 <% } %>
               </div>
             </div>
@@ -42,6 +44,8 @@
                 <p>Arena: <%= boss.arena.name %></p>
                 <% if(boss.imageUrl) { %>
                   <img src="<%= boss.imageUrl %>" alt="<%= boss.name %>" class="img-fluid">
+                <% } else { %>
+                  <img src="/assets/images/default.jpg" alt="Default Image" class="img-fluid"> <!-- Default image when specific asset is not found -->
                 <% } %>
               </div>
             </div>
@@ -51,5 +55,6 @@
     </div>
   </div>
   <% include partials/_footer.ejs %>
+  <script src="/js/endGame.js"></script>
 </body>
 </html>

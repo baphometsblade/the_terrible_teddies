@@ -17,3 +17,45 @@
 .card-body h3 {
   color: #007bff;
 }
+
+/* Enhanced styles for the arena GUI */
+.arena-section, .bosses-section {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  margin-bottom: 30px;
+}
+
+.card-body {
+  background-color: #ffffff;
+  padding: 15px;
+  border-radius: 5px;
+  margin: 10px 0;
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.card img {
+  width: 100%;
+  height: auto;
+  margin-top: 15px;
+  border-radius: 5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .arena-section, .bosses-section {
+    padding: 10px;
+  }
+
+  .card-body {
+    padding: 10px;
+  }
+
+  .card-title {
+    font-size: 18px;
+  }
+}

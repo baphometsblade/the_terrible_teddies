@@ -35,4 +35,25 @@ $(document).ready(function() {
 
         console.log(`Assets loaded for teddy ID: ${teddyId}`);
     });
+
+    // Enable dropdowns in Bootstrap
+    $('.dropdown-toggle').dropdown();
+
+    // Fix for game options dropdown not working
+    $('.game-options-btn').on('click', function() {
+        $('.game-options-dropdown').toggleClass('is-active');
+        console.log('Game options dropdown toggled.');
+    });
+
+    // Ensure CSS for .game-options-dropdown.is-active makes it visible
+    // Note: This requires corresponding CSS rules to be added or verified in public/css/style.css
+
+    // Example modal interaction - Add this if a modal is needed
+    $('#exampleModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var recipient = button.data('whatever'); // Extract info from data-* attributes
+        var modal = $(this);
+        modal.find('.modal-title').text('New message to ' + recipient);
+        modal.find('.modal-body input').val(recipient);
+    });
 });

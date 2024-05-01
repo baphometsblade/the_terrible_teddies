@@ -200,4 +200,15 @@ router.get('/api/arena-gui', isAuthenticated, async (req, res) => {
   }
 });
 
+// New route to fetch the latest teddy stats
+router.get('/api/game/latest-teddy-stats', isAuthenticated, async (req, res) => {
+  try {
+    const teddies = await Teddy.find({}).sort({ createdAt: -1 }).limit(10); // Fetch the latest 10 teddies
+    res.json(teddies);
+  } catch (error) {
+    console.error('Error fetching latest teddy stats:', error.message, error.stack);
+    res.status(500).send('Error fetching latest teddy stats');
+  }
+});
+
 module.exports = router;

@@ -1,5 +1,6 @@
-document.addEventListener('DOMContentLoaded', function() {
+import { fetchTeddyData } from './utils/fetchData';
 
+document.addEventListener('DOMContentLoaded', function() {
     const updateStatsUI = (teddyData) => {
         const teddyStatsContainer = document.getElementById('teddy-stats');
         if (!teddyStatsContainer) {
@@ -15,13 +16,9 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     };
 
-    const fetchTeddyData = async () => {
+    const fetchAndUpdateTeddyData = async () => {
         try {
-            const response = await fetch('/api/game/latest-teddy-stats');
-            if (!response.ok) {
-                throw new Error(`Failed to fetch teddy data: ${response.status} ${response.statusText}`);
-            }
-            const teddyData = await response.json();
+            const teddyData = await fetchTeddyData('/api/game/latest-teddy-stats');
             updateStatsUI(teddyData);
         } catch (error) {
             console.error('Error fetching teddy data:', error.message);
@@ -29,6 +26,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    fetchTeddyData();
-    setInterval(fetchTeddyData, 5000); // Fetch latest data every 5 seconds
+    fetchAndUpdateTeddyData();
+    setInterval(fetchAndUpdateTeddyData, 5000); // Fetch latest data every 5 seconds
 });

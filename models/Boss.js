@@ -10,4 +10,4 @@ const bossSchema = new Schema({
 });
 
 const Boss = mongoose.model('Boss', bossSchema);
-export default Boss;
+module.exports = Boss;

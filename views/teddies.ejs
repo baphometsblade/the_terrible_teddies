@@ -18,7 +18,7 @@
         <% teddies.forEach(function(teddy) { %>
           <div class="col-md-4">
             <div class="card mb-4 shadow-sm teddy-card" data-teddy-id="<%= teddy._id %>">
-              <img id="img-<%= teddy._id %>" src="/assets/images/<%= teddy._id %>.jpg" class="card-img-top" alt="<%= teddy.name %>" onerror="this.onerror=null;this.src='/images/default.jpg';">
+              <img id="img-<%= teddy._id %>" src="<%= teddy.imageUrl %>" class="card-img-top" alt="<%= teddy.name %>" onerror="this.onerror=null;this.src='/assets/images/default.jpg';">
               <div class="card-body">
                 <h5 class="card-title"><%= teddy.name %></h5>
                 <p class="card-text"><%= teddy.description %></p>
@@ -48,5 +48,6 @@
     <%- include('partials/_debugLinks.ejs') %>
     <script src="/js/battleLogic.js"></script>
     <script src="/js/teddyStats.js"></script>
+    <script src="/js/teddyInteraction.js"></script>
   </body>
 </html>

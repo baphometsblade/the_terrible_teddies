@@ -96,7 +96,7 @@ const teddySchema = new mongoose.Schema({
   imageUrl: {
     type: String,
     trim: true,
-    default: ''
+    default: '/assets/images/default.jpg' // Ensure this default image exists in the public/assets/images directory
   }
 }, {
   timestamps: true
