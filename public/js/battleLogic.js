@@ -1,29 +1,26 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const teddiesCollection = document.getElementById("teddies-collection");
-  const selectedTeddyIdsInput = document.getElementById("selectedTeddyIds");
+import { addEventListenerToSelector } from './utils/eventListeners';
 
-  teddiesCollection.addEventListener("click", function (event) {
-    if (event.target.classList.contains("select-teddy")) {
-      const teddyId = event.target.dataset.teddyId;
-      const teddyCard = event.target.closest(".teddy-card");
-      toggleTeddySelection(teddyId, teddyCard);
+document.addEventListener('DOMContentLoaded', function () {
+  addEventListenerToSelector('.select-teddy', 'click', function () {
+    const teddyId = this.dataset.teddyId;
+    if (!teddyId) {
+      console.error('Error: Teddy ID is missing from the dataset.');
+      return;
     }
+    const teddyCard = this.closest('.teddy-card');
+    if (!teddyCard) {
+      console.error(
+        'Error: .teddy-card element not found in the DOM for teddy ID:',
+        teddyId,
+      );
+      return;
+    }
+    teddyCard.classList.toggle('selected-teddy');
+    console.log(`Toggle selection for teddy ID: ${teddyId}`);
   });
 
-  function toggleTeddySelection(teddyId, teddyCard) {
-    let selectedIds = selectedTeddyIdsInput.value
-      ? selectedTeddyIdsInput.value.split(",")
-      : [];
-    if (selectedIds.includes(teddyId)) {
-      selectedIds = selectedIds.filter((id) => id !== teddyId);
-      teddyCard.classList.toggle("selected");
-      teddyCard.classList.toggle("selected-teddy"); // Toggle visual indication for selection
-    } else {
-      selectedIds.push(teddyId);
-      teddyCard.classList.toggle("selected");
-      teddyCard.classList.toggle("selected-teddy"); // Toggle visual indication for selection
-    }
-    selectedTeddyIdsInput.value = selectedIds.join(",");
-    console.log(`Updated selected teddies: ${selectedTeddyIdsInput.value}`);
+  // Error handling for missing teddy data or elements not found
+  if (!document.querySelector('.select-teddy')) {
+    console.error('Error: .select-teddy elements not found in the DOM');
   }
 });

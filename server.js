@@ -4,7 +4,8 @@ const mongoose = require("mongoose");
 const express = require("express");
 const session = require("express-session");
 const MongoStore = require('connect-mongo');
-const authRoutes = require("./routes/authRoutes"); // Restored the original path to authRoutes
+// Corrected the path to authRoutes if it was incorrect or restored if it was missing
+const authRoutes = require("./routes/authRoutes"); 
 const gameRoutes = require('./routes/gameRoutes'); // Include game routes
 const teamRoutes = require('./routes/teamRoutes'); // Include team management routes
 const marketRoutes = require('./routes/marketRoutes'); // Include marketplace routes

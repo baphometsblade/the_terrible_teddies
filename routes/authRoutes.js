@@ -1,65 +1,55 @@
 const express = require('express');
-const User = require('../models/User');
-const bcrypt = require('bcrypt');
 const router = express.Router();
+const bcrypt = require('bcrypt');
+const User = require('../models/User');
+const { ensureAuthenticated } = require('../middleware/authMiddleware');
 
-router.get('/auth/register', (req, res) => {
-  res.render('register');
-});
-
-router.post('/auth/register', async (req, res) => {
+// Register route
+router.post('/register', async (req, res) => {
   try {
     const { username, password } = req.body;
-    // User model will automatically hash the password using bcrypt
-    const newUser = await User.create({ username, password });
-    console.log(`New user registered: ${newUser.username}`);
-    res.redirect('/auth/login');
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ username, password: hashedPassword });
+    await newUser.save();
+    console.log('User registered successfully');
+    res.redirect('/login');
   } catch (error) {
-    console.error('Registration error:', error.message, error.stack);
-    if (error.code === 11000) {
-      // Duplicate key error code
-      res.status(409).send('Username already exists.');
-    } else {
-      res.status(500).send('An error occurred during registration.');
-    }
+    console.error('Error registering user:', error.message);
+    console.error(error.stack);
+    res.status(500).send('Error registering user');
   }
 });
 
-router.get('/auth/login', (req, res) => {
-  res.render('login');
-});
-
-router.post('/auth/login', async (req, res) => {
+// Login route
+router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     const user = await User.findOne({ username });
-    if (!user) {
-      console.log('Login attempt failed: User not found');
-      return res.status(400).send('User not found');
-    }
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (isMatch) {
+    if (user && await bcrypt.compare(password, user.password)) {
       req.session.userId = user._id;
-      console.log(`User logged in: ${user.username}`);
-      return res.redirect('/');
+      console.log('User logged in successfully');
+      res.redirect('/dashboard');
     } else {
-      console.log('Login attempt failed: Password is incorrect');
-      return res.status(400).send('Password is incorrect');
+      console.log('Login failed: Invalid username or password');
+      res.redirect('/login');
     }
   } catch (error) {
-    console.error('Login error:', error.message, error.stack);
-    return res.status(500).send('An error occurred during login.');
+    console.error('Error logging in:', error.message);
+    console.error(error.stack);
+    res.status(500).send('Error logging in');
   }
 });
 
-router.get('/auth/logout', (req, res) => {
+// Logout route
+router.get('/logout', ensureAuthenticated, (req, res) => {
   req.session.destroy(err => {
     if (err) {
-      console.error('Error during session destruction:', err.message, err.stack);
+      console.error('Error logging out:', err.message);
+      console.error(err.stack);
       return res.status(500).send('Error logging out');
     }
     console.log('User logged out successfully');
-    res.redirect('/auth/login');
+    res.redirect('/login');
   });
 });
 
