@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Terrible Teddies</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Login to Terrible Teddies</h1>
+        <form action="/login" method="POST" id="loginForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+                <div class="error" id="usernameError"></div>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+                <div class="error" id="passwordError"></div>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <p>Don't have an account? <a href="/register">Register here</a>.</p>
+    </div>
+    <script src="/js/main.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            let validationFailed = false;
+
+            if (!username) {
+                document.getElementById('usernameError').textContent = 'Username is required';
+                validationFailed = true;
+            } else {
+                document.getElementById('usernameError').textContent = '';
+            }
+
+            if (!password) {
+                document.getElementById('passwordError').textContent = 'Password is required';
+                validationFailed = true;
+            } else {
+                document.getElementById('passwordError').textContent = '';
+            }
+
+            if (validationFailed) {
+                event.preventDefault(); // Prevent form submission
+            }
+        });
+
+        // Error handling for login feedback
+        const urlParams = new URLSearchParams(window.location.search);
+        const loginError = urlParams.get('error');
+        if (loginError) {
+            const container = document.querySelector('.container');
+            const errorMessage = document.createElement('p');
+            errorMessage.style.color = 'red';
+            errorMessage.textContent = 'Error: ' + loginError;
+            container.insertBefore(errorMessage, container.firstChild);
+            console.error('Login error:', loginError);
+        }
+    </script>
+</body>
+</html>

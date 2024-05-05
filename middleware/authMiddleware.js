@@ -1,5 +1,5 @@
 // Middleware to check if the user is authenticated
-const isAuthenticated = (req, res, next) => {
+const ensureAuthenticated = (req, res, next) => {
   if (req.session && req.session.userId) {
     console.log(`User session ID: ${req.session.userId} is authenticated`);
     next();
@@ -21,6 +21,6 @@ const isAdmin = (req, res, next) => {
 };
 
 module.exports = {
-  isAuthenticated,
+  ensureAuthenticated,
   isAdmin
 };

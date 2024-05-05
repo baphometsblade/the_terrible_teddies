@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Terrible Teddies</title>
+    <link rel="stylesheet" href="/css/style.css"> <!-- Ensure this path is correct for your project -->
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Terrible Teddies</h1>
+        <p>This is the home page of the Terrible Teddies game. Start your adventure with your teddy bear!</p>
+        <% if (user) { %>
+            <p>Hello, <%= user.username %>! Ready for your next battle?</p>
+            <a href="/dashboard">Go to Dashboard</a>
+        <% } else { %>
+            <p>You are not logged in. Please <a href="/login">login</a> or <a href="/register">register</a> to play.</p>
+        <% } %>
+    </div>
+    <script src="/js/main.js"></script> <!-- Ensure this path is correct for your project -->
+</body>
+</html>
