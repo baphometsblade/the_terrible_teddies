@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Start animation and sound
-            image.classList.add(`${teddyId}-animation`);
+            image.classList.add(`${teddyId.replace(/ /g, '-')}-animation`);
             audio.play().catch(error => {
                 console.error('Error playing audio:', error.message);
                 console.error(error.stack);

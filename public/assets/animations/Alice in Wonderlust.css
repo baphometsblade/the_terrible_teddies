@@ -1,10 +1,8 @@
+@keyframes rock-Alice in Wonderlust {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
 
-      @keyframes rock-Alice in Wonderlust {
-        0%, 100% { transform: rotate(-3deg); }
-        50% { transform: rotate(3deg); }
-      }
-
-      .Alice in Wonderlust-animation {
-        animation: rock-Alice in Wonderlust 1s infinite;
-      }
-      
+.Alice-in-Wonderlust-animation {
+  animation: rock-Alice in Wonderlust 1s infinite;
+}

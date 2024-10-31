@@ -42,3 +42,10 @@ async function generateTeddyImages() {
     console.log('MongoDB connection closed');
   }
 }
+
+function createImagesForTeddies() {
+  console.log('Creating images for teddies...');
+  generateTeddyImages();
+}
+
+createImagesForTeddies();

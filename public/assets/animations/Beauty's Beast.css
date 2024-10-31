@@ -1,10 +1,8 @@
+@keyframes rock-Beauty's Beast {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
 
-      @keyframes rock-Beauty's Beast {
-        0%, 100% { transform: rotate(-3deg); }
-        50% { transform: rotate(3deg); }
-      }
-
-      .Beauty's Beast-animation {
-        animation: rock-Beauty's Beast 1s infinite;
-      }
-      
+.Beautys-Beast-animation {
+  animation: rock-Beautys-Beast 1s infinite;
+}
