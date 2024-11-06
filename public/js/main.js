@@ -31,7 +31,7 @@ $(document).ready(function() {
         }
 
         // Start animation
-        $(`#img-${teddyId}`).addClass(`${teddyId}-animation`);
+        $(`#img-${teddyId}`).addClass(`${teddyId.replace(/ /g, '-')}-animation`);
 
         console.log(`Assets loaded for teddy ID: ${teddyId}`);
     });
