@@ -1,134 +1,143 @@
-// Load environment variables
-require("dotenv").config();
-const mongoose = require("mongoose");
-const express = require("express");
-const session = require("express-session");
+require('dotenv').config();
+
+const express = require('express');
+const session = require('express-session');
+const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
-const authRoutes = require("./routes/authRoutes"); // Restored the original path to authRoutes
-const gameRoutes = require('./routes/gameRoutes'); // Include game routes
-const teamRoutes = require('./routes/teamRoutes'); // Include team management routes
-const marketRoutes = require('./routes/marketRoutes'); // Include marketplace routes
-const challengeRoutes = require('./routes/challengeRoutes'); // Include challenge routes
-const apiGameRoutes = require('./routes/api/gameRoutes'); // Include API game routes
-const eventRoutes = require('./routes/api/eventRoutes'); // Include API event routes
-const Teddy = require('./models/Teddy'); // Import Teddy model for stats aggregation
 
-const app = express();
-const port = process.env.PORT || 3000; // INPUT_REQUIRED {Set the desired port number or leave as default}
+const authRoutes = require('./routes/authRoutes');
+const gameRoutes = require('./routes/gameRoutes');
+const teamRoutes = require('./routes/teamRoutes');
+const marketRoutes = require('./routes/marketRoutes');
+const challengeRoutes = require('./routes/challengeRoutes');
+const apiGameRoutes = require('./routes/api/gameRoutes');
+const eventRoutes = require('./routes/api/eventRoutes');
+const demoRoutes = require('./routes/demoRoutes');
 
-// Middleware to parse request bodies
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+const port = process.env.PORT || 3000;
+const hasDatabase = Boolean(process.env.DATABASE_URL);
+const demoMode = process.env.DEMO_MODE === 'true' || !hasDatabase;
 
-// Setting the templating engine to EJS
-app.set("view engine", "ejs");
+function createSessionStore() {
+  if (!hasDatabase || demoMode) {
+    console.warn('Using in-memory session store. Set DATABASE_URL for persistent production sessions.');
+    return undefined;
+  }
 
-// Serve static files
-app.use(express.static("public"));
+  return MongoStore.create({
+    mongoUrl: process.env.DATABASE_URL
+  });
+}
 
-let server;
+function createApp() {
+  const app = express();
 
-// Database connection
-mongoose
-  .connect(process.env.DATABASE_URL) // INPUT_REQUIRED {Set your MongoDB connection string in the .env file}
-  .then(() => {
-    console.log("Database connected successfully");
-    // Start the server after successful database connection
-    server = app.listen(port, () => {
-      console.log(`Server running at http://localhost:${port}`);
+  app.set('view engine', 'ejs');
+  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json());
+  app.use(express.static('public'));
+
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || 'terrible-teddies-local-dev-secret-change-me',
+      resave: false,
+      saveUninitialized: false,
+      store: createSessionStore(),
+      cookie: {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production' && process.env.FORCE_SECURE_COOKIES === 'true',
+        maxAge: 86400000
+      }
+    })
+  );
+
+  app.get('/health', (req, res) => {
+    res.json({
+      ok: true,
+      service: 'terrible-teddies',
+      demoMode,
+      databaseConfigured: hasDatabase
     });
-  })
-  .catch((err) => {
-    console.error(`Database connection error: ${err.message}`);
-    console.error(err.stack);
-    process.exit(1);
   });
 
-// Session configuration with connect-mongo
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET, // INPUT_REQUIRED {Set your session secret in the .env file}
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({ 
-      mongoUrl: process.env.DATABASE_URL
-    }),
-    cookie: { 
-      secure: process.env.NODE_ENV === 'production' && app.get('env') === 'production',
-      maxAge: 86400000 // 24 hours
-    }
-  }),
-);
+  app.get('/', (req, res) => {
+    res.render('index', { user: req.session.user, demoMode });
+  });
 
-// MongoDB event listeners
-mongoose.connection.on('connected', () => {
-  console.log('Mongoose default connection open');
-});
+  app.use(demoRoutes);
+  app.use(authRoutes);
+  app.use(gameRoutes);
+  app.use('/teams', teamRoutes);
+  app.use(marketRoutes);
+  app.use('/challenges', challengeRoutes);
+  app.use('/api/game', apiGameRoutes);
+  app.use('/api', eventRoutes);
 
-mongoose.connection.on('error', (err) => {
-  console.error(`Mongoose default connection error: ${err.message}`);
-  console.error(err.stack);
-});
+  app.use((req, res) => {
+    console.log(`Requested route not found: ${req.originalUrl}`);
+    res.status(404).render('404', (err, html) => {
+      if (err) {
+        console.error(`Error rendering 404 page: ${err.message}`);
+        res.status(404).send('Page not found.');
+        return;
+      }
+      res.send(html);
+    });
+  });
 
-mongoose.connection.on('disconnected', () => {
-  console.log('Mongoose default connection disconnected');
-});
+  app.use((err, req, res, next) => {
+    console.error(`Unhandled application error: ${err.message}`);
+    console.error(err.stack);
+    res.status(500).send('There was an error serving your request.');
+  });
 
-process.on('SIGINT', () => {
-  console.log('SIGINT signal received: closing HTTP server');
-  server.close(() => {
-    console.log('HTTP server closed');
-    mongoose.connection.close(() => {
-      console.log('Mongoose default connection disconnected through app termination');
+  return app;
+}
+
+async function connectDatabase() {
+  if (!hasDatabase || demoMode) {
+    console.warn('Skipping MongoDB connection. Demo mode is enabled.');
+    return false;
+  }
+
+  await mongoose.connect(process.env.DATABASE_URL);
+  console.log('Database connected successfully');
+  return true;
+}
+
+async function bootstrap() {
+  const app = createApp();
+  await connectDatabase();
+
+  const server = app.listen(port, () => {
+    console.log(`Terrible Teddies running at http://localhost:${port}`);
+    console.log(`Playable demo: http://localhost:${port}/play`);
+  });
+
+  process.on('SIGINT', async () => {
+    console.log('SIGINT signal received: closing HTTP server');
+    server.close(async () => {
+      if (mongoose.connection.readyState !== 0) {
+        await mongoose.connection.close();
+      }
       process.exit(0);
     });
   });
-});
 
-// Root route to render index.ejs
-app.get('/', (req, res) => {
-  console.log("Rendering the home page.");
-  res.render('index', { user: req.session.user });
-});
+  return server;
+}
 
-// Authentication Routes
-app.use(authRoutes);
-
-// Game Interaction Routes
-app.use(gameRoutes);
-
-// Team Management Routes
-app.use('/teams', teamRoutes);
-
-// Marketplace Routes
-app.use(marketRoutes);
-
-// Challenge Routes
-app.use('/challenges', challengeRoutes);
-
-// API Game Routes
-app.use('/api/game', apiGameRoutes);
-
-// API Event Routes
-app.use('/api', eventRoutes); // Mount the event routes
-
-// If no routes handled the request, it's a 404
-app.use((req, res, next) => {
-  console.log(`Requested route not found: ${req.originalUrl}`); // Log the 404 error with the requested URL
-  res.status(404).render('404', (err, html) => { // Render a dedicated 404 page
-    if (err) {
-      console.error(`Error rendering 404 page: ${err.message}`);
-      console.error(err.stack);
-      res.status(500).send("Error rendering 404 page.");
-    } else {
-      res.send(html);
-    }
+if (require.main === module) {
+  bootstrap().catch((err) => {
+    console.error(`Startup failed: ${err.message}`);
+    console.error(err.stack);
+    process.exit(1);
   });
-});
+}
 
-// Error handling
-app.use((err, req, res, next) => {
-  console.error(`Unhandled application error: ${err.message}`);
-  console.error(err.stack);
-  res.status(500).send("There was an error serving your request.");
-});
+module.exports = {
+  createApp,
+  bootstrap,
+  connectDatabase
+};
