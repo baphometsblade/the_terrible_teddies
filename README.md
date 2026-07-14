@@ -1,35 +1,96 @@
-# The Terrible Teddies
+# Terrible Teddies
 
-The Terrible Teddies is a strategic and interactive card-based game where players battle using teddy bears with unique abilities. Each teddy bear character in the game has a distinct set of attributes, special moves, and rarity, making every battle unique and engaging.
+Terrible Teddies is a strategic teddy bear card battler where players collect ridiculous fighters, choose moves, and battle through a turn-based fluff pit.
 
-## Overview
+The repository now includes a guaranteed playable web demo that can run without MongoDB, plus the existing Express/MongoDB foundation for accounts, teams, marketplace, challenges, events, and persistent collections.
 
-The game is developed using Node.js and Express for the backend, with MongoDB as the database for persistent storage of game data and player progress. The frontend utilizes EJS for rendering views and jQuery for dynamic interactions. The game features a turn-based combat system, a card collection mechanism, and an engaging user interface for managing teddy collections and battling other players.
+## What runs today
 
-## Features
+- Express server with EJS views
+- `/play` browser demo with selectable teddies
+- Deterministic battle engine in `services/battleEngine.js`
+- Demo teddy deck in `data/demoTeddies.js`
+- `/api/demo/teddies` JSON endpoint
+- `/api/demo/battle` automated battle endpoint
+- `/health` deployment health check
+- Node test suite using `node --test`
+- Optional `FOUNDER_PACK_URL` monetisation link on the playable demo page
 
-- **Character Development:** Players can collect and customize teddy bears with unique abilities and attributes.
-- **Battle System:** A robust turn-based system where players use their teddies' special moves to battle against others.
-- **Progression System:** Players can level up their teddies, unlocking new abilities and features.
-- **Player Interaction:** Features include trading cards, forming teams, and participating in community challenges.
-- **End-Game Content:** Special events and boss fights provide challenging gameplay for advanced players.
+## Requirements
 
-## Getting Started
+- Node.js 18.18 or newer
+- MongoDB is optional for the playable demo
+- MongoDB is required for the full persistent account/collection experience
 
-### Requirements
+## Fastest local run
 
-- Node.js (v14 or newer)
-- MongoDB (Local or cloud-based via MongoDB Atlas)
-- Modern web browser supporting JavaScript and HTML5
+```bash
+npm install
+cp .env.example .env
+npm run dev
+```
 
-### Quickstart
+Open:
 
-1. Clone the repository to your local machine.
-2. Install dependencies with `npm install`.
-3. Set up your MongoDB database and update the `.env` file with your database URL.
-4. Start the server with `npm start`.
-5. Access the game through `http://localhost:3000` in your web browser.
+```text
+http://localhost:3000/play
+```
+
+This starts the game in demo mode and skips MongoDB.
+
+## Full production run
+
+Set these environment variables in your host:
+
+```bash
+PORT=3000
+NODE_ENV=production
+SESSION_SECRET=use-a-long-random-secret
+DATABASE_URL=mongodb+srv://...
+DEMO_MODE=false
+FOUNDER_PACK_URL=https://your-payment-or-store-link.example
+```
+
+Then run:
+
+```bash
+npm install
+npm start
+```
+
+## Monetisation path
+
+Use `FOUNDER_PACK_URL` for the fastest revenue setup. It can point to Stripe Payment Links, Gumroad, Ko-fi, Patreon, Fourthwall, Shopify, or any other checkout page.
+
+Recommended first offer:
+
+- Founder Pack: early supporter credit, exclusive teddy skin, Discord role, and first-season cosmetic drop
+- Price test: AUD $9, $19, and $29 tiers
+- CTA: place the `/play` link in YouTube descriptions, pinned comments, Shorts captions, and livestream chat
+
+## Test
+
+```bash
+npm test
+```
+
+The battle engine tests verify battle creation, damage calculation, turn execution, and auto battle completion.
+
+## Key routes
+
+| Route | Purpose |
+| --- | --- |
+| `/` | Landing page |
+| `/play` | Playable demo |
+| `/health` | Deployment health check |
+| `/api/demo/teddies` | Demo teddy deck JSON |
+| `/api/demo/battle` | Automated demo battle JSON |
+| `/teddies` | Authenticated collection route |
+
+## Deployment notes
+
+For the fastest public demo, deploy with `DEMO_MODE=true` and no `DATABASE_URL`. Add MongoDB later when you want persistent user accounts, inventory, marketplace listings, and progression.
 
 ## License
 
-Copyright (c) 2024.
+Copyright (c) 2024-2026.
