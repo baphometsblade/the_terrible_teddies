@@ -1,27 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <%- include('partials/_head.ejs') %>
-  <body>
-<%- include('partials/_header.ejs') %>
-    <main role="main" class="container mt-4">
-      <div class="text-center">
-        <h1>the_terrible_teddies</h1>
-        <a href="/teddies" class="btn btn-primary mt-3">Go to Teddies</a>
-        <!-- Feedback Form Start -->
-        <div class="feedback-form mt-4">
-          <h2>Feedback</h2>
-          <form action="/submit-feedback" method="post">
-            <div class="form-group">
-              <label for="feedback">Your Feedback:</label>
-              <textarea class="form-control" id="feedback" name="feedback" rows="3" required></textarea>
-            </div>
-            <button type="submit" class="btn btn-secondary">Submit Feedback</button>
-          </form>
-        </div>
-        <!-- Feedback Form End -->
+<body class="tt-body">
+  <%- include('partials/_header.ejs') %>
+  <main class="tt-shell">
+    <section class="tt-hero">
+      <p class="tt-kicker">Strategic Teddy Card Battler</p>
+      <h1>Terrible Teddies</h1>
+      <p class="tt-lede">Collect unhinged teddy fighters, battle in the fluff pit, unlock rarities, and build toward paid Founder Packs, cosmetics, and seasonal drops.</p>
+      <div class="tt-actions">
+        <a href="/play" class="tt-button tt-button-primary">Play Demo Now</a>
+        <a href="/teddies" class="tt-button tt-button-muted">Open Collection</a>
       </div>
-    </main>
-    <%- include('partials/_debugLinks.ejs') %>
-  </body>
-<%- include('partials/_footer.ejs') %>
+      <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+        <p class="tt-demo-note">Demo mode is active, so the playable demo runs without MongoDB.</p>
+      <% } %>
+    </section>
+
+    <section class="tt-feature-grid">
+      <article>
+        <h2>Playable immediately</h2>
+        <p>The /play route uses a built-in deck and deterministic battle engine, so the game can run locally even before database setup.</p>
+      </article>
+      <article>
+        <h2>Built for paid packs</h2>
+        <p>Set FOUNDER_PACK_URL in hosting settings to turn the demo page into a payment-ready landing page.</p>
+      </article>
+      <article>
+        <h2>Expandable backend</h2>
+        <p>The existing Express, MongoDB, sessions, marketplace, teams, challenges, and API routes remain available for the full account-based game.</p>
+      </article>
+    </section>
+  </main>
+  <%- include('partials/_footer.ejs') %>
+</body>
 </html>
