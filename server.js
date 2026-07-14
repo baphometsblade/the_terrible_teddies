@@ -5,18 +5,25 @@ const session = require('express-session');
 const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
 
-const authRoutes = require('./routes/authRoutes');
-const gameRoutes = require('./routes/gameRoutes');
-const teamRoutes = require('./routes/teamRoutes');
-const marketRoutes = require('./routes/marketRoutes');
-const challengeRoutes = require('./routes/challengeRoutes');
-const apiGameRoutes = require('./routes/api/gameRoutes');
-const eventRoutes = require('./routes/api/eventRoutes');
-const demoRoutes = require('./routes/demoRoutes');
-
 const port = process.env.PORT || 3000;
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 const demoMode = process.env.DEMO_MODE === 'true' || !hasDatabase;
+
+function loadRoute(modulePath, label) {
+  try {
+    return require(modulePath);
+  } catch (error) {
+    console.warn(`Optional route skipped: ${label}. ${error.message}`);
+    const router = express.Router();
+    router.use((req, res) => {
+      res.status(503).json({
+        error: `${label} is not available in this build`,
+        detail: 'The playable demo still works at /play.'
+      });
+    });
+    return router;
+  }
+}
 
 function createSessionStore() {
   if (!hasDatabase || demoMode) {
@@ -65,14 +72,14 @@ function createApp() {
     res.render('index', { user: req.session.user, demoMode });
   });
 
-  app.use(demoRoutes);
-  app.use(authRoutes);
-  app.use(gameRoutes);
-  app.use('/teams', teamRoutes);
-  app.use(marketRoutes);
-  app.use('/challenges', challengeRoutes);
-  app.use('/api/game', apiGameRoutes);
-  app.use('/api', eventRoutes);
+  app.use(loadRoute('./routes/demoRoutes', 'playable demo routes'));
+  app.use(loadRoute('./routes/authRoutes', 'authentication routes'));
+  app.use(loadRoute('./routes/gameRoutes', 'game routes'));
+  app.use('/teams', loadRoute('./routes/teamRoutes', 'team routes'));
+  app.use(loadRoute('./routes/marketRoutes', 'marketplace routes'));
+  app.use('/challenges', loadRoute('./routes/challengeRoutes', 'challenge routes'));
+  app.use('/api/game', loadRoute('./routes/api/gameRoutes', 'API game routes'));
+  app.use('/api', loadRoute('./routes/api/eventRoutes', 'API event routes'));
 
   app.use((req, res) => {
     console.log(`Requested route not found: ${req.originalUrl}`);
