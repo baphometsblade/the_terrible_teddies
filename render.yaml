@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: terrible-teddies
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEMO_MODE
+        value: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: FOUNDER_PACK_URL
+        sync: false
