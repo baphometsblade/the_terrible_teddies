@@ -112,8 +112,9 @@ const teddySchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes for efficient querying
-teddySchema.index({ name: 1 }, { unique: true });
+// Indexes for efficient querying.
+// `name` already declares `unique: true` in the schema above; declaring it here
+// too produced a Mongoose "Duplicate schema index" warning on every startup.
 teddySchema.index({ rarity: 1 });
 
 teddySchema.post('save', function(error, doc, next) {

@@ -22,5 +22,11 @@ const isAdmin = (req, res, next) => {
 
 module.exports = {
   isAuthenticated,
-  isAdmin
+  isAdmin,
+  // routes/api/{auth,challenge,team,market}Routes.js all import
+  // `ensureAuthenticated`, which was never exported. Every one of those modules
+  // threw "Route.get() requires a callback function but got [object Undefined]"
+  // on require. They are not mounted today, so the breakage was latent - but
+  // mounting any of them would have failed at startup.
+  ensureAuthenticated: isAuthenticated
 };

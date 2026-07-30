@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const MarketItem = require('../../models/MarketItem');
-const authMiddleware = require('../middleware/authMiddleware');
+// Path was '../middleware/authMiddleware', which does not exist - this file is
+// two levels down, not one.
+const authMiddleware = require('../../middleware/authMiddleware');
 
 // Route to get all available market items
 router.get('/market', authMiddleware.ensureAuthenticated, (req, res) => {

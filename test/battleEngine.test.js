@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 
 const { DEMO_TEDDIES } = require('../data/demoTeddies');
-const { createBattle, executeTurn, autoBattle, calculateDamage } = require('../services/battleEngine');
+const { createBattle, executeTurn, autoBattle, calculateDamage, cloneFighter } = require('../services/battleEngine');
 
 test('createBattle creates a valid active battle state', () => {
   const battle = createBattle(DEMO_TEDDIES[0], DEMO_TEDDIES[1]);
@@ -37,4 +37,35 @@ test('autoBattle always reaches a finished state', () => {
 
   assert.equal(battle.status, 'finished');
   assert.ok(['player', 'opponent'].includes(battle.winner));
+});
+
+test('cloneFighter preserves zero stats instead of substituting defaults', () => {
+  // Regression: cloneFighter used `teddy.health || 100`, so a teddy on 0 health
+  // entered the battle at full health. Same for 0 attack damage.
+  const knockedOut = {
+    _id: 'ko',
+    name: 'Flattened Fred',
+    health: 0,
+    attackDamage: 0,
+    strategyLevel: 0,
+    adaptability: 0
+  };
+
+  const fighter = cloneFighter(knockedOut);
+
+  assert.equal(fighter.health, 0, '0 health must stay 0');
+  assert.equal(fighter.maxHealth, 0, 'maxHealth must match the given health');
+  assert.equal(fighter.attackDamage, 0, '0 attack must stay 0');
+  assert.equal(fighter.strategyLevel, 0);
+  assert.equal(fighter.adaptability, 0);
+});
+
+test('cloneFighter still applies defaults when stats are absent', () => {
+  const bare = { _id: 'bare', name: 'Plain Pat' };
+  const fighter = cloneFighter(bare);
+
+  assert.equal(fighter.health, 100);
+  assert.equal(fighter.attackDamage, 10);
+  assert.equal(fighter.strategyLevel, 50);
+  assert.equal(fighter.adaptability, 50);
 });

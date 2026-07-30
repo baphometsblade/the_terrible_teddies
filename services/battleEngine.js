@@ -3,16 +3,21 @@ function cloneFighter(teddy) {
     throw new Error('A valid teddy is required');
   }
 
+  // ?? not ||: a teddy with 0 health (or 0 attack) is a real value, and || was
+  // silently replacing it with the default, so a knocked-out teddy entered the
+  // pit at full health.
+  const health = Number(teddy.health ?? 100);
+
   return {
     id: String(teddy._id || teddy.id || teddy.name),
     name: teddy.name,
-    maxHealth: Number(teddy.health || 100),
-    health: Number(teddy.health || 100),
-    attackDamage: Number(teddy.attackDamage || 10),
+    maxHealth: health,
+    health,
+    attackDamage: Number(teddy.attackDamage ?? 10),
     specialMove: teddy.specialMove || 'Stuffing Strike',
     rarity: teddy.rarity || 'Common',
-    strategyLevel: Number(teddy.strategyLevel || 50),
-    adaptability: Number(teddy.adaptability || 50),
+    strategyLevel: Number(teddy.strategyLevel ?? 50),
+    adaptability: Number(teddy.adaptability ?? 50),
     voiceLine: teddy.voiceLine || 'Prepare for fluff.'
   };
 }
