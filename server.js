@@ -96,7 +96,11 @@ function createApp() {
         // required FORCE_SECURE_COOKIES=true as well, so the default production
         // deploy sent session cookies over plain HTTP.
         secure: isProduction && process.env.FORCE_SECURE_COOKIES !== 'false',
-        maxAge: 86400000
+        // Demo mode has no DATABASE_URL, so sessions live in express-session's
+        // MemoryStore, which never evicts and is documented as unsuitable for
+        // production. A shorter demo lifetime bounds how long an abandoned
+        // battle occupies memory. Configure DATABASE_URL for a real store.
+        maxAge: demoMode ? 2 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000
       }
     })
   );

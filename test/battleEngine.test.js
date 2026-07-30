@@ -17,10 +17,19 @@ test('createBattle creates a valid active battle state', () => {
 });
 
 test('calculateDamage always returns positive integer damage', () => {
-  const damage = calculateDamage(DEMO_TEDDIES[3], DEMO_TEDDIES[0], 'special', 2);
+  const { damage } = calculateDamage(DEMO_TEDDIES[3], DEMO_TEDDIES[0], 'special', 2);
 
   assert.equal(Number.isInteger(damage), true);
   assert.ok(damage > 0);
+});
+
+test('calculateDamage never returns less than 1, even in the worst case', () => {
+  // A feeble attacker against a highly adaptable defender, on the lowest roll.
+  const weak = { attackDamage: 0, rarity: 'Common', strategyLevel: 0 };
+  const tank = { adaptability: 100 };
+
+  const { damage } = calculateDamage(weak, tank, 'attack', 1, 0);
+  assert.ok(damage >= 1, `expected at least 1, got ${damage}`);
 });
 
 test('executeTurn changes health and appends battle log', () => {

@@ -8,7 +8,8 @@ The repository now includes a guaranteed playable web demo that can run without 
 
 - Express server with EJS views
 - `/play` browser demo with selectable teddies
-- Deterministic battle engine in `services/battleEngine.js`
+- Seeded battle engine in `services/battleEngine.js` — damage variance,
+  critical hits, and reactive opponent AI, all reproducible from a seed
 - Demo teddy deck in `data/demoTeddies.js`
 - `/api/demo/teddies` JSON endpoint
 - `/api/demo/battle` automated battle endpoint
@@ -44,6 +45,27 @@ Read this before deploying.
 - Secure cookies are enabled automatically when `NODE_ENV=production`. Only set
   `FORCE_SECURE_COOKIES=false` if your host genuinely does not terminate HTTPS.
 
+## Battle randomness
+
+Battles are random but reproducible. Each battle carries a `seed` and an
+`rngStep`, so `executeTurn(state, move)` is a pure function: the same state and
+move always give the same outcome.
+
+That matters because battle state lives in the session between requests. With a
+bare `Math.random()`, a retried or replayed POST would produce a different
+result — and a player could re-roll a bad turn just by resubmitting the form.
+
+Pass a seed to replay a battle exactly:
+
+```js
+const { createBattle, autoBattle } = require('./services/battleEngine');
+
+createBattle(playerTeddy, opponentTeddy, { seed: 12345 }); // same fight every time
+autoBattle(playerTeddy, opponentTeddy, undefined, { seed: 42 });
+```
+
+Omit the seed and one is chosen at random.
+
 ## Fastest local run
 
 ```bash
@@ -51,6 +73,11 @@ npm install
 cp .env.example .env
 npm run dev
 ```
+
+`npm run dev` pins `NODE_ENV=development` deliberately. If `NODE_ENV` is
+`production` — which can be inherited from a parent process, not just set on
+purpose — session cookies become `Secure` and are never issued over plain-HTTP
+localhost, so the demo silently cannot keep a battle between requests.
 
 Open:
 

@@ -37,6 +37,14 @@ router.post('/play/start', (req, res) => {
 router.post('/play/turn', (req, res) => {
   const move = req.body.move === 'special' ? 'special' : 'attack';
   const existingBattle = req.session.demoBattle;
+
+  // Taking a turn with no battle in progress used to fall through to a render
+  // with battle undefined, which silently did nothing and told the player
+  // nothing. Send them back to pick a fighter instead.
+  if (!existingBattle) {
+    return res.redirect('/play');
+  }
+
   const battle = executeTurn(existingBattle, move);
   req.session.demoBattle = battle;
 

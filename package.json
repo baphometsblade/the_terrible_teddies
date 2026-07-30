@@ -4,7 +4,7 @@
   "description": "Terrible Teddies is a strategic teddy bear card battler with a playable demo, founder-pack payment path, and production-ready Express backend.",
   "main": "server.js",
   "scripts": {
-    "dev": "node -e \"process.env.DEMO_MODE='true'; require('./server').bootstrap();\"",
+    "dev": "node -e \"process.env.NODE_ENV='development'; process.env.DEMO_MODE='true'; require('./server').bootstrap();\"",
     "start": "node server.js",
     "test": "node --test"
   },
