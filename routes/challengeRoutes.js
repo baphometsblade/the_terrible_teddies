@@ -2,7 +2,11 @@ const express = require('express');
 const router = express.Router();
 const Challenge = require('../models/Challenge');
 const Player = require('../models/Player');
-const challengeService = require('../services/challengeService'); // Importing challenge service
+const mongoose = require('mongoose');
+const challengeService = require('../services/challengeService');
+const { isAuthenticated } = require('./middleware/authMiddleware');
+
+const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 // Route to retrieve active challenges
 router.get('/active', async (req, res) => {
@@ -17,13 +21,11 @@ router.get('/active', async (req, res) => {
 });
 
 // Route to mark a challenge as completed by a player
-router.post('/complete', async (req, res) => {
+router.post('/complete', isAuthenticated, async (req, res) => {
     const { challengeId } = req.body;
-    const userId = req.session.userId; // Assumes user session is managed and userId is stored in session
 
-    if (!challengeId) {
-        console.log('Challenge ID not provided');
-        return res.status(400).send('Challenge ID is required');
+    if (!isValidId(challengeId)) {
+        return res.status(400).send('A valid challenge ID is required');
     }
 
     try {
@@ -33,10 +35,14 @@ router.post('/complete', async (req, res) => {
             return res.status(404).send('Challenge not found or not active');
         }
 
-        const player = await Player.findById(userId);
+        // The previous version passed req.session.userId (a User id) to
+        // Player.findById - different collections, so this never matched.
+        // Look the player up by the username on the session instead.
+        const username = req.session.user && req.session.user.username;
+        const player = username ? await Player.findOne({ username }) : null;
         if (!player) {
-            console.log('Player not found:', userId);
-            return res.status(404).send('Player not found');
+            console.log('No player profile for user:', req.session.userId);
+            return res.status(404).send('No player profile found for your account');
         }
 
         // Utilize the challengeService to handle challenge completion logic
@@ -46,7 +52,7 @@ router.post('/complete', async (req, res) => {
             return res.status(409).send('Challenge already completed');
         }
 
-        console.log('Challenge marked as completed for player:', challengeId, userId);
+        console.log('Challenge marked as completed for player:', challengeId, player.username);
 
         res.send('Challenge completed successfully');
     } catch (error) {

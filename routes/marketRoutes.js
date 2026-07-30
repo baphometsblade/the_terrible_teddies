@@ -1,26 +1,51 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const MarketItem = require('../models/MarketItem');
+const Teddy = require('../models/Teddy');
+const { isAuthenticated } = require('./middleware/authMiddleware');
 
-// Route to get all available market items
+const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+// Browsing the market stays public.
 router.get('/market', async (req, res, next) => {
   try {
     const items = await MarketItem.find({ status: 'available' }).populate('teddy');
-    console.log('Market items fetched successfully.');
-    res.render('marketplace', { items });
+    res.render('marketplace', { items, user: req.session.user });
   } catch (error) {
     console.error('Market operation failed:', error.message, error.stack);
     next(error);
   }
 });
 
-// Route to post an item for sale
-router.post('/market/sell', async (req, res, next) => {
-  const { teddyId, price } = req.body;
+// Listing an item requires a login. Previously anonymous callers could create
+// listings with owner: undefined.
+router.post('/market/sell', isAuthenticated, async (req, res, next) => {
+  const { teddyId } = req.body;
+  const price = Number(req.body.price);
+
+  if (!isValidId(teddyId)) {
+    return res.status(400).send('A valid teddyId is required');
+  }
+  if (!Number.isFinite(price) || price <= 0 || price > 1_000_000) {
+    return res.status(400).send('Price must be a positive number');
+  }
+
   try {
-    const newItem = new MarketItem({ owner: req.session.userId, teddy: teddyId, price });
-    await newItem.save();
-    console.log('New item listed for sale successfully.');
+    const teddy = await Teddy.findById(teddyId);
+    if (!teddy) {
+      return res.status(404).send('Teddy not found');
+    }
+    if (teddy.owner && String(teddy.owner) !== String(req.session.userId)) {
+      return res.status(403).send('You cannot sell a teddy you do not own');
+    }
+
+    const existing = await MarketItem.findOne({ teddy: teddyId, status: 'available' });
+    if (existing) {
+      return res.status(409).send('That teddy is already listed');
+    }
+
+    await MarketItem.create({ owner: req.session.userId, teddy: teddyId, price });
     res.redirect('/market');
   } catch (error) {
     console.error('Market operation failed:', error.message, error.stack);
@@ -28,18 +53,43 @@ router.post('/market/sell', async (req, res, next) => {
   }
 });
 
-// Route to buy an item
-router.post('/market/buy/:itemId', async (req, res, next) => {
+// Buying requires a login and is now a single atomic transition.
+//
+// The previous version read the item, checked status, then saved - two buyers
+// hitting it simultaneously both passed the check and both "bought" it. It also
+// never recorded who bought it, never transferred the teddy, and threw a
+// TypeError (500) instead of 404 when the item did not exist.
+router.post('/market/buy/:itemId', isAuthenticated, async (req, res, next) => {
+  const { itemId } = req.params;
+
+  if (!isValidId(itemId)) {
+    return res.status(400).send('Invalid item id');
+  }
+
   try {
-    const item = await MarketItem.findById(req.params.itemId);
-    if (item.status !== 'available') {
-      console.log('Item is not available');
-      res.status(400).send('Item is not available');
-      return;
+    const item = await MarketItem.findById(itemId);
+    if (!item) {
+      return res.status(404).send('Item not found');
     }
-    item.status = 'sold';
-    await item.save();
-    console.log(`Item ${item._id} purchased successfully.`);
+    if (String(item.owner) === String(req.session.userId)) {
+      return res.status(400).send('You cannot buy your own listing');
+    }
+
+    // Atomic: only the request that flips available -> sold wins the race.
+    const claimed = await MarketItem.findOneAndUpdate(
+      { _id: itemId, status: 'available' },
+      { $set: { status: 'sold' } },
+      { new: true }
+    );
+
+    if (!claimed) {
+      return res.status(409).send('Item is no longer available');
+    }
+
+    // Transfer the teddy to the buyer so the sale actually means something.
+    await Teddy.findByIdAndUpdate(claimed.teddy, { $set: { owner: req.session.userId } });
+
+    console.log(`Item ${claimed._id} purchased by ${req.session.userId}`);
     res.redirect('/market');
   } catch (error) {
     console.error('Market operation failed:', error.message, error.stack);

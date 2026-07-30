@@ -1,6 +1,9 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const { isAuthenticated } = require('./middleware/authMiddleware');
+
+const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 const { initiateBattle, executeTurn, initiateEndGameBattle, loadTeddiesByIds, saveTeddyProgress } = require('../gameLogic');
 const { loadEndGameContent } = require('../services/endGameService');
 const Teddy = require('../models/Teddy'); // Import the Teddy model
@@ -113,16 +116,43 @@ router.get('/game/battle', isAuthenticated, async (req, res) => {
   }
 });
 
-// Route to customize a teddy
-router.post('/api/teddies/customize', async (req, res) => {
+// Route to customize a teddy.
+// Previously this had no authentication at all: any anonymous caller could
+// mutate any teddy in the database by guessing an id.
+router.post('/api/teddies/customize', isAuthenticated, async (req, res) => {
   const { teddyId, skinId, accessoryId } = req.body;
+
+  if (!isValidId(teddyId)) {
+    return res.status(400).send('A valid teddyId is required');
+  }
+  if (skinId && !isValidId(skinId)) {
+    return res.status(400).send('skinId must be a valid id');
+  }
+  if (accessoryId && !isValidId(accessoryId)) {
+    return res.status(400).send('accessoryId must be a valid id');
+  }
+  if (!skinId && !accessoryId) {
+    return res.status(400).send('Provide a skinId or an accessoryId');
+  }
+
   try {
-    await Teddy.findByIdAndUpdate(teddyId, {
-      $push: {
-        skins: skinId,
-        accessories: accessoryId
-      }
-    });
+    const teddy = await Teddy.findById(teddyId);
+    if (!teddy) {
+      return res.status(404).send('Teddy not found');
+    }
+
+    // Teddies predating the owner field are unowned; once owned, only the
+    // owner may customise.
+    if (teddy.owner && String(teddy.owner) !== String(req.session.userId)) {
+      console.warn(`User ${req.session.userId} tried to customise teddy ${teddyId} owned by ${teddy.owner}`);
+      return res.status(403).send('That teddy is not yours');
+    }
+
+    const update = {};
+    if (skinId) update.skins = skinId;
+    if (accessoryId) update.accessories = accessoryId;
+
+    await Teddy.findByIdAndUpdate(teddyId, { $addToSet: update });
     console.log('Customization updated for teddy:', teddyId);
     res.status(200).send('Customization updated');
   } catch (error) {

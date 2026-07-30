@@ -97,6 +97,16 @@ const teddySchema = new mongoose.Schema({
     type: String,
     trim: true,
     default: ''
+  },
+  // Ownership was never modelled, yet routes/api/eventRoutes.js queried
+  // Teddy.find({ owner: userId }) - which matched nothing, so a player's attack
+  // total always came out as 0 and the boss always won.
+  // Optional so existing teddies stay valid; treated as unowned when absent.
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null,
+    index: true
   }
 }, {
   timestamps: true
