@@ -7,14 +7,7 @@ const { isAuthenticated } = require('./middleware/authMiddleware');
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
-// NOTE: User (login) and Player (game profile) are separate collections with no
-// foreign key between them, so the only available link is the username. That is
-// a modelling gap worth closing - Player should carry a `user` reference.
-async function currentPlayer(req) {
-  const username = req.session.user && req.session.user.username;
-  if (!username) return null;
-  return Player.findOne({ username });
-}
+const { currentPlayer } = require('../utils/currentPlayer');
 
 router.post('/create', isAuthenticated, async (req, res) => {
   const { name } = req.body;

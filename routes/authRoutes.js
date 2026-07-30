@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const User = require('../models/User');
+const Player = require('../models/Player');
 const bcrypt = require('bcrypt');
 const router = express.Router();
 
@@ -44,6 +45,18 @@ router.post('/auth/register', requireDatabase, async (req, res) => {
     }
 
     const newUser = await User.create({ username, password });
+
+    // Create the game profile alongside the account. Previously a User existed
+    // with no matching Player, so every Player lookup after login failed and
+    // teams/challenges were unreachable for anyone who had just signed up.
+    try {
+      await Player.create({ user: newUser._id, username: newUser.username });
+    } catch (playerError) {
+      // Don't leave a User stranded without a Player.
+      await User.deleteOne({ _id: newUser._id });
+      throw playerError;
+    }
+
     console.log(`New user registered: ${newUser.username}`);
     res.redirect('/auth/login');
   } catch (error) {

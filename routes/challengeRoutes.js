@@ -5,6 +5,7 @@ const Player = require('../models/Player');
 const mongoose = require('mongoose');
 const challengeService = require('../services/challengeService');
 const { isAuthenticated } = require('./middleware/authMiddleware');
+const { currentPlayer } = require('../utils/currentPlayer');
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
@@ -35,11 +36,9 @@ router.post('/complete', isAuthenticated, async (req, res) => {
             return res.status(404).send('Challenge not found or not active');
         }
 
-        // The previous version passed req.session.userId (a User id) to
-        // Player.findById - different collections, so this never matched.
-        // Look the player up by the username on the session instead.
-        const username = req.session.user && req.session.user.username;
-        const player = username ? await Player.findOne({ username }) : null;
+        // The original code passed req.session.userId (a User id) to
+        // Player.findById - different collections, so it never matched.
+        const player = await currentPlayer(req);
         if (!player) {
             console.log('No player profile for user:', req.session.userId);
             return res.status(404).send('No player profile found for your account');
