@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/_head.ejs') %>
+<body class="tt-body">
+  <%- include('partials/_header.ejs') %>
+
+  <main class="tt-shell">
+    <section class="tt-hero">
+      <p class="tt-kicker">Ranked Battle</p>
+      <h1>The Fluff Pit</h1>
+    </section>
+
+    <% if (!battleState) { %>
+      <section class="tt-battle-panel">
+        <p>No battle in progress.</p>
+        <a class="tt-button tt-button-primary" href="/teddies">Choose Your Lineup</a>
+      </section>
+    <% } else { %>
+      <section class="tt-battle-panel" aria-live="polite">
+        <div class="tt-fighters">
+          <article>
+            <h2><%= battleState.player.name %></h2>
+            <progress max="<%= battleState.player.maxHealth %>" value="<%= battleState.player.health %>"></progress>
+            <p><%= battleState.player.health %> / <%= battleState.player.maxHealth %> HP</p>
+          </article>
+          <strong>VS</strong>
+          <article>
+            <h2><%= battleState.opponent.name %></h2>
+            <progress max="<%= battleState.opponent.maxHealth %>" value="<%= battleState.opponent.health %>"></progress>
+            <p><%= battleState.opponent.health %> / <%= battleState.opponent.maxHealth %> HP</p>
+          </article>
+        </div>
+
+        <p class="tt-demo-note">Turn <%= battleState.turn %></p>
+
+        <% if (battleState.status === 'active') { %>
+          <form class="tt-actions" action="/game/execute-turn" method="post">
+            <button class="tt-button tt-button-primary" name="move" value="attack" type="submit">Basic Bonk</button>
+            <button class="tt-button tt-button-pay" name="move" value="special" type="submit"><%= battleState.player.specialMove %></button>
+          </form>
+        <% } else { %>
+          <div class="tt-result">
+            <h2><%= battleState.winner === 'player' ? 'Victory' : 'Defeat' %></h2>
+            <p>
+              <%= battleState.winner === 'player'
+                    ? 'Your teddy stands triumphant amid the stuffing.'
+                    : 'Flattened into premium carpet fluff. Try a different lineup.' %>
+            </p>
+            <a class="tt-button tt-button-primary" href="/teddies">Back to Collection</a>
+          </div>
+        <% } %>
+
+        <ol class="tt-log">
+          <% battleState.log.slice().reverse().forEach(function(entry) { %>
+            <li><%= entry %></li>
+          <% }); %>
+        </ol>
+      </section>
+    <% } %>
+  </main>
+
+  <%- include('partials/_footer.ejs') %>
+</body>
+</html>

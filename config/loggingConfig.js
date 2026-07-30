@@ -1,5 +1,11 @@
 const winston = require('winston');
 const path = require('path');
+const fs = require('fs');
+
+// logs/ is gitignored, so it will not exist on a fresh clone. Winston's File
+// transport does not reliably create missing directories, so create it here.
+const logDir = path.join(__dirname, '..', 'logs');
+fs.mkdirSync(logDir, { recursive: true });
 
 // Configure the Winston logger.
 const logger = winston.createLogger({
@@ -18,8 +24,8 @@ const logger = winston.createLogger({
     // - Write all logs with level `error` and below to `error.log`
     // - Write all logs with level `info` and below to `combined.log`
     //
-    new winston.transports.File({ filename: path.join(__dirname, '..', 'logs', 'error.log'), level: 'error' }),
-    new winston.transports.File({ filename: path.join(__dirname, '..', 'logs', 'combined.log') })
+    new winston.transports.File({ filename: path.join(logDir, 'error.log'), level: 'error' }),
+    new winston.transports.File({ filename: path.join(logDir, 'combined.log') })
   ]
 });
 

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { isAuthenticated } = require('./middleware/authMiddleware');
-const { initiateBattle, executeTurn, determineBattleOutcome, loadTeddiesByIds, saveTeddyProgress } = require('../gameLogic');
+const { initiateBattle, executeTurn, initiateEndGameBattle, loadTeddiesByIds, saveTeddyProgress } = require('../gameLogic');
 const { loadEndGameContent } = require('../services/endGameService');
 const Teddy = require('../models/Teddy'); // Import the Teddy model
 
@@ -57,15 +57,24 @@ router.post('/game/initiate-battle', isAuthenticated, (req, res) => {
 router.post('/game/execute-turn', isAuthenticated, async (req, res) => {
   try {
     const battleState = req.session.battleState;
-    const playerMove = req.body.move;
-    if (!battleState || !playerMove) {
-      console.log('Invalid battle state or player move');
-      return res.status(400).send('Invalid battle state or player move');
+    const playerMove = req.body.move === 'special' ? 'special' : 'attack';
+    if (!battleState) {
+      console.log('No battle in progress');
+      return res.status(400).send('No battle in progress');
     }
-    let updatedBattleState = executeTurn(battleState, playerMove);
-    updatedBattleState = determineBattleOutcome(updatedBattleState); // Determine the outcome after executing the turn
-    await saveTeddyProgress(updatedBattleState.playerTeddy);
-    await saveTeddyProgress(updatedBattleState.opponentTeddy);
+    if (battleState.status !== 'active') {
+      console.log('Battle already finished');
+      return res.status(409).send('This battle is already finished');
+    }
+
+    const updatedBattleState = executeTurn(battleState, playerMove);
+
+    // Only award progression once the battle has actually concluded.
+    if (updatedBattleState.status === 'finished') {
+      await saveTeddyProgress(updatedBattleState.player, { won: updatedBattleState.winner === 'player' });
+      await saveTeddyProgress(updatedBattleState.opponent, { won: updatedBattleState.winner === 'opponent' });
+    }
+
     req.session.battleState = updatedBattleState;
     console.log('Turn executed for user:', req.session.userId);
     res.json(updatedBattleState);
