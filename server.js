@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const dns = require('node:dns').promises;
 const express = require('express');
 const session = require('express-session');
 const mongoose = require('mongoose');
@@ -11,6 +12,57 @@ const requireDatabase = require('./middleware/requireDatabase');
 const port = process.env.PORT || 3000;
 const hasDatabase = Boolean(process.env.DATABASE_URL);
 const demoMode = process.env.DEMO_MODE === 'true' || !hasDatabase;
+
+// How long to wait for MongoDB before giving up. See connectDatabase().
+const dbTimeoutMs = Number(process.env.DB_TIMEOUT_MS) || 10000;
+
+/**
+ * Hostname of a connection string, with any credentials stripped.
+ *
+ * DATABASE_URL carries user:password@ inline, so it must never be interpolated
+ * into a log line or an error message verbatim.
+ */
+function safeHost(uri) {
+  try {
+    return new URL(uri).hostname;
+  } catch {
+    return '<unparsable DATABASE_URL>';
+  }
+}
+
+/**
+ * Resolve a mongodb+srv:// cluster's SRV record before handing the URI to the
+ * driver.
+ *
+ * serverSelectionTimeoutMS does not cover this step. SRV resolution happens in
+ * the DNS layer first, with its own OS-level retry behaviour, and when the
+ * cluster no longer exists the lookup rejects *outside* the driver's promise
+ * chain - so it escapes any try/catch around mongoose.connect() and takes the
+ * process down with a raw node:internal/dns stack trace. Doing the lookup here
+ * keeps the failure somewhere we can describe it.
+ */
+async function assertSrvResolves(uri, timeoutMs) {
+  if (!uri.startsWith('mongodb+srv://')) return;
+  const host = safeHost(uri);
+
+  const lookup = dns.resolveSrv(`_mongodb._tcp.${host}`);
+  // If the timeout below wins the race, this lookup still settles afterwards.
+  // Without a handler attached, that late rejection is an unhandled rejection.
+  lookup.catch(() => {});
+
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`lookup exceeded ${timeoutMs}ms`)), timeoutMs);
+  });
+
+  try {
+    await Promise.race([lookup, timeout]);
+  } catch (error) {
+    throw new Error(`DNS lookup for ${host} failed (${error.message})`);
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 /**
  * Load an optional route module.
@@ -220,7 +272,25 @@ async function connectDatabase() {
     return false;
   }
 
-  await mongoose.connect(process.env.DATABASE_URL);
+  // Fail fast instead of hanging. bootstrap() awaits this before app.listen(),
+  // so an unreachable host stalls the entire boot: no port bound, no output,
+  // no exit. The driver's default server-selection window is 30s, and for a
+  // mongodb+srv:// host that no longer resolves in DNS it can stall past that
+  // indefinitely while retrying the lookup. Cap the wait, and turn the failure
+  // into a message that names the host and the way out.
+  try {
+    await assertSrvResolves(process.env.DATABASE_URL, dbTimeoutMs);
+    await mongoose.connect(process.env.DATABASE_URL, {
+      serverSelectionTimeoutMS: dbTimeoutMs,
+    });
+  } catch (error) {
+    throw new Error(
+      `Could not reach MongoDB at ${safeHost(process.env.DATABASE_URL)} ` +
+      `within ${dbTimeoutMs}ms: ${error.message}. Check DATABASE_URL, or set ` +
+      'DEMO_MODE=true to start without a database.'
+    );
+  }
+
   console.log('Database connected successfully');
   return true;
 }
