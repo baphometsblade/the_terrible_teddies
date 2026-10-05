@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const requireDatabase = require('./middleware/requireDatabase');
 
 const port = process.env.PORT || 3000;
 const hasDatabase = Boolean(process.env.DATABASE_URL);
@@ -36,6 +37,42 @@ function mount(app, pathOrRouter, maybeRouter) {
   const hasPath = typeof pathOrRouter === 'string';
   const router = hasPath ? maybeRouter : pathOrRouter;
   if (!router) return;
+  if (hasPath) app.use(pathOrRouter, router);
+  else app.use(router);
+}
+
+/**
+ * Mount a router that cannot work without MongoDB.
+ *
+ * The guard makes the route answer 503 immediately instead of letting Mongoose
+ * buffer against a dead connection for ten seconds and then throw a 500 with a
+ * stack trace - which is what every DB-backed route did in demo mode.
+ *
+ * The guard is registered only for the paths the router actually declares, NOT
+ * as `app.use(requireDatabase, router)`. Most of these routers mount at the
+ * root, so a bare app.use would run the guard for every request and swallow
+ * the 404 handler - the same shadowing bug that loadRoute's old catch-all
+ * fallback caused.
+ */
+function mountDbRoute(app, pathOrRouter, maybeRouter) {
+  const hasPath = typeof pathOrRouter === 'string';
+  const router = hasPath ? maybeRouter : pathOrRouter;
+  if (!router) return;
+
+  const declaredPaths = [
+    ...new Set(
+      router.stack
+        .filter((layer) => layer.route && layer.route.path)
+        .map((layer) => layer.route.path)
+    )
+  ];
+
+  if (declaredPaths.length) {
+    const prefix = hasPath ? pathOrRouter : '';
+    const guarded = declaredPaths.map((p) => `${prefix}${p}`.replace(/\/{2,}/g, '/'));
+    app.use(guarded, requireDatabase);
+  }
+
   if (hasPath) app.use(pathOrRouter, router);
   else app.use(router);
 }
@@ -135,14 +172,18 @@ function createApp() {
     res.render('index', { user: req.session.user, demoMode });
   });
 
+  // The demo is the one thing that must work without a database.
   mount(app, loadRoute('./routes/demoRoutes', 'playable demo routes'));
-  mount(app, loadRoute('./routes/authRoutes', 'authentication routes'));
-  mount(app, loadRoute('./routes/gameRoutes', 'game routes'));
-  mount(app, '/teams', loadRoute('./routes/teamRoutes', 'team routes'));
-  mount(app, loadRoute('./routes/marketRoutes', 'marketplace routes'));
-  mount(app, '/challenges', loadRoute('./routes/challengeRoutes', 'challenge routes'));
-  mount(app, '/api/game', loadRoute('./routes/api/gameRoutes', 'API game routes'));
-  mount(app, '/api', loadRoute('./routes/api/eventRoutes', 'API event routes'));
+
+  // Everything below needs MongoDB, so it is guarded to fail fast rather than
+  // hang for ten seconds on Mongoose buffering and then 500.
+  mountDbRoute(app, loadRoute('./routes/authRoutes', 'authentication routes'));
+  mountDbRoute(app, loadRoute('./routes/gameRoutes', 'game routes'));
+  mountDbRoute(app, '/teams', loadRoute('./routes/teamRoutes', 'team routes'));
+  mountDbRoute(app, loadRoute('./routes/marketRoutes', 'marketplace routes'));
+  mountDbRoute(app, '/challenges', loadRoute('./routes/challengeRoutes', 'challenge routes'));
+  mountDbRoute(app, '/api/game', loadRoute('./routes/api/gameRoutes', 'API game routes'));
+  mountDbRoute(app, '/api', loadRoute('./routes/api/eventRoutes', 'API event routes'));
 
   app.use((req, res) => {
     console.log(`Requested route not found: ${req.originalUrl}`);

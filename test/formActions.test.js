@@ -96,11 +96,19 @@ test('no form posts to a route that does not exist', () => {
   );
 });
 
-test('auth-protected form actions answer 401 rather than 404', () => {
-  // Confirms the probe above can actually tell the two apart - otherwise the
-  // test could pass simply because everything errors the same way.
+test('the probe can tell an existing route from a missing one', () => {
+  // Without this control the test above could pass simply because every
+  // request errors the same way.
+  //
+  // An existing route answers something other than 404 - 401 when only auth
+  // stands in the way, or 503 when the database guard fires first (which is
+  // what happens in demo mode, where this runs).
   const statuses = statusesFor(['/game/choose-lineup', '/definitely-not-a-route']);
 
-  assert.equal(statuses['/game/choose-lineup'], 401, 'a real but protected route should 401');
+  assert.notEqual(
+    statuses['/game/choose-lineup'],
+    404,
+    `a real route must not look missing (got ${statuses['/game/choose-lineup']})`
+  );
   assert.equal(statuses['/definitely-not-a-route'], 404, 'a missing route should 404');
 });

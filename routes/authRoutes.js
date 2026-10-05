@@ -1,5 +1,5 @@
 const express = require('express');
-const mongoose = require('mongoose');
+
 const User = require('../models/User');
 const Player = require('../models/Player');
 const bcrypt = require('bcrypt');
@@ -7,17 +7,10 @@ const router = express.Router();
 
 const MIN_PASSWORD_LENGTH = 10;
 
-// Accounts need MongoDB. Without this guard, demo mode (no DATABASE_URL) lets
-// queries sit in Mongoose's buffer for 10 seconds before failing with an opaque
-// 500. Fail fast with something the user can act on instead.
-function requireDatabase(req, res, next) {
-  if (mongoose.connection.readyState !== 1) {
-    return res
-      .status(503)
-      .send('Accounts are unavailable in demo mode. The playable demo is at /play.');
-  }
-  next();
-}
+// The database guard that used to live here now applies to this whole router
+// at its mount point in server.js (mountDbRoute), alongside every other
+// DB-backed router - the same ten-second Mongoose buffering hang affected all
+// of them, not just accounts.
 
 // Body values must be strings. Objects arriving here (e.g. username[$ne]=)
 // can reach Mongo as query operators.
@@ -29,7 +22,7 @@ router.get('/auth/register', (req, res) => {
   res.render('register');
 });
 
-router.post('/auth/register', requireDatabase, async (req, res) => {
+router.post('/auth/register', async (req, res) => {
   try {
     const username = asString(req.body.username);
     const password = asString(req.body.password);
@@ -73,7 +66,7 @@ router.get('/auth/login', (req, res) => {
   res.render('login');
 });
 
-router.post('/auth/login', requireDatabase, async (req, res) => {
+router.post('/auth/login', async (req, res) => {
   // One message for both "no such user" and "wrong password". Distinct
   // messages let an attacker enumerate valid usernames.
   const GENERIC_FAILURE = 'Invalid username or password.';
