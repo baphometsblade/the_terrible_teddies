@@ -57,6 +57,11 @@ function createApp() {
 
   app.set('view engine', 'ejs');
 
+  // The debug toolbar links to /debug/* and must never render for real users.
+  // It used to appear on every page that included the partial - login and
+  // register included.
+  app.locals.showDebugToolbar = !isProduction;
+
   // Render/Heroku/Fly terminate TLS at a proxy. Without this, req.secure is
   // false and secure cookies are never sent.
   if (isProduction) {

@@ -351,3 +351,51 @@ progress {
     text-align: center;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Moved out of inline blocks and attributes.
+
+   The Content-Security-Policy sets style-src 'self' with no 'unsafe-inline',
+   which blocks both inline <style> elements and style="" attributes. These
+   rules previously lived inline in views/teddies.ejs and
+   views/partials/_debugLinks.ejs and silently stopped applying.
+   --------------------------------------------------------------------------- */
+
+.teddy-card:hover {
+  transform: scale(1.05);
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Stand-in for teddy artwork that fails to load, so no request 404s. */
+.teddy-img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  background: linear-gradient(135deg, #6b5b95, #3f3351);
+  color: #fff;
+  font-weight: 700;
+  font-size: 2rem;
+  letter-spacing: 0.1em;
+}
+
+/* Debug toolbar - only rendered outside production. */
+.debug-toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #f8f9fa;
+  border-top: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+  z-index: 1000;
+}
+
+.debug-toolbar a {
+  margin-right: 10px;
+}
+
+.debug-toolbar a:last-child {
+  margin-right: 0;
+}

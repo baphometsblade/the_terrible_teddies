@@ -34,26 +34,6 @@
     </main>
     <%- include('partials/_footer.ejs') %>
     <%- include('partials/_debugLinks.ejs') %>
-    <script src="/js/jquery.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('.complete-challenge').on('click', function() {
-                const challengeId = $(this).data('challenge-id');
-                $.ajax({
-                    url: '/challenges/complete',
-                    type: 'POST',
-                    data: { challengeId: challengeId },
-                    success: function(response) {
-                        alert('Challenge completed! Rewards have been added to your account.');
-                        window.location.reload();
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error completing challenge:', xhr.responseText, error.stack);
-                        alert('Failed to complete challenge. Please try again.');
-                    }
-                });
-            });
-        });
-    </script>
+    <script src="/js/challenges.js"></script>
 </body>
 </html>
