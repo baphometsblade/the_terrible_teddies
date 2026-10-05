@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const router = express.Router();
 const Team = require('../models/Team');
 const Player = require('../models/Player');
-const { isAuthenticated } = require('./middleware/authMiddleware');
+const { isAuthenticated } = require('../middleware/authMiddleware');
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 

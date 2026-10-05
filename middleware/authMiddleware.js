@@ -1,32 +1,21 @@
-// Middleware to check if the user is authenticated
+// Session-based authentication guard.
+//
+// There used to be two copies of isAuthenticated (this file and
+// routes/middleware/authMiddleware.js) plus an `ensureAuthenticated` alias for a
+// set of stale duplicate routers. One copy now, so there is one place to audit -
+// and test/authCoverage.test.js asserts every non-public route refuses an
+// anonymous caller.
+//
+// It no longer logs on every authenticated request: that line printed the user
+// id on each call, which is a lot of noise for anything that polls.
+
 const isAuthenticated = (req, res, next) => {
   if (req.session && req.session.userId) {
-    console.log(`User session ID: ${req.session.userId} is authenticated`);
-    next();
-  } else {
-    console.log('User is not authenticated');
-    res.status(401).send('User is not authenticated');
+    return next();
   }
-};
-
-// Middleware to check if the user is an admin
-const isAdmin = (req, res, next) => {
-  if (req.session.user && req.session.user.isAdmin) {
-    console.log(`Admin access granted for user ID: ${req.session.user.userId}`);
-    next(); // Proceed if user is admin
-  } else {
-    console.error("Access denied. Admins only.");
-    res.status(403).send("Access denied. Admins only.");
-  }
+  return res.status(401).send('User is not authenticated');
 };
 
 module.exports = {
-  isAuthenticated,
-  isAdmin,
-  // routes/api/{auth,challenge,team,market}Routes.js all import
-  // `ensureAuthenticated`, which was never exported. Every one of those modules
-  // threw "Route.get() requires a callback function but got [object Undefined]"
-  // on require. They are not mounted today, so the breakage was latent - but
-  // mounting any of them would have failed at startup.
-  ensureAuthenticated: isAuthenticated
+  isAuthenticated
 };

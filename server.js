@@ -182,7 +182,6 @@ function createApp() {
   mountDbRoute(app, '/teams', loadRoute('./routes/teamRoutes', 'team routes'));
   mountDbRoute(app, loadRoute('./routes/marketRoutes', 'marketplace routes'));
   mountDbRoute(app, '/challenges', loadRoute('./routes/challengeRoutes', 'challenge routes'));
-  mountDbRoute(app, '/api/game', loadRoute('./routes/api/gameRoutes', 'API game routes'));
   mountDbRoute(app, '/api', loadRoute('./routes/api/eventRoutes', 'API event routes'));
 
   app.use((req, res) => {

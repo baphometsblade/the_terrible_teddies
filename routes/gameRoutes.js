@@ -1,12 +1,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
-const { isAuthenticated } = require('./middleware/authMiddleware');
+const { isAuthenticated } = require('../middleware/authMiddleware');
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 const { initiateBattle, executeTurn, initiateEndGameBattle, loadTeddiesByIds, saveTeddyProgress } = require('../gameLogic');
 const { loadEndGameContent } = require('../services/endGameService');
 const Teddy = require('../models/Teddy'); // Import the Teddy model
+const Arena = require('../models/Arena');
+const Boss = require('../models/Boss');
 
 // Route to start a new game session
 router.post('/game/session', isAuthenticated, (req, res) => {
@@ -185,6 +187,23 @@ router.post('/game/initiate-end-game-battle', isAuthenticated, async (req, res) 
   } catch (error) {
     console.error('Error initiating end-game battle:', error.message, error.stack);
     res.status(500).send('Failed to initiate end-game battle');
+  }
+});
+
+// Debug view of the seeded arenas and bosses.
+//
+// This lived in routes/api/gameRoutes.js, a stale duplicate router mounted at
+// /api/game, which put it at the unintended path /api/game/api/arena-gui.
+router.get('/game/arena-gui', isAuthenticated, async (req, res) => {
+  try {
+    const [arenas, bosses] = await Promise.all([
+      Arena.find({}),
+      Boss.find({}).populate('arena')
+    ]);
+    res.render('arenaGUI', { arenas, bosses, user: req.session });
+  } catch (error) {
+    console.error('Error loading arena GUI:', error.message, error.stack);
+    res.status(500).send('Error loading arena GUI');
   }
 });
 

@@ -5,8 +5,11 @@ from dalle_mini.model import DalleMini, DalleBartProcessor
 from PIL import Image
 import torch
 
-# INPUT_REQUIRED {MongoDB connection string} - Set your MongoDB connection string here
-MONGO_URI = "mongodb+srv://user:user@cluster0.8wuam9k.mongodb.net/Cluster0?retryWrites=true&w=majority"
+# The connection string comes from the environment. It used to be hardcoded
+# here, credentials included, in a public repository. Never commit one.
+MONGO_URI = os.environ.get("DATABASE_URL")
+if not MONGO_URI:
+    raise SystemExit("DATABASE_URL is not set. Export it (see .env.example) before running this script.")
 DB_NAME = "the_terrible_teddies"
 COLLECTION_NAME = "teddies"
 

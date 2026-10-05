@@ -4,6 +4,8 @@ const Event = require('../../models/Event'); // Corrected path to match the proj
 const logger = require('../../config/loggingConfig'); // Corrected path to loggingConfig
 const Boss = require('../../models/Boss'); // Ensure Boss model is required for boss fight logic
 const Teddy = require('../../models/Teddy'); // Ensure Teddy model is required for player attack calculation
+const mongoose = require('mongoose');
+const { isAuthenticated } = require('../../middleware/authMiddleware');
 
 // Route to fetch and return a list of available special events from the database
 router.get('/events', async (req, res) => {
@@ -21,9 +23,17 @@ router.get('/events', async (req, res) => {
 });
 
 // Route to initiate a boss fight by selecting a boss based on the player's progress level
-router.get('/boss-fight', async (req, res) => {
+// Authenticated: the attack total is computed from the caller's own teddies, so
+// there is no meaningful anonymous answer - and this was the one route in the
+// app that never looked at the session.
+router.get('/boss-fight', isAuthenticated, async (req, res) => {
   try {
-    const bossId = req.query.bossId; // Assuming bossId is passed as a query parameter
+    const bossId = req.query.bossId;
+    // ?bossId[$ne]=x is parsed into an object by the query parser; only a plain
+    // string id may reach findById.
+    if (typeof bossId !== 'string' || !mongoose.Types.ObjectId.isValid(bossId)) {
+      return res.status(400).json({ message: 'A valid bossId query parameter is required' });
+    }
     const boss = await Boss.findById(bossId).populate('arena');
     if (!boss) {
       return res.status(404).json({ message: 'Boss not found' });

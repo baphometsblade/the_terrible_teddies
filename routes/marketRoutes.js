@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const router = express.Router();
 const MarketItem = require('../models/MarketItem');
 const Teddy = require('../models/Teddy');
-const { isAuthenticated } = require('./middleware/authMiddleware');
+const { isAuthenticated } = require('../middleware/authMiddleware');
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 

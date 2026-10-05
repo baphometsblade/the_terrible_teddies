@@ -1,13 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <% include partials/_head.ejs %>
-  <title>Arena GUI</title>
+  <%- include('partials/_head.ejs') %>
+  <title>Arenas and Bosses - Terrible Teddies</title>
 </head>
 <body>
-  <% include partials/_nav.ejs %>
-  <h1>End Game Challenges</h1>
-  <div id="endGameContent">
+  <%- include('partials/_nav.ejs') %>
+  <%# Three things were wrong here. It used EJS 2's `<% include x %>` directive,
+      which EJS 3 does not support, so the page could only ever 500. It was
+      titled "End Game Challenges" and loaded endGame.js, which replaces the
+      contents of #endGameContent with a fetched event list - wiping the arenas
+      and bosses this page exists to show. And boss.arena.name threw for a boss
+      with no arena. %>
+  <main role="main" class="container">
+    <h1>Arenas and Bosses</h1>
     <h2>Arenas</h2>
     <ul>
       <% arenas.forEach(function(arena) { %>
@@ -26,12 +32,11 @@
           <p>Health: <%= boss.health %></p>
           <p>Attack Damage: <%= boss.attackDamage %></p>
           <p>Special Move: <%= boss.specialMove %></p>
-          <p>Arena: <%= boss.arena.name %></p>
+          <p>Arena: <%= boss.arena ? boss.arena.name : 'Unassigned' %></p>
         </li>
       <% }) %>
     </ul>
-  </div>
-  <% include partials/_footer.ejs %>
-  <script src="/js/endGame.js"></script>
+  </main>
+  <%- include('partials/_footer.ejs') %>
 </body>
 </html>
