@@ -50,3 +50,6 @@ desktop.ini
 __pycache__/
 venv/
 .venv/
+
+# Serena MCP local project state
+.serena/
