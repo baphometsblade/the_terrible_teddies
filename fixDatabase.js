@@ -1,14 +1,21 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const Teddy = require('./models/Teddy');
+const { requireWriteConfirmation } = require('./utils/scriptGuard');
 
-mongoose.connect(process.env.DATABASE_URL)
+// This overwrites health and attackDamage on the teddies listed below, which
+// undoes any level-up progression they have earned. It used to run the instant
+// it was invoked, against whatever DATABASE_URL pointed at.
+const { databaseUrl, dryRun } = requireWriteConfirmation('fixDatabase.js');
+
+mongoose.connect(databaseUrl)
   .then(() => {
     console.log('MongoDB connected successfully');
-    updateTeddyData();
+    return updateTeddyData(dryRun);
   })
   .catch((err) => {
-    console.error('MongoDB connection error:', err.message, err.stack);
+    console.error('MongoDB connection error:', err.message);
+    process.exitCode = 1;
   });
 
 const teddiesToUpdate = [
@@ -165,24 +172,46 @@ const teddiesToUpdate = [
   // ... Include the rest of the teddy data provided by the user ...
 ];
 
-async function updateTeddyData() {
+async function updateTeddyData(dryRun) {
   try {
     for (const teddyData of teddiesToUpdate) {
       if (!mongoose.Types.ObjectId.isValid(teddyData._id)) {
         console.error(`Invalid ID: ${teddyData._id}`);
         continue;
       }
-      const result = await Teddy.findByIdAndUpdate(new mongoose.Types.ObjectId(teddyData._id), teddyData, { new: true, upsert: true });
-      if (result) {
-        console.log(`Updated teddy: ${result.name}`);
-      } else {
-        console.log(`Teddy not found with ID: ${teddyData._id}, a new teddy has been created.`);
+
+      const id = new mongoose.Types.ObjectId(teddyData._id);
+
+      if (dryRun) {
+        const existing = await Teddy.findById(id);
+        if (!existing) {
+          console.log(`WOULD CREATE  ${teddyData.name}`);
+        } else {
+          // Call out the fields that actually change, so progression loss is
+          // visible before it happens rather than after.
+          const changes = Object.keys(teddyData)
+            .filter((key) => key !== '_id')
+            .filter((key) => String(existing[key]) !== String(teddyData[key]))
+            .map((key) => `${key}: ${existing[key]} -> ${teddyData[key]}`);
+
+          console.log(
+            changes.length
+              ? `WOULD UPDATE  ${existing.name}\n                ${changes.join('\n                ')}`
+              : `UNCHANGED     ${existing.name}`
+          );
+        }
+        continue;
       }
+
+      const result = await Teddy.findByIdAndUpdate(id, teddyData, { new: true, upsert: true });
+      console.log(`Updated teddy: ${result.name}`);
     }
-    console.log('All teddies have been updated successfully');
+
+    console.log(dryRun ? '\nDry run complete. No changes were written.' : '\nAll teddies have been updated successfully');
   } catch (error) {
-    console.error('Error updating teddies:', error.message, error.stack);
+    console.error('Error updating teddies:', error.message);
+    process.exitCode = 1;
   } finally {
-    mongoose.connection.close();
+    await mongoose.connection.close();
   }
 }

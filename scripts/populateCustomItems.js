@@ -5,7 +5,11 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+const { requireWriteConfirmation } = require('../utils/scriptGuard');
+
+const { databaseUrl } = requireWriteConfirmation('scripts/populateCustomItems.js');
+
+mongoose.connect(databaseUrl)
   .then(() => {
     console.log('MongoDB connected');
     populateCustomItems(); // Ensure populateCustomItems is called only after successful connection

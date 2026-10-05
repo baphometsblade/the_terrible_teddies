@@ -107,6 +107,29 @@ npm install
 npm start
 ```
 
+## Seed and repair scripts
+
+**These now require explicit confirmation.** They previously connected to
+whatever `DATABASE_URL` pointed at and started writing the moment they were
+invoked — and `.env` points at the live cluster, so a stray `node fixDatabase.js`
+rewrote production records with no prompt and no way to preview.
+
+```bash
+node fixDatabase.js --dry-run   # show exactly what would change
+node fixDatabase.js --yes       # apply
+```
+
+Running with no flags prints the target database (credentials masked) and exits
+without writing. The same applies to `populateDatabase.js`, `populateItems.js`,
+`scripts/seedChallenges.js`, `scripts/seedEventsAndBosses.js` and
+`scripts/populateCustomItems.js`. `CONFIRM_WRITE=1` works in place of `--yes`
+for non-interactive use.
+
+Note on `fixDatabase.js`: it overwrites `health` and `attackDamage` on the
+teddies it lists, which undoes any level-up progression those teddies earned.
+Its `--dry-run` prints a field-by-field diff so you can see that before it
+happens.
+
 ## Migrations
 
 `Player` documents gained a `user` reference linking a game profile to a login

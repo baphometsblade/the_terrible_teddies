@@ -1,7 +1,13 @@
+// This file never called dotenv.config(), so run standalone it read an
+// undefined DATABASE_URL and could not connect at all.
+require('dotenv').config();
 const mongoose = require('mongoose');
 const Challenge = require('../models/Challenge');
+const { requireWriteConfirmation } = require('../utils/scriptGuard');
 
-mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+const { databaseUrl } = requireWriteConfirmation('scripts/seedChallenges.js');
+
+mongoose.connect(databaseUrl)
   .then(() => console.log('MongoDB connected for seeding challenges'))
   .catch(err => {
     console.error('MongoDB connection error:', err.message);

@@ -6,9 +6,11 @@ const Event = require('../models/Event');
 
 dotenv.config();
 
-const DATABASE_URL = process.env.DATABASE_URL; // INPUT_REQUIRED {Provide your MongoDB connection string}
+const { requireWriteConfirmation } = require('../utils/scriptGuard');
 
-mongoose.connect(DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+const { databaseUrl: DATABASE_URL } = requireWriteConfirmation('scripts/seedEventsAndBosses.js');
+
+mongoose.connect(DATABASE_URL)
   .then(() => console.log('MongoDB connected for seeding events and bosses...'))
   .catch(err => console.error('MongoDB connection error:', err.message, err.stack));
 

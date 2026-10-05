@@ -3,7 +3,11 @@ const mongoose = require('mongoose');
 const Teddy = require('./models/Teddy'); // Assuming Teddy model exists and is in the models directory
 const MarketItem = require('./models/MarketItem'); // Assuming MarketItem model exists and is in the models directory
 
-mongoose.connect(process.env.DATABASE_URL)
+const { requireWriteConfirmation } = require('./utils/scriptGuard');
+
+const { databaseUrl } = requireWriteConfirmation('populateItems.js');
+
+mongoose.connect(databaseUrl)
   .then(() => console.log('MongoDB connected for item population'))
   .catch(err => {
     console.error('MongoDB connection error:', err.message);

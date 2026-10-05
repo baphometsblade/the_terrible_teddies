@@ -2,7 +2,11 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const Teddy = require('./models/Teddy');
 
-mongoose.connect(process.env.DATABASE_URL)
+const { requireWriteConfirmation } = require('./utils/scriptGuard');
+
+const { databaseUrl } = requireWriteConfirmation('populateDatabase.js');
+
+mongoose.connect(databaseUrl)
   .then(() => {
     console.log('MongoDB connected successfully');
     populateDatabase();

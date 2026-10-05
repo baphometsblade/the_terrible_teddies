@@ -39,7 +39,11 @@
           </div>
         <% }); %>
       </div>
-      <form id="lineup-form" action="/battle" method="post">
+      <%# action="/battle" had no handler, so this 404'd. battleLogic.js now
+          intercepts submit and drives the real two-step server flow:
+          POST /game/choose-lineup then POST /game/initiate-battle. The action
+          points at the first of those as a no-JS fallback. %>
+      <form id="lineup-form" action="/game/choose-lineup" method="post">
         <input type="hidden" name="selectedTeddyIds" id="selectedTeddyIds" value="">
         <button type="submit" class="btn btn-primary">Initiate Battle</button>
       </form>
