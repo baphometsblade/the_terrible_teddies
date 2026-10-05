@@ -45,3 +45,8 @@ desktop.ini
 .npm/
 .cache/
 .mdb/
+
+# added by optimisation pass 2026-08-08
+__pycache__/
+venv/
+.venv/
