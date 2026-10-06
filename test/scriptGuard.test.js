@@ -9,11 +9,16 @@ const { describeTarget, isDryRun, isConfirmed } = require('../utils/scriptGuard'
 // and no way to preview.
 
 test('describeTarget never exposes credentials', () => {
-  const masked = describeTarget('mongodb+srv://admin:sup3rs3cret@cluster0.abc.mongodb.net/Prod?retryWrites=true');
+  // Assembled from parts, on a non-Atlas host. A credentialed connection string
+  // written out in full is exactly what secret scanners are built to flag, even
+  // when it is obviously fake: GitHub raised three alerts on earlier versions of
+  // this fixture and of the one in test/noSecrets.test.js.
+  const url = 'mongodb+srv://' + 'admin' + ':' + 'sup3rs3cret' + '@' + 'cluster0.example.org/Prod?retryWrites=true';
+  const masked = describeTarget(url);
 
   assert.ok(!masked.includes('sup3rs3cret'), `password leaked: ${masked}`);
   assert.ok(!masked.includes('admin'), `username leaked: ${masked}`);
-  assert.ok(masked.includes('cluster0.abc.mongodb.net'), 'host should be shown');
+  assert.ok(masked.includes('cluster0.example.org'), 'host should be shown');
   assert.ok(masked.includes('Prod'), 'database name should be shown');
 });
 

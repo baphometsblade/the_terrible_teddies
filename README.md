@@ -203,6 +203,13 @@ defect rather than single bugs:
   Security Policy would block (inline script or style, unlisted CDN hosts).
 - `dbGuard`: database routes answer 503 at once, not after a ten second hang,
   when there is no database.
+- `dbConnect`: an unreachable database stops startup within `DB_TIMEOUT_MS`,
+  naming the host and never the credentials.
+- `dbWriteScripts`: every script that connects to the database and writes stops
+  at the confirmation guard unless given `--yes`.
+- `moduleGraph`: every `require` is a built-in, a declared dependency or a file
+  git tracks, every `loadRoute` target in `server.js` exists (a missing one would
+  otherwise just 404), and every tracked script parses.
 - `noSecrets`: no credentialed connection string in any tracked file.
 
 Each has a control case, so it cannot pass just because it never sees a failure.
