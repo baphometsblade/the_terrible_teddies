@@ -9,23 +9,34 @@ on:
     branches: ["master"]
   pull_request:
     branches: ["master"]
-  # Advisories are published against lockfiles that have not changed: seven
-  # appeared between two audits of this repo on the same day. The weekly run
-  # exists so a new one is noticed without waiting for the next commit.
+  # Two things change without a commit. Advisories are published against
+  # lockfiles that have not moved: seven appeared between two audits of this
+  # repo on the same day. And ubuntu-latest and each Node line get new
+  # releases. The weekly run notices either one without waiting for the next
+  # push, so a push is not the first time anyone finds out.
   schedule:
     - cron: '17 3 * * 1'
+  # Run by hand on another runner image to try it before ubuntu-latest moves
+  # to it:  gh workflow run ci.yml -f runner=ubuntu-26.04
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: Runner label to test on
+        default: ubuntu-latest
+        required: false
 
 jobs:
   test:
     name: Test (Node ${{ matrix.node }})
-    # The weekly run is only about the audit below.
-    if: github.event_name != 'schedule'
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
 
     strategy:
       fail-fast: false
       matrix:
-        node: ['18.18', '20', '22']
+        # 18.18 is the floor package.json declares. 20 is left out: it reached
+        # end of life on 30 April 2026, and the floor and 22 bracket it. 24 is
+        # the active LTS and 26 the current release (LTS from late October).
+        node: ['18.18', '22', '24', '26']
 
     steps:
       - uses: actions/checkout@v7
@@ -71,7 +82,7 @@ jobs:
 
   audit:
     name: Dependency audit
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
