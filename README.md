@@ -124,9 +124,11 @@ node fixDatabase.js --yes       # apply
 
 Running with no flags prints the target database (credentials masked) and exits
 without writing. The same applies to `populateDatabase.js`, `populateItems.js`,
-`scripts/seedChallenges.js`, `scripts/seedEventsAndBosses.js` and
-`scripts/populateCustomItems.js`. `CONFIRM_WRITE=1` works in place of `--yes`
-for non-interactive use.
+`scripts/seedChallenges.js`, `scripts/seedEventsAndBosses.js`,
+`scripts/populateCustomItems.js`, `scripts/linkPlayersToUsers.js` and
+`scripts/dalleImageGenerator.js`. `CONFIRM_WRITE=1` works in place of `--yes`
+for non-interactive use. `test/dbWriteScripts.test.js` finds every script that
+connects and writes, and fails unless it stops at the guard.
 
 Note on `fixDatabase.js`: it overwrites `health` and `attackDamage` on the
 teddies it lists, which undoes any level-up progression those teddies earned.
@@ -141,7 +143,7 @@ one-off backfill.
 
 ```bash
 node scripts/linkPlayersToUsers.js --dry-run   # report only, no writes
-node scripts/linkPlayersToUsers.js             # apply
+node scripts/linkPlayersToUsers.js --yes       # apply
 ```
 
 It is safe to re-run, skips already-linked profiles, and reports any user

@@ -1,7 +1,5 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const path = require('node:path');
-const { spawnSync } = require('node:child_process');
 
 const { describeTarget, isDryRun, isConfirmed } = require('../utils/scriptGuard');
 
@@ -40,35 +38,5 @@ test('isConfirmed requires an explicit flag', () => {
   assert.equal(isConfirmed(['node', 'x.js', '--dry-run']), false);
 });
 
-// Each write script must actually be wired to the guard, not just have it
-// available. Running with no flags must refuse and write nothing.
-const WRITE_SCRIPTS = [
-  'fixDatabase.js',
-  'populateDatabase.js',
-  'populateItems.js',
-  'scripts/seedChallenges.js',
-  'scripts/seedEventsAndBosses.js',
-  'scripts/populateCustomItems.js'
-];
-
-for (const script of WRITE_SCRIPTS) {
-  test(`${script} refuses to write without confirmation`, () => {
-    const result = spawnSync(process.execPath, [script], {
-      cwd: path.join(__dirname, '..'),
-      // A URL that would fail to connect anyway - the guard must stop it before
-      // any connection attempt.
-      env: { ...process.env, DATABASE_URL: 'mongodb://127.0.0.1:1/guardtest' },
-      encoding: 'utf8',
-      timeout: 20000
-    });
-
-    const output = `${result.stdout || ''}${result.stderr || ''}`;
-
-    assert.match(
-      output,
-      /Refusing to write without confirmation/,
-      `${script} did not stop at the guard. Output: ${output.slice(0, 300)}`
-    );
-    assert.ok(!/sup3rs3cret|:[^:@/]+@/.test(output), 'guard output must not contain credentials');
-  });
-}
+// That every write script is actually wired to the guard is checked in
+// dbWriteScripts.test.js, which finds the scripts rather than trusting a list.

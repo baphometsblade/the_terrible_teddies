@@ -4,25 +4,24 @@
 // reference existed, matching on username.
 //
 //   node scripts/linkPlayersToUsers.js --dry-run   # report only, no writes
-//   node scripts/linkPlayersToUsers.js             # apply
+//   node scripts/linkPlayersToUsers.js --yes       # apply
 //
 // Safe to re-run: already-linked players are skipped.
+//
+// It used to apply as soon as it was invoked, against whatever DATABASE_URL
+// pointed at, unlike every other script that writes. It now needs --yes.
 
 require('dotenv').config();
 
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Player = require('../models/Player');
+const { requireWriteConfirmation } = require('../utils/scriptGuard');
 
-const DRY_RUN = process.argv.includes('--dry-run');
+const { databaseUrl, dryRun: DRY_RUN } = requireWriteConfirmation('scripts/linkPlayersToUsers.js');
 
 async function main() {
-  if (!process.env.DATABASE_URL) {
-    console.error('DATABASE_URL is not set. Nothing to do.');
-    process.exit(1);
-  }
-
-  await mongoose.connect(process.env.DATABASE_URL);
+  await mongoose.connect(databaseUrl);
   console.log(`Connected.${DRY_RUN ? ' DRY RUN - no writes will be made.' : ''}\n`);
 
   const unlinked = await Player.find({ $or: [{ user: null }, { user: { $exists: false } }] });

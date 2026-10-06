@@ -1,46 +1,75 @@
+// Looks up a stock photo for each teddy on Unsplash and stores its URL in
+// teddy.imageUrl.
+//
+//   node scripts/dalleImageGenerator.js --dry-run   # look up, but save nothing
+//   node scripts/dalleImageGenerator.js --yes       # save
+//
+// Needs UNSPLASH_ACCESS_KEY. Three things to know before running it:
+//
+//  - It writes to every teddy, so it needs the same confirmation as the other
+//    write scripts. It used to start the moment it was invoked.
+//  - The URLs it stores are remote. The site's Content-Security-Policy only
+//    allows images from 'self' and data:, and services/teddyAssets.js only
+//    accepts same-origin paths, so they will not display until you add the host
+//    (images.unsplash.com) to imgSrc in server.js and relax sameOriginPath.
+//  - It never loaded dotenv and imported node-fetch, which was not a dependency.
+//    Both are fixed: it reads .env and uses the fetch built into Node 18+.
+
+require('dotenv').config();
+
 const mongoose = require('mongoose');
-const fetch = require('node-fetch'); // Assuming node-fetch is already installed, if not, it should be added to the project dependencies.
 const Teddy = require('../models/Teddy');
 const logger = require('../config/loggingConfig');
+const { requireWriteConfirmation } = require('../utils/scriptGuard');
 
-// Ensure the DATABASE_URL is correctly set in your .env file
-const dbConnectionUrl = process.env.DATABASE_URL;
-if (!dbConnectionUrl) {
-  logger.error('DATABASE_URL is not set in the environment variables.');
-  process.exit(1); // Exit the script if the DATABASE_URL is not set
+const { databaseUrl, dryRun } = requireWriteConfirmation('scripts/dalleImageGenerator.js');
+
+if (!process.env.UNSPLASH_ACCESS_KEY) {
+  logger.error('UNSPLASH_ACCESS_KEY is not set in the environment.');
+  process.exit(1);
 }
 
-mongoose.connect(dbConnectionUrl, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => logger.info('Connected to MongoDB'))
-  .catch(err => logger.error('Error connecting to MongoDB:', err.message + ' ' + err.stack));
+async function main() {
+  await mongoose.connect(databaseUrl);
+  logger.info('Connected to MongoDB');
 
-async function generateAndAssignImages() {
   try {
     const teddies = await Teddy.find();
+
     for (const teddy of teddies) {
-      // Use Unsplash API to fetch images for teddies. Ensure you have set the UNSPLASH_ACCESS_KEY in your .env file.
-      const response = await fetch(`https://api.unsplash.com/photos/random?query=${encodeURIComponent(teddy.name)} teddy bear&client_id=${process.env.UNSPLASH_ACCESS_KEY}`);
+      const query = encodeURIComponent(`${teddy.name} teddy bear`);
+      // The key goes in a header, not the query string, so it does not end up in
+      // URLs, proxies or logs.
+      const response = await fetch(`https://api.unsplash.com/photos/random?query=${query}`, {
+        headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` }
+      });
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
       if (data && data.urls && data.urls.regular) {
-        teddy.imageUrl = data.urls.regular;
-        await teddy.save();
-        logger.info(`Image for ${teddy.name} generated and saved.`);
+        if (dryRun) {
+          logger.info(`WOULD set image for ${teddy.name}: ${data.urls.regular}`);
+        } else {
+          teddy.imageUrl = data.urls.regular;
+          await teddy.save();
+          logger.info(`Image for ${teddy.name} saved.`);
+        }
       } else {
-        logger.warn(`No image generated for ${teddy.name}.`);
+        logger.warn(`No image found for ${teddy.name}.`);
       }
     }
-  } catch (error) {
-    logger.error('Error generating or assigning images:', error.message + ' ' + error.stack);
+  } finally {
+    await mongoose.disconnect();
+    logger.info('Disconnected from MongoDB');
   }
 }
 
-generateAndAssignImages().then(() => {
-  logger.info('Image generation and assignment process completed.');
-  mongoose.disconnect().then(() => logger.info('Disconnected from MongoDB'));
-}).catch(err => {
-  logger.error('An error occurred during the image generation and assignment process:', err.message + ' ' + err.stack);
-  mongoose.disconnect().then(() => logger.info('Disconnected from MongoDB'));
-});
+main()
+  .then(() => logger.info('Image assignment completed.'))
+  .catch((error) => {
+    logger.error(`Image assignment failed: ${error.message}`);
+    process.exitCode = 1;
+  });
