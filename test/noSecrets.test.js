@@ -46,17 +46,21 @@ function trackedFiles() {
   }
 }
 
+// Built by concatenation so this file does not itself contain a literal
+// credentialed URI - the scan below would (rightly) flag it.
+const uri = (scheme, user, pass, host) => `${scheme}://` + user + ':' + pass + '@' + host;
+
 test('the detector recognises a credentialed connection string', () => {
   // Control: without it the scan below could pass simply because the pattern
   // never matches anything.
-  assert.equal(credentialedUris('MONGO_URI = "mongodb+srv://someone:hunter2@cluster0.real.mongodb.net/db"').length, 1);
-  assert.equal(credentialedUris('postgres://app:pw@db.internal.example.io/app').length, 1);
+  assert.equal(credentialedUris(`MONGO_URI = "${uri('mongodb+srv', 'someone', 'hunter2', 'cluster0.real.mongodb.net/db')}"`).length, 1);
+  assert.equal(credentialedUris(uri('postgres', 'app', 'pw', 'db.internal.example.io/app')).length, 1);
 });
 
 test('the detector ignores placeholders and local databases', () => {
-  assert.equal(credentialedUris('mongodb+srv://<user>:<password>@cluster0.real.mongodb.net/db').length, 0);
-  assert.equal(credentialedUris('mongodb://root:pw@127.0.0.1:27017/test').length, 0);
-  assert.equal(credentialedUris('mongodb+srv://admin:pw@cluster0.abc.mongodb.net/db').length, 0);
+  assert.equal(credentialedUris(uri('mongodb+srv', '<user>', '<password>', 'cluster0.real.mongodb.net/db')).length, 0);
+  assert.equal(credentialedUris(uri('mongodb', 'root', 'pw', '127.0.0.1:27017/test')).length, 0);
+  assert.equal(credentialedUris(uri('mongodb+srv', 'admin', 'pw', 'cluster0.abc.mongodb.net/db')).length, 0);
   assert.equal(credentialedUris('mongodb+srv://cluster0.real.mongodb.net/db').length, 0);
 });
 

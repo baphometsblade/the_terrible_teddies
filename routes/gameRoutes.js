@@ -9,6 +9,7 @@ const { loadEndGameContent } = require('../services/endGameService');
 const Teddy = require('../models/Teddy'); // Import the Teddy model
 const Arena = require('../models/Arena');
 const Boss = require('../models/Boss');
+const teddyAssets = require('../services/teddyAssets');
 
 // Route to start a new game session
 router.post('/game/session', isAuthenticated, (req, res) => {
@@ -97,7 +98,7 @@ router.get('/teddies', isAuthenticated, async (req, res) => {
       console.log('No teddies found in the database');
       return res.status(404).send('No teddies found');
     }
-    res.render('teddies', { teddies: teddies, user: req.session });
+    res.render('teddies', { teddies: teddies, art: teddyAssets.artFor(teddies), user: req.session });
   } catch (error) {
     console.error('Error fetching teddies:', error.message, error.stack);
     res.status(500).send('Error fetching teddies');

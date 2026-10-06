@@ -10,9 +10,19 @@
         <p>No items available in the marketplace. Please check back later.</p>
       <% } else { %>
         <% items.forEach(function(item) { %>
+          <%# A listing whose teddy was deleted populates to null, and the old
+              item.teddy.name made the whole page 500. Skip it. %>
+          <% if (!item.teddy) { return; } %>
+          <% const picture = (locals.art && locals.art[String(item.teddy._id)]) || {}; %>
           <div class="col-md-4 mb-3">
             <div class="card">
-              <img src="/images/teddies/<%= encodeURIComponent(item.teddy.name.toLowerCase().replace(/\s+/g, '-')) %>.jpg" class="card-img-top" alt="<%= item.teddy.name %>">
+              <%# This requested /images/teddies/<name>.jpg, which does not exist
+                  and had no fallback. Artwork is resolved on the server now. %>
+              <% if (picture.imageUrl) { %>
+                <img src="<%= picture.imageUrl %>" class="card-img-top" alt="<%= item.teddy.name %>">
+              <% } else { %>
+                <div class="teddy-img-placeholder card-img-top" role="img" aria-label="<%= item.teddy.name %>"><%= picture.initials || '?' %></div>
+              <% } %>
               <div class="card-body">
                 <h5 class="card-title"><%= item.teddy.name %></h5>
                 <p class="card-text">$<%= item.price %></p>
@@ -27,5 +37,6 @@
     </div>
   </main>
   <%- include('partials/_footer.ejs') %>
+  <script src="/js/imageFallback.js"></script>
 </body>
 </html>

@@ -30,10 +30,13 @@ The repository now includes a guaranteed playable web demo that can run without 
 
 Read this before deploying.
 
-- **Never commit `.env`.** An earlier revision of this repo did, exposing live
-  MongoDB Atlas credentials and the session signing key. Both are still present
-  in git history, so treat any credential used before July 2026 as compromised
-  and rotate it.
+- **Never commit `.env`, and never hardcode a connection string.** Earlier
+  revisions did both, exposing live MongoDB Atlas credentials and the session
+  signing key. This repository is public and everything committed stays in git
+  history, so treat every database credential that was ever used with it as
+  compromised and rotate it - deleting the file does not undo the exposure.
+  `test/noSecrets.test.js` fails the build if a connection string containing a
+  username and password is committed.
 - **`SESSION_SECRET` must be long, random, and unique per environment.** Anyone
   who has it can forge session cookies and authenticate as any user. Generate
   one with:
@@ -145,6 +148,23 @@ It is safe to re-run, skips already-linked profiles, and reports any user
 accounts that have no `Player` at all. Until it runs, lookups fall back to
 matching on username, so nothing breaks in the meantime.
 
+## Teddy artwork
+
+Artwork is looked up by teddy **name**, never by database id: an `_id` is
+generated at insert time, so no committed file could ever match one.
+
+Put `public/assets/images/<name>.png` (or `.jpg`, `.jpeg`, `.webp`) in place,
+where `<name>` is the teddy's name with everything but letters, digits and
+spaces removed, spaces turned into underscores, and lowercased - the same rule
+`scripts/generateImages.py` uses. `Count Cuddula` becomes `count_cuddula.png`
+and `Beauty's Beast` becomes `beautys_beast.png`.
+
+A teddy with no file falls back to its `imageUrl` if that is a same-origin path,
+and otherwise to a placeholder tile showing its initials, so the server never
+emits a request that is certain to 404. The directory listing is cached for 30
+seconds. Remote image URLs are not accepted: the Content Security Policy allows
+only `'self'` and `data:`, so add the host to `imgSrc` in `server.js` first.
+
 ## Monetisation path
 
 Use `FOUNDER_PACK_URL` for the fastest revenue setup. It can point to Stripe Payment Links, Gumroad, Ko-fi, Patreon, Fourthwall, Shopify, or any other checkout page.
@@ -161,19 +181,79 @@ Recommended first offer:
 npm test
 ```
 
-The battle engine tests verify battle creation, damage calculation, turn execution, and auto battle completion.
+Beyond unit tests there are structural guards, which catch whole classes of
+defect rather than single bugs:
+
+- `authCoverage` boots the app, enumerates every route and calls each one with
+  no session. Anything not listed as public in the test must answer 401 or 403.
+- `linkTargets` and `formActions`: every hard-coded link and form action in a
+  view must lead to a real route.
+- `viewCompile` and `viewRender`: every view compiles, emits nothing unescaped,
+  and renders with realistic data, including a hostile teddy name.
+- `viewAssets`: every script a view loads exists, and nothing the Content
+  Security Policy would block (inline script or style, unlisted CDN hosts).
+- `dbGuard`: database routes answer 503 at once, not after a ten second hang,
+  when there is no database.
+- `noSecrets`: no credentialed connection string in any tracked file.
+
+Each has a control case, so it cannot pass just because it never sees a failure.
 
 ## Key routes
+
+Public (no login):
 
 | Route | Purpose |
 | --- | --- |
 | `/` | Landing page |
-| `/play` | Playable demo |
+| `/play`, `/play/start`, `/play/turn` | Playable demo (no database needed) |
+| `/api/demo/teddies`, `/api/demo/battle` | Demo deck and automated battle JSON |
 | `/health` | Deployment health check |
-| `/api/demo/teddies` | Demo teddy deck JSON |
-| `/api/demo/battle` | Automated demo battle JSON |
-| `/teddies` | Authenticated collection route |
+| `/auth/register`, `/auth/login`, `/auth/logout` | Account entry points |
+| `/market` | Browse marketplace listings |
+| `/challenges`, `/challenges/active` | Browse active challenges |
+| `/api/events` | Active events JSON |
 
+Login required:
+
+| Route | Purpose |
+| --- | --- |
+| `/teddies` | Your collection |
+| `/game/choose-lineup`, `/game/initiate-battle`, `/game/battle`, `/game/execute-turn` | The battle loop |
+| `/game/end-game`, `/game/initiate-end-game-battle` | End-game arenas and bosses |
+| `/game/arena-gui` | Debug view of the seeded arenas and bosses |
+| `/api/teddies/customize` | Attach a skin or accessory to a teddy |
+| `/market/sell`, `/market/buy/:itemId` | List and buy teddies |
+| `/challenges/complete` | Complete a challenge |
+| `/teams/create`, `/teams/:teamId/addMember` | Teams |
+| `/api/boss-fight` | Boss fight attack check |
+
+Every route outside the first table must refuse an anonymous caller, and
+`test/authCoverage.test.js` enforces it. To add a public route, list it there
+as well, which keeps the decision explicit and reviewable.
+
+## Present but not wired up
+
+Four views exist, compile and render (`test/viewRender.test.js` checks), but no
+route renders them. Wiring each one is a product decision rather than a bug fix:
+
+- `createTeam` and `manageTeam`: the team routes only return JSON, nothing lists
+  the players to pick from, and the manage form asks the user to paste a raw
+  database id.
+- `teddiesCustomization`: the customise endpoint works, but registration gives
+  nobody any teddies, so every teddy is unowned and any player could change a
+  shared one.
+- `endGame`: needs a page route; `/game/end-game` already returns JSON.
+
+Also unused: `public/assets/animations/*.css` and `public/assets/sounds/*.wav`.
+Most of the animation files are invalid CSS - `scripts/generateAnimations.js`
+writes teddy names containing spaces or apostrophes straight into a class and a
+keyframe name - and the sounds are one-second placeholder tones named after each
+teddy's special move. Nothing loads either.
+
+A live "latest teddy stats" panel and a select-a-teddy effect script were
+removed because they could never run: the panel's container element and its
+endpoint never existed, and the effect script was only loaded by views that no
+route renders.
 ## Deployment notes
 
 For the fastest public demo, deploy with `DEMO_MODE=true` and no `DATABASE_URL`. Add MongoDB later when you want persistent user accounts, inventory, marketplace listings, and progression.

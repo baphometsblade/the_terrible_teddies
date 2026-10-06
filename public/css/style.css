@@ -357,8 +357,8 @@ progress {
 
    The Content-Security-Policy sets style-src 'self' with no 'unsafe-inline',
    which blocks both inline <style> elements and style="" attributes. These
-   rules previously lived inline in views/teddies.ejs and
-   views/partials/_debugLinks.ejs and silently stopped applying.
+   rules previously lived inline in views/teddies.ejs and in a debug toolbar
+   partial (since removed) and silently stopped applying.
    --------------------------------------------------------------------------- */
 
 .teddy-card:hover {
@@ -379,23 +379,3 @@ progress {
   letter-spacing: 0.1em;
 }
 
-/* Debug toolbar - only rendered outside production. */
-.debug-toolbar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: #f8f9fa;
-  border-top: 1px solid #ccc;
-  padding: 10px;
-  text-align: center;
-  z-index: 1000;
-}
-
-.debug-toolbar a {
-  margin-right: 10px;
-}
-
-.debug-toolbar a:last-child {
-  margin-right: 0;
-}

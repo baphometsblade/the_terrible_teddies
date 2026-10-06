@@ -4,14 +4,20 @@ const router = express.Router();
 const MarketItem = require('../models/MarketItem');
 const Teddy = require('../models/Teddy');
 const { isAuthenticated } = require('../middleware/authMiddleware');
+const teddyAssets = require('../services/teddyAssets');
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 // Browsing the market stays public.
 router.get('/market', async (req, res, next) => {
   try {
-    const items = await MarketItem.find({ status: 'available' }).populate('teddy');
-    res.render('marketplace', { items, user: req.session.user });
+    // A listing whose teddy has been deleted populates to null, which made the
+    // whole page 500 on item.teddy.name. Leave those out.
+    const items = (await MarketItem.find({ status: 'available' }).populate('teddy')).filter(
+      (item) => item.teddy
+    );
+    const art = teddyAssets.artFor(items.map((item) => item.teddy));
+    res.render('marketplace', { items, art, user: req.session.user });
   } catch (error) {
     console.error('Market operation failed:', error.message, error.stack);
     next(error);

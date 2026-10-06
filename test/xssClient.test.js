@@ -5,10 +5,12 @@ const path = require('node:path');
 
 // Regression guard for the DOM XSS sinks in the client scripts.
 //
-// public/js/endGame.js and public/js/teddyStats.js both built HTML by
-// interpolating database values into template strings assigned to innerHTML.
-// Event titles and teddy names are attacker-influenced, so a crafted value
-// executed in the browser of every visitor.
+// public/js/endGame.js and public/js/teddyStats.js (since removed - nothing
+// ever loaded it) both built HTML by interpolating database values into
+// template strings assigned to innerHTML. Event titles and teddy names are
+// attacker-influenced, so a crafted value executed in the browser of every
+// visitor. Server-rendered values are covered separately: test/viewRender.test.js
+// pushes a hostile teddy name through the real templates.
 //
 // There is no DOM here, so this asserts the shape of the source: the sinks are
 // gone and textContent is used instead. A full browser test would be better,
@@ -18,7 +20,7 @@ const CLIENT_JS = path.join(__dirname, '..', 'public', 'js');
 
 const readScript = (name) => fs.readFileSync(path.join(CLIENT_JS, name), 'utf8');
 
-for (const file of ['endGame.js', 'teddyStats.js']) {
+for (const file of ['endGame.js']) {
   test(`${file} does not assign to innerHTML`, () => {
     const source = readScript(file);
     const offenders = source
@@ -44,23 +46,6 @@ for (const file of ['endGame.js', 'teddyStats.js']) {
     }
   });
 }
-
-test('a crafted teddy name is rendered as text, not parsed as markup', () => {
-  // Mirrors what teddyStats.js now does, against what it used to do.
-  const hostile = '<img src=x onerror="alert(1)">';
-
-  // Old behaviour: the payload lands inside the HTML string verbatim.
-  const oldWay = `<h3>${hostile}</h3>`;
-  assert.ok(oldWay.includes('onerror='), 'precondition: the old approach embedded live markup');
-
-  // New behaviour: textContent assignment, so the value is never parsed. Node
-  // has no DOM, so model the contract - the value is stored, not interpolated
-  // into markup.
-  const node = { textContent: '' };
-  node.textContent = hostile;
-  assert.equal(node.textContent, hostile, 'the raw string is preserved as text');
-  // Nothing concatenated it into a tag, which is the whole point.
-});
 
 test('every client script referenced by a view is free of innerHTML', () => {
   // Wider sweep: catches a new sink appearing in any shipped client script.

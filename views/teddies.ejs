@@ -13,12 +13,19 @@
       <h1>Your Teddies</h1>
       <div id="teddies-collection" class="row">
         <% teddies.forEach(function(teddy) { %>
+          <% const picture = (locals.art && locals.art[String(teddy._id)]) || {}; %>
           <div class="col-md-4">
             <div class="card mb-4 shadow-sm teddy-card" data-teddy-id="<%= teddy._id %>">
-              <%# Fallback handled by /js/imageFallback.js. An inline onerror
-                  attribute is blocked by the CSP, and the old fallback target
-                  (/images/default.jpg) does not exist. %>
-              <img id="img-<%= teddy._id %>" src="/assets/images/<%= teddy._id %>.jpg" class="card-img-top" alt="<%= teddy.name %>">
+              <%# Artwork is resolved on the server (services/teddyAssets.js), by
+                  teddy name rather than _id. A teddy with none gets a drawn
+                  placeholder instead of a request that can only 404.
+                  imageFallback.js still covers a file that exists but fails to
+                  load; an inline onerror would be blocked by the CSP. %>
+              <% if (picture.imageUrl) { %>
+                <img id="img-<%= teddy._id %>" src="<%= picture.imageUrl %>" class="card-img-top" alt="<%= teddy.name %>">
+              <% } else { %>
+                <div id="img-<%= teddy._id %>" class="teddy-img-placeholder card-img-top" role="img" aria-label="<%= teddy.name %>"><%= picture.initials || '?' %></div>
+              <% } %>
               <div class="card-body">
                 <h5 class="card-title"><%= teddy.name %></h5>
                 <p class="card-text"><%= teddy.description %></p>
@@ -49,9 +56,7 @@
       </form>
     </main>
     <%- include('partials/_footer.ejs') %>
-    <%- include('partials/_debugLinks.ejs') %>
     <script src="/js/imageFallback.js"></script>
     <script src="/js/battleLogic.js"></script>
-    <script src="/js/teddyStats.js"></script>
   </body>
 </html>

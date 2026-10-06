@@ -94,10 +94,6 @@ function createApp() {
 
   app.set('view engine', 'ejs');
 
-  // The debug toolbar links to /debug/* and must never render for real users.
-  // It used to appear on every page that included the partial - login and
-  // register included.
-  app.locals.showDebugToolbar = !isProduction;
 
   // Render/Heroku/Fly terminate TLS at a proxy. Without this, req.secure is
   // false and secure cookies are never sent.
@@ -146,6 +142,19 @@ function createApp() {
       }
     })
   );
+
+  // Views read `currentUser` to decide what to show. Each route used to pass its
+  // own `user` - the whole session object in one, session.user in another,
+  // nothing at all in a third - so "signed in" meant different things on
+  // different pages, and the header never showed Logout.
+  app.use((req, res, next) => {
+    const sess = req.session;
+    res.locals.currentUser =
+      sess && sess.userId
+        ? { id: String(sess.userId), username: (sess.user && sess.user.username) || null }
+        : null;
+    next();
+  });
 
   // Throttle credential endpoints. Without this /auth/login is open to
   // unlimited password guessing.
