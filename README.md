@@ -110,6 +110,13 @@ npm install
 npm start
 ```
 
+If MongoDB can't be reached, startup stops within `DB_TIMEOUT_MS` (default 10
+seconds) and exits 1 with a message that names the host, never the credentials.
+Before this, an unreachable cluster stalled the boot for 30 seconds or crashed
+it with a raw DNS stack trace. A paused Atlas free-tier cluster looks exactly
+like this: resume it in Atlas, or set `DEMO_MODE=true` to run without a
+database. `test/dbConnect.test.js` covers it.
+
 ## Seed and repair scripts
 
 **These now require explicit confirmation.** They previously connected to
