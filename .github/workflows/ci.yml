@@ -9,10 +9,17 @@ on:
     branches: ["master"]
   pull_request:
     branches: ["master"]
+  # Advisories are published against lockfiles that have not changed: seven
+  # appeared between two audits of this repo on the same day. The weekly run
+  # exists so a new one is noticed without waiting for the next commit.
+  schedule:
+    - cron: '17 3 * * 1'
 
 jobs:
   test:
     name: Test (Node ${{ matrix.node }})
+    # The weekly run is only about the audit below.
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
 
     strategy:
@@ -21,9 +28,9 @@ jobs:
         node: ['18.18', '20', '22']
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
           cache: npm
@@ -66,16 +73,18 @@ jobs:
     name: Dependency audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: npm
       - run: npm ci
-      # Advisory: the remaining high-severity findings sit in ejs -> jake ->
-      # filelist -> minimatch -> brace-expansion. That chain is build tooling and
-      # is never loaded when EJS renders a template, and the only patched
-      # brace-expansion is a major version above what minimatch accepts. Audit
-      # is reported but not gated until that resolves upstream.
-      - name: Audit (report only)
-        run: npm audit --audit-level=critical || true
+      # Production dependencies only: that is what a deploy installs.
+      #
+      # Pushes and pull requests report but never fail, so an advisory published
+      # between two commits cannot turn an unrelated change red. The weekly run
+      # does fail on a high or critical finding, which is what sends the
+      # notification. When it fires, `npm audit fix` is usually the whole fix.
+      - name: Audit production dependencies
+        continue-on-error: ${{ github.event_name != 'schedule' }}
+        run: npm audit --omit=dev --audit-level=high
