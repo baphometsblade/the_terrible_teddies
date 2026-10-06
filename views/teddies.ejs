@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <%- include('partials/_head.ejs') %>
-    <title>Terrible Teddies - Your Collection</title>
-    <%# The .teddy-card:hover rule moved to /css/style.css. The CSP sets
-        style-src 'self' with no unsafe-inline, so an inline <style> block
-        never applied. %>
-  </head>
+<%- include('partials/_head.ejs', { pageTitle: 'Your Collection - Terrible Teddies' }) %>
+  <%# The .teddy-card:hover rule moved to /css/style.css. The CSP sets
+      style-src 'self' with no unsafe-inline, so an inline <style> block
+      never applied. %>
   <body>
     <%- include('partials/_nav.ejs') %>
     <main role="main" class="container">

@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<%- include('partials/_head.ejs') %>
+<%- include('partials/_head.ejs', {
+  pageTitle: 'Terrible Teddies - Strategic Teddy Card Battler',
+  pageDescription: 'Collect unhinged teddy fighters, battle in the fluff pit and unlock rarities. Play the demo in your browser.'
+}) %>
 <body class="tt-body">
   <%- include('partials/_header.ejs') %>
   <main class="tt-shell">
