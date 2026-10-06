@@ -201,6 +201,9 @@ defect rather than single bugs:
   and renders with realistic data, including a hostile teddy name.
 - `viewAssets`: every script a view loads exists, and nothing the Content
   Security Policy would block (inline script or style, unlisted CDN hosts).
+- `viewHead`: every page gets its head from one partial, with a viewport, a
+  page-specific title, a description and a favicon, and no view writes a second
+  `<head>` or `<title>` of its own.
 - `dbGuard`: database routes answer 503 at once, not after a ten second hang,
   when there is no database.
 - `dbConnect`: an unreachable database stops startup within `DB_TIMEOUT_MS`,
