@@ -16,25 +16,31 @@ const path = require('node:path');
 
 const SERVER = path.join(__dirname, '..', 'server.js');
 
-function runDemo(env) {
+function runDemo(env, proxyHeaders = {}) {
   const probe = `
     const { createApp } = require(${JSON.stringify(SERVER)});
+    const extraHeaders = ${JSON.stringify(proxyHeaders)};
     const app = createApp();
     const server = app.listen(0, async () => {
       const base = 'http://127.0.0.1:' + server.address().port;
       let cookie = '';
+      let secureCookie = false;
       const post = async (p, body) => {
         const res = await fetch(base + p, {
           method: 'POST',
           headers: {
             'content-type': 'application/x-www-form-urlencoded',
+            ...extraHeaders,
             ...(cookie ? { cookie } : {})
           },
           body: new URLSearchParams(body).toString(),
           redirect: 'manual'
         });
         const sc = res.headers.getSetCookie();
-        if (sc.length) cookie = sc.map(c => c.split(';')[0]).join('; ');
+        if (sc.length) {
+          cookie = sc.map(c => c.split(';')[0]).join('; ');
+          secureCookie = sc.every(c => c.toLowerCase().includes('; secure'));
+        }
         return res;
       };
 
@@ -51,7 +57,7 @@ function runDemo(env) {
       }
 
       process.stdout.write(JSON.stringify({
-        startStatus: start.status, gotCookie, turns, finished, redirected
+        startStatus: start.status, gotCookie, secureCookie, turns, finished, redirected
       }));
       process.exit(0);
     });
@@ -115,4 +121,22 @@ test('secure cookies in production mean the demo needs HTTPS', () => {
 
   assert.equal(r.gotCookie, false, 'a secure cookie is correctly withheld over plain HTTP');
   assert.equal(r.redirected, true, 'so the battle cannot persist - this is why npm run dev pins NODE_ENV');
+});
+
+test('production behind a TLS-terminating proxy, as on Render, plays a battle to the end', () => {
+  // render.yaml deploys with NODE_ENV=production, and Render terminates TLS and
+  // forwards X-Forwarded-Proto: https. That is the public deployment, and
+  // nothing exercised it: the development run above does not use secure cookies,
+  // and the production run above sends no proxy header. This one sends what
+  // Render sends, so a broken trust-proxy setup would fail here instead of
+  // silently resetting every battle for every visitor.
+  const r = runDemo(
+    { NODE_ENV: 'production' },
+    { 'x-forwarded-proto': 'https', 'x-forwarded-for': '203.0.113.7' }
+  );
+
+  assert.equal(r.gotCookie, true, 'a cookie is issued once the proxy says the request was HTTPS');
+  assert.equal(r.secureCookie, true, 'and it is marked Secure');
+  assert.equal(r.redirected, false, 'the battle should persist between requests');
+  assert.equal(r.finished, true, `battle should reach a result, played ${r.turns} turns`);
 });
