@@ -11,16 +11,21 @@
       <li class="nav-item">
         <a class="nav-link" href="/play">Play Demo</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/health">Health</a>
-      </li>
-      <li class="nav-item">
-        <% if (locals.currentUser) { %>
+      <% if (locals.showOperatorNotes) { %>
+        <li class="nav-item">
+          <a class="nav-link" href="/health">Health</a>
+        </li>
+      <% } %>
+      <% if (locals.currentUser) { %>
+        <li class="nav-item">
           <a class="nav-link" href="/auth/logout">Logout</a>
-        <% } else { %>
+        </li>
+      <% } else if (!locals.demoMode) { %>
+        <%# Without a database there is no account to log into. %>
+        <li class="nav-item">
           <a class="nav-link" href="/auth/login">Login</a>
-        <% } %>
-      </li>
+        </li>
+      <% } %>
     </ul>
   </div>
 </nav>

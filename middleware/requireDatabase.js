@@ -22,12 +22,33 @@ function requireDatabase(req, res, next) {
 
   const message = 'This feature needs a database. The playable demo is at /play.';
 
-  // Match the caller's expectations rather than always sending HTML.
-  if (req.accepts(['html', 'json']) === 'json' || req.path.startsWith('/api')) {
+  // Match the caller's expectations rather than always sending HTML. This reads
+  // originalUrl: the guard is mounted with app.use, which strips the mount path
+  // from req.path, so a req.path check for /api never matched.
+  if (req.accepts(['html', 'json']) === 'json' || req.originalUrl.startsWith('/api')) {
     return res.status(503).json({ error: 'database_unavailable', detail: message });
   }
 
-  return res.status(503).send(message);
+  // A person who followed a link gets a page with a way back, not one bare line
+  // of text. Demo mode is the default deploy, so Login and the collection link
+  // landed here for every visitor.
+  const demo = Boolean(req.app && req.app.locals && req.app.locals.demoMode);
+  const page = demo
+    ? {
+        heading: 'That part of the game is switched off',
+        message:
+          'Accounts, collections and the marketplace need the game database, and this copy is running as a demo without one. The battle demo works as normal.'
+      }
+    : {
+        heading: 'The game database is not reachable',
+        message: 'Please try again in a few minutes. The battle demo still works.'
+      };
+
+  return res.status(503).render('unavailable', page, (err, html) => {
+    // If the page itself cannot render, fall back to the plain line.
+    if (err) return res.status(503).type('text/plain').send(message);
+    return res.status(503).send(html);
+  });
 }
 
 module.exports = requireDatabase;

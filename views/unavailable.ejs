@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('partials/_head.ejs', {
+  pageTitle: 'Not available - Terrible Teddies',
+  pageDescription: 'This part of Terrible Teddies needs the game database, which is not connected right now.'
+}) %>
+<body class="tt-body">
+  <%- include('partials/_header.ejs') %>
+
+  <%# Served with a 503 by middleware/requireDatabase.js when a route that needs
+      MongoDB is opened without one, which is every visitor who clicks Login in
+      demo mode. It used to be one bare line of text with no way back. %>
+  <main class="tt-shell">
+    <section class="tt-hero">
+      <p class="tt-kicker">Not available right now</p>
+      <h1><%= locals.heading || 'This part of the game is switched off' %></h1>
+      <p class="tt-lede"><%= locals.message || 'It needs the game database. The battle demo works as normal.' %></p>
+      <div class="tt-actions">
+        <a class="tt-button tt-button-primary" href="/play">Play the demo</a>
+        <a class="tt-button tt-button-muted" href="/">Back to home</a>
+      </div>
+    </section>
+  </main>
+
+  <%- include('partials/_footer.ejs') %>
+</body>
+</html>

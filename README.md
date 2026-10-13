@@ -15,7 +15,8 @@ The repository now includes a guaranteed playable web demo that can run without 
 - `/api/demo/battle` automated battle endpoint
 - `/health` deployment health check
 - Node test suite using `node --test`
-- CI on every push: tests across Node 18.18/20/22 plus a demo-mode boot check
+- CI on every push, and weekly: tests across Node 18.18, 22, 24 and 26 plus a
+  demo-mode boot check, and an audit of production dependencies
 - Session auth with helmet, rate limiting on the credential routes, and secure
   cookies on by default in production
 - Optional `FOUNDER_PACK_URL` monetisation link on the playable demo page
@@ -117,6 +118,11 @@ it with a raw DNS stack trace. A paused Atlas free-tier cluster looks exactly
 like this: resume it in Atlas, or set `DEMO_MODE=true` to run without a
 database. `test/dbConnect.test.js` covers it.
 
+Without a database (`DEMO_MODE=true`, or no `DATABASE_URL`) the navbar and home
+page leave out Login and the collection link, since neither can work. A
+database-backed URL that is opened anyway answers 503 with a page that explains
+and links back to `/play`; API callers get JSON.
+
 ## Seed and repair scripts
 
 **These now require explicit confirmation.** They previously connected to
@@ -177,6 +183,12 @@ only `'self'` and `data:`, so add the host to `imgSrc` in `server.js` first.
 ## Monetisation path
 
 Use `FOUNDER_PACK_URL` for the fastest revenue setup. It can point to Stripe Payment Links, Gumroad, Ko-fi, Patreon, Fourthwall, Shopify, or any other checkout page.
+
+Until it is set, the demo page and home page carry notes saying so, along with
+"Demo mode is active" lines and a Health link in the navbar. Those are for
+whoever runs the site, so they show everywhere except `NODE_ENV=production`; a
+visitor to a production deploy never sees them. `test/operatorNotes.test.js`
+covers it.
 
 Recommended first offer:
 

@@ -144,6 +144,13 @@ function createApp() {
   const app = express();
   const isProduction = process.env.NODE_ENV === 'production';
 
+  // What views may show a visitor. Operator notes (which variable to set, which
+  // mode the server is in) are for whoever runs the site, so they appear
+  // everywhere except production. demoMode lets the navbar and home page leave
+  // out links that can only dead-end when there is no database.
+  app.locals.demoMode = demoMode;
+  app.locals.showOperatorNotes = !isProduction;
+
   app.set('view engine', 'ejs');
 
 

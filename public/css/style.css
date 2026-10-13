@@ -139,6 +139,12 @@ a {
   margin-top: 24px;
 }
 
+/* Two cards (the one for the site owner is hidden in production) should fill
+   the row rather than leave an empty third column. */
+.tt-feature-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
 .tt-feature-grid article,
 .tt-card,
 .tt-battle-panel {

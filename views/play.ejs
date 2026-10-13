@@ -16,11 +16,11 @@
         <a class="tt-button tt-button-primary" href="#choose">Choose Fighter</a>
         <% if (founderPackUrl) { %>
           <a class="tt-button tt-button-pay" href="<%= founderPackUrl %>" target="_blank" rel="noreferrer">Buy Founder Pack</a>
-        <% } else { %>
+        <% } else if (locals.showOperatorNotes) { %>
           <span class="tt-button tt-button-muted">Set FOUNDER_PACK_URL to enable payments</span>
         <% } %>
       </div>
-      <% if (demoMode) { %>
+      <% if (demoMode && locals.showOperatorNotes) { %>
         <p class="tt-demo-note">Demo mode is active. MongoDB is optional for this route.</p>
       <% } %>
     </section>
@@ -71,7 +71,7 @@
         <% } else { %>
           <div class="tt-result">
             <h2><%= battle.winner === 'player' ? 'Victory' : 'Defeat' %></h2>
-            <p><%= battle.winner === 'player' ? 'You won the fluff pit. Push Founder Packs now.' : 'You lost, but the rematch button is free.' %></p>
+            <p><%= battle.winner === 'player' ? 'You won the fluff pit.' + (founderPackUrl ? ' Push Founder Packs now.' : '') : 'You lost, but the rematch button is free.' %></p>
             <a class="tt-button tt-button-primary" href="/play">Play Again</a>
           </div>
         <% } %>

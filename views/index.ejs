@@ -13,9 +13,11 @@
       <p class="tt-lede">Collect unhinged teddy fighters, battle in the fluff pit, unlock rarities, and build toward paid Founder Packs, cosmetics, and seasonal drops.</p>
       <div class="tt-actions">
         <a href="/play" class="tt-button tt-button-primary">Play Demo Now</a>
-        <a href="/teddies" class="tt-button tt-button-muted">Open Collection</a>
+        <% if (!locals.demoMode) { %>
+          <a href="/teddies" class="tt-button tt-button-muted">Open Collection</a>
+        <% } %>
       </div>
-      <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+      <% if (locals.demoMode && locals.showOperatorNotes) { %>
         <p class="tt-demo-note">Demo mode is active, so the playable demo runs without MongoDB.</p>
       <% } %>
     </section>
@@ -25,10 +27,12 @@
         <h2>Playable immediately</h2>
         <p>The /play route uses a built-in deck and deterministic battle engine, so the game can run locally even before database setup.</p>
       </article>
-      <article>
-        <h2>Built for paid packs</h2>
-        <p>Set FOUNDER_PACK_URL in hosting settings to turn the demo page into a payment-ready landing page.</p>
-      </article>
+      <% if (locals.showOperatorNotes) { %>
+        <article>
+          <h2>Built for paid packs</h2>
+          <p>Set FOUNDER_PACK_URL in hosting settings to turn the demo page into a payment-ready landing page.</p>
+        </article>
+      <% } %>
       <article>
         <h2>Expandable backend</h2>
         <p>The existing Express, MongoDB, sessions, marketplace, teams, challenges, and API routes remain available for the full account-based game.</p>

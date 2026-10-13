@@ -200,3 +200,16 @@ test('navigation: uses Bootstrap 5 attributes, which is what the site loads', as
   assert.ok(!html.includes('data-toggle='), 'Bootstrap 4 attribute: the menu would never open');
   assert.ok(!html.includes('sr-only'), 'Bootstrap 4 class');
 });
+
+test('unavailable: escapes what it is given, links back to the demo, renders with no locals', async () => {
+  const html = await render('unavailable.ejs', { heading: HOSTILE, message: HOSTILE });
+
+  assertWellFormed(html, 'unavailable.ejs');
+  assert.ok(!html.includes('<img src=x onerror'), 'the heading and message must not become markup');
+  assert.ok(html.includes('&lt;img src=x onerror=alert(1)&gt;'));
+  // The navbar also links to /play, so look for the page's own buttons.
+  assert.ok(html.includes('>Play the demo<'));
+  assert.ok(html.includes('>Back to home<'));
+
+  assertWellFormed(await render('unavailable.ejs'), 'unavailable.ejs with no locals');
+});
