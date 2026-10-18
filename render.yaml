@@ -7,7 +7,9 @@ services:
     env: node
     plan: free
     buildCommand: npm ci
-    startCommand: npm start
+    # Not `npm start`: npm hands SIGTERM to a shell that does not pass it on, so
+    # the server would never hear Render stop it (test/startCommand.test.js).
+    startCommand: node server.js
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV

@@ -277,6 +277,9 @@ defect rather than single bugs:
 - `shutdown`: starts the real server and sends it `SIGTERM` and `SIGINT`. Open
   requests finish, idle and stuck connections cannot hold it up, and a second
   signal exits at once. Skipped on Windows, which only emulates signals.
+- `startCommand`: `render.yaml` starts `node server.js` itself rather than going
+  through npm, which would swallow the `SIGTERM` Render sends, and it names the
+  same file as `npm start`.
 
 Each has a control case, so it cannot pass just because it never sees a failure.
 
@@ -344,7 +347,7 @@ For the fastest public demo, deploy with `DEMO_MODE=true` and no `DATABASE_URL`.
 
 Without a database the demo keeps its sessions in memory: at most `DEMO_MAX_SESSIONS` of them (default 10000, oldest unused dropped first), swept after two hours, so a flood of visitors cannot exhaust the server's memory. Restarting the server ends every demo session.
 
-On `SIGTERM` or `SIGINT` the server stops taking new connections, lets requests in flight finish, closes MongoDB and exits 0. Anything still open after `SHUTDOWN_GRACE_MS` (default 10 seconds) is cut off and the exit code is 1; a second signal exits at once. Render sends `SIGTERM` when it replaces an instance and kills the process 30 seconds later. `test/shutdown.test.js` starts the real server and signals it; Windows only emulates signals, so the test is skipped there.
+On `SIGTERM` or `SIGINT` the server stops taking new connections, lets requests in flight finish, closes MongoDB and exits 0. Anything still open after `SHUTDOWN_GRACE_MS` (default 10 seconds) is cut off and the exit code is 1; a second signal exits at once. Render sends `SIGTERM` when it replaces an instance and kills the process 30 seconds later. `test/shutdown.test.js` starts the real server and signals it; Windows only emulates signals, so the test is skipped there. Run the server with `node server.js` rather than `npm start` wherever a platform stops it with a signal: npm passes `SIGTERM` to a shell, the shell dies, and node is never told (measured with npm 10.9.8). `render.yaml` does this, and `test/startCommand.test.js` keeps it that way. A Render service set up by hand has its own Start Command in the dashboard, which should say `node server.js` too.
 
 ## License
 
