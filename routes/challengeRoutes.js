@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { actionLimiter } = require('../middleware/rateLimits');
 const Challenge = require('../models/Challenge');
 const Player = require('../models/Player');
 const mongoose = require('mongoose');
@@ -10,7 +11,7 @@ const { currentPlayer } = require('../utils/currentPlayer');
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 // Route to retrieve active challenges
-router.get('/active', async (req, res) => {
+router.get('/active', actionLimiter, async (req, res) => {
     try {
         const activeChallenges = await Challenge.find({ isActive: true });
         console.log('Retrieved active challenges');
@@ -22,7 +23,7 @@ router.get('/active', async (req, res) => {
 });
 
 // Route to mark a challenge as completed by a player
-router.post('/complete', isAuthenticated, async (req, res) => {
+router.post('/complete', actionLimiter, isAuthenticated, async (req, res) => {
     const { challengeId } = req.body;
 
     if (!isValidId(challengeId)) {
@@ -61,7 +62,7 @@ router.post('/complete', isAuthenticated, async (req, res) => {
 });
 
 // Route to retrieve all challenges
-router.get('/', async (req, res) => {
+router.get('/', actionLimiter, async (req, res) => {
     try {
         const challenges = await Challenge.find({});
         const user = req.session.user; // Assuming user session is managed and user info is stored in session

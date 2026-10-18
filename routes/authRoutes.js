@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Player = require('../models/Player');
 const bcrypt = require('bcrypt');
 const router = express.Router();
+const { actionLimiter, loginLimiter, registerLimiter } = require('../middleware/rateLimits');
 
 const MIN_PASSWORD_LENGTH = 10;
 // C0 controls (line breaks, tabs, NUL, escape) and DEL.
@@ -20,11 +21,11 @@ function asString(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-router.get('/auth/register', (req, res) => {
+router.get('/auth/register', actionLimiter, (req, res) => {
   res.render('register');
 });
 
-router.post('/auth/register', async (req, res) => {
+router.post('/auth/register', registerLimiter, async (req, res) => {
   try {
     const username = asString(req.body.username);
     const password = asString(req.body.password);
@@ -69,11 +70,11 @@ router.post('/auth/register', async (req, res) => {
   }
 });
 
-router.get('/auth/login', (req, res) => {
+router.get('/auth/login', actionLimiter, (req, res) => {
   res.render('login');
 });
 
-router.post('/auth/login', async (req, res) => {
+router.post('/auth/login', loginLimiter, async (req, res) => {
   // One message for both "no such user" and "wrong password". Distinct
   // messages let an attacker enumerate valid usernames.
   const GENERIC_FAILURE = 'Invalid username or password.';
@@ -123,7 +124,7 @@ router.post('/auth/login', async (req, res) => {
   }
 });
 
-router.post('/auth/logout', (req, res) => {
+router.post('/auth/logout', actionLimiter, (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       console.error('Error during session destruction:', err.message);
@@ -137,7 +138,7 @@ router.post('/auth/logout', (req, res) => {
 
 // Kept for backwards compatibility with existing links. Logout via GET is
 // CSRF-able, so prefer the POST route above.
-router.get('/auth/logout', (req, res) => {
+router.get('/auth/logout', actionLimiter, (req, res) => {
   req.session.destroy(() => {
     res.clearCookie('tt.sid');
     res.redirect('/auth/login');

@@ -17,8 +17,8 @@ The repository now includes a guaranteed playable web demo that can run without 
 - Node test suite using `node --test`
 - CI on every push, and weekly: tests across Node 18.18, 22, 24 and 26 plus a
   demo-mode boot check, and an audit of production dependencies
-- Session auth with helmet, rate limiting on the credential routes, and secure
-  cookies on by default in production
+- Session auth with helmet, a per-visitor rate limit on every route (tighter on
+  login and sign-up), and secure cookies on by default in production
 - Optional `FOUNDER_PACK_URL` monetisation link on the playable demo page
 
 ## Requirements
@@ -48,6 +48,16 @@ Read this before deploying.
   verification for the entire process, including the database connection.
 - Secure cookies are enabled automatically when `NODE_ENV=production`. Only set
   `FORCE_SECURE_COOKIES=false` if your host genuinely does not terminate HTTPS.
+- **Rate limits count per visitor, in memory** (`middleware/rateLimits.js`): 300
+  requests a minute on any route, and 20 failed logins or 20 sign-up attempts per
+  15 minutes. The counts start again when the process restarts. Behind a proxy the
+  app has to work out which address is the visitor's. By default it trusts one
+  proxy hop (`trust proxy`), which is right for some hosts and wrong for others,
+  and where it is wrong every visitor shares one allowance. Set
+  `CLIENT_IP_HEADER` to a header your platform's edge writes itself and that
+  address is used instead; `render.yaml` sets `True-Client-IP`, which Render
+  points to. Never name a header a visitor can send themselves: they could forge
+  it and walk around the limits.
 
 ## Battle randomness
 
@@ -207,6 +217,10 @@ defect rather than single bugs:
 
 - `authCoverage` boots the app, enumerates every route and calls each one with
   no session. Anything not listed as public in the test must answer 401 or 403.
+  It also checks that every route has a rate limit as its first handler.
+- `rateLimits`: a visitor is served up to the limit and refused after it, a
+  refusal says when to come back, a whole battle is far below it, and visitors
+  are told apart by the address you tell the app to trust.
 - `linkTargets` and `formActions`: every hard-coded link and form action in a
   view must lead to a real route.
 - `viewCompile` and `viewRender`: every view compiles, emits nothing unescaped,
@@ -269,9 +283,11 @@ Login required:
 | `/teams/create`, `/teams/:teamId/addMember` | Teams |
 | `/api/boss-fight` | Boss fight attack check |
 
-Every route outside the first table must refuse an anonymous caller, and
-`test/authCoverage.test.js` enforces it. To add a public route, list it there
-as well, which keeps the decision explicit and reviewable.
+Every route outside the first table must refuse an anonymous caller, and every
+route must carry a rate limit (`actionLimiter` from `middleware/rateLimits.js`,
+first in the route's handlers). `test/authCoverage.test.js` enforces both. To add
+a public route, list it there as well, which keeps the decision explicit and
+reviewable.
 
 ## Present but not wired up
 

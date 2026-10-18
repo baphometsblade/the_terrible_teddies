@@ -19,6 +19,19 @@ const SERVER = path.join(ROOT, 'server.js');
 const VIEWS = path.join(ROOT, 'views');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 
+// Comments never reach the browser, so a link or tag quoted in one is not a link
+// or tag. Repeated until nothing changes: taking one comment out can join the text
+// around it into another.
+function withoutComments(source) {
+  let current = source;
+  let previous;
+  do {
+    previous = current;
+    current = current.replace(/<%#[\s\S]*?%>/g, '').replace(/<!--[\s\S]*?-->/g, '');
+  } while (current !== previous);
+  return current;
+}
+
 function viewSources() {
   return fs
     .readdirSync(VIEWS, { recursive: true })
@@ -26,11 +39,7 @@ function viewSources() {
     .filter((file) => file.endsWith('.ejs'))
     .map((file) => ({
       file,
-      // Comments never reach the browser, so a link quoted in one is not a link.
-      source: fs
-        .readFileSync(path.join(VIEWS, file), 'utf8')
-        .replace(/<%#[\s\S]*?%>/g, '')
-        .replace(/<!--[\s\S]*?-->/g, '')
+      source: withoutComments(fs.readFileSync(path.join(VIEWS, file), 'utf8'))
     }));
 }
 

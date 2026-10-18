@@ -267,13 +267,15 @@ test('a session that cannot be serialised is an error, not a crash', async () =>
 test('works as an express-session store: cookies, regenerate, destroy, and the cap', async () => {
   const store = new BoundedSessionStore({ maxSessions: 2 });
   const app = express();
+  // As in production: behind a proxy that terminates TLS, with a secure cookie.
+  app.set('trust proxy', 1);
   app.use(expressSession({
     name: 'sid',
     secret: 'bounded-store-test',
     resave: false,
     saveUninitialized: false,
     store,
-    cookie: { maxAge: 60000 }
+    cookie: { maxAge: 60000, secure: true }
   }));
   app.get('/set', (req, res) => { req.session.value = req.query.v; res.send('ok'); });
   app.get('/get', (req, res) => res.json({ value: req.session.value || null }));
@@ -283,25 +285,26 @@ test('works as an express-session store: cookies, regenerate, destroy, and the c
   const server = await new Promise((resolve) => { const s = app.listen(0, () => resolve(s)); });
   const base = `http://127.0.0.1:${server.address().port}`;
   const cookieOf = (res) => (res.headers.getSetCookie().find((c) => c.startsWith('sid=')) || '').split(';')[0];
-  const read = async (cookie) => (await (await fetch(`${base}/get`, { headers: { cookie } })).json()).value;
+  const tls = { 'x-forwarded-proto': 'https' };
+  const read = async (cookie) => (await (await fetch(`${base}/get`, { headers: { cookie, ...tls } })).json()).value;
 
   try {
-    const a = cookieOf(await fetch(`${base}/set?v=a`));
+    const a = cookieOf(await fetch(`${base}/set?v=a`, { headers: tls }));
     assert.ok(a, 'a cookie is issued');
     assert.equal(await read(a), 'a', 'and it brings the session back');
 
-    const b = cookieOf(await fetch(`${base}/set?v=b`));
-    const c = cookieOf(await fetch(`${base}/set?v=c`));
+    const b = cookieOf(await fetch(`${base}/set?v=b`, { headers: tls }));
+    const c = cookieOf(await fetch(`${base}/set?v=c`, { headers: tls }));
     assert.equal(await read(a), null, 'the cap of two pushed the first one out');
     assert.equal(await read(b), 'b');
     assert.equal(await read(c), 'c');
 
-    const regenerated = cookieOf(await fetch(`${base}/regenerate`, { headers: { cookie: c } }));
+    const regenerated = cookieOf(await fetch(`${base}/regenerate`, { headers: { cookie: c, ...tls } }));
     assert.ok(regenerated && regenerated !== c, 'regenerate issues a new id');
     assert.equal(await read(c), null, 'the old id is dead');
     assert.equal(await read(regenerated), 'after');
 
-    await fetch(`${base}/destroy`, { headers: { cookie: regenerated } });
+    await fetch(`${base}/destroy`, { headers: { cookie: regenerated, ...tls } });
     assert.equal(await read(regenerated), null, 'destroy ends it');
   } finally {
     server.close();

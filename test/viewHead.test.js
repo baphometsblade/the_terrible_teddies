@@ -24,6 +24,19 @@ const HEAD = path.join(VIEWS, 'partials', '_head.ejs');
 const HOSTILE = '<img src=x onerror=alert(1)>';
 const SHARED_HEAD = /<%-\s*include\(\s*['"]partials\/_head\.ejs['"]/g;
 
+// Comments never reach the browser, so a tag quoted in one is not a tag. Repeated
+// until nothing changes: taking one comment out can join the text around it into
+// another.
+function withoutComments(source) {
+  let current = source;
+  let previous;
+  do {
+    previous = current;
+    current = current.replace(/<%#[\s\S]*?%>/g, '').replace(/<!--[\s\S]*?-->/g, '');
+  } while (current !== previous);
+  return current;
+}
+
 function views() {
   return fs
     .readdirSync(VIEWS, { recursive: true })
@@ -31,11 +44,7 @@ function views() {
     .filter((file) => file.endsWith('.ejs'))
     .map((file) => ({
       file,
-      // Comments never reach the browser, so a tag quoted in one is not a tag.
-      source: fs
-        .readFileSync(path.join(VIEWS, file), 'utf8')
-        .replace(/<%#[\s\S]*?%>/g, '')
-        .replace(/<!--[\s\S]*?-->/g, '')
+      source: withoutComments(fs.readFileSync(path.join(VIEWS, file), 'utf8'))
     }));
 }
 

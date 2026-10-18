@@ -13,5 +13,9 @@ services:
         value: true
       - key: SESSION_SECRET
         generateValue: true
+      # Render's edge names the visitor here. The rate limits count this address
+      # rather than guessing how many proxies sit in front of the app.
+      - key: CLIENT_IP_HEADER
+        value: True-Client-IP
       - key: FOUNDER_PACK_URL
         sync: false

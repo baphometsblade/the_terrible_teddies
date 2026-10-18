@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
+const { actionLimiter } = require('../middleware/rateLimits');
 const { isAuthenticated } = require('../middleware/authMiddleware');
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
@@ -12,14 +13,14 @@ const Boss = require('../models/Boss');
 const teddyAssets = require('../services/teddyAssets');
 
 // Route to start a new game session
-router.post('/game/session', isAuthenticated, (req, res) => {
+router.post('/game/session', actionLimiter, isAuthenticated, (req, res) => {
   req.session.gameState = {}; // Placeholder for initial game state
   console.log('New game session started for user:', req.session.userId);
   res.send('New game session started');
 });
 
 // Route to choose a lineup of teddies
-router.post('/game/choose-lineup', isAuthenticated, async (req, res) => {
+router.post('/game/choose-lineup', actionLimiter, isAuthenticated, async (req, res) => {
   try {
     const teddyLineup = req.body.lineup;
     if (!teddyLineup || !Array.isArray(teddyLineup) || teddyLineup.length === 0) {
@@ -41,7 +42,7 @@ router.post('/game/choose-lineup', isAuthenticated, async (req, res) => {
 });
 
 // Route to initiate a battle
-router.post('/game/initiate-battle', isAuthenticated, (req, res) => {
+router.post('/game/initiate-battle', actionLimiter, isAuthenticated, (req, res) => {
   try {
     if (!req.session.teddyLineup || req.session.teddyLineup.length !== 2) {
       console.log('Invalid teddy lineup for battle initiation');
@@ -60,7 +61,7 @@ router.post('/game/initiate-battle', isAuthenticated, (req, res) => {
 });
 
 // Route to execute a player's turn
-router.post('/game/execute-turn', isAuthenticated, async (req, res) => {
+router.post('/game/execute-turn', actionLimiter, isAuthenticated, async (req, res) => {
   try {
     const battleState = req.session.battleState;
     const playerMove = req.body.move === 'special' ? 'special' : 'attack';
@@ -91,7 +92,7 @@ router.post('/game/execute-turn', isAuthenticated, async (req, res) => {
 });
 
 // Route to render the teddies view
-router.get('/teddies', isAuthenticated, async (req, res) => {
+router.get('/teddies', actionLimiter, isAuthenticated, async (req, res) => {
   try {
     const teddies = await Teddy.find({});
     if (teddies.length === 0) {
@@ -106,7 +107,7 @@ router.get('/teddies', isAuthenticated, async (req, res) => {
 });
 
 // Route to render the battle view
-router.get('/game/battle', isAuthenticated, async (req, res) => {
+router.get('/game/battle', actionLimiter, isAuthenticated, async (req, res) => {
   try {
     if (!req.session.battleState) {
       console.log('No battle state found for user:', req.session.userId);
@@ -122,7 +123,7 @@ router.get('/game/battle', isAuthenticated, async (req, res) => {
 // Route to customize a teddy.
 // Previously this had no authentication at all: any anonymous caller could
 // mutate any teddy in the database by guessing an id.
-router.post('/api/teddies/customize', isAuthenticated, async (req, res) => {
+router.post('/api/teddies/customize', actionLimiter, isAuthenticated, async (req, res) => {
   const { teddyId, skinId, accessoryId } = req.body;
 
   if (!isValidId(teddyId)) {
@@ -165,7 +166,7 @@ router.post('/api/teddies/customize', isAuthenticated, async (req, res) => {
 });
 
 // Route to load end-game content
-router.get('/game/end-game', isAuthenticated, async (req, res) => {
+router.get('/game/end-game', actionLimiter, isAuthenticated, async (req, res) => {
   try {
     const content = await loadEndGameContent();
     if (!content.arenas.length || !content.bosses.length) {
@@ -180,7 +181,7 @@ router.get('/game/end-game', isAuthenticated, async (req, res) => {
 });
 
 // Route to initiate an end-game battle
-router.post('/game/initiate-end-game-battle', isAuthenticated, async (req, res) => {
+router.post('/game/initiate-end-game-battle', actionLimiter, isAuthenticated, async (req, res) => {
   try {
     const { playerTeddyId, arenaId } = req.body;
     const battleSetup = await initiateEndGameBattle(playerTeddyId, arenaId);
@@ -195,7 +196,7 @@ router.post('/game/initiate-end-game-battle', isAuthenticated, async (req, res) 
 //
 // This lived in routes/api/gameRoutes.js, a stale duplicate router mounted at
 // /api/game, which put it at the unintended path /api/game/api/arena-gui.
-router.get('/game/arena-gui', isAuthenticated, async (req, res) => {
+router.get('/game/arena-gui', actionLimiter, isAuthenticated, async (req, res) => {
   try {
     const [arenas, bosses] = await Promise.all([
       Arena.find({}),

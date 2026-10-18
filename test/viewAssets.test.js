@@ -29,12 +29,22 @@ function viewFiles() {
     .filter((f) => f.endsWith('.ejs'));
 }
 
+// EJS comments (<%# ... %>) and HTML comments never reach the browser, so
+// neither should trip these checks - otherwise a comment explaining why jQuery
+// was removed counts as a jQuery reference. Repeated until nothing changes:
+// taking one comment out can join the text around it into another.
+function withoutComments(source) {
+  let current = source;
+  let previous;
+  do {
+    previous = current;
+    current = current.replace(/<%#[\s\S]*?%>/g, '').replace(/<!--[\s\S]*?-->/g, '');
+  } while (current !== previous);
+  return current;
+}
+
 function readView(file) {
-  const source = fs.readFileSync(path.join(VIEWS, file), 'utf8');
-  // Strip EJS comments (<%# ... %>) and HTML comments. Neither reaches the
-  // browser, so neither should trip these checks - otherwise a comment
-  // explaining why jQuery was removed counts as a jQuery reference.
-  return source.replace(/<%#[\s\S]*?%>/g, '').replace(/<!--[\s\S]*?-->/g, '');
+  return withoutComments(fs.readFileSync(path.join(VIEWS, file), 'utf8'));
 }
 
 function srcAttributes(source, tag, attr) {

@@ -18,7 +18,7 @@ test('describeTarget never exposes credentials', () => {
 
   assert.ok(!masked.includes('sup3rs3cret'), `password leaked: ${masked}`);
   assert.ok(!masked.includes('admin'), `username leaked: ${masked}`);
-  assert.ok(masked.includes('cluster0.example.org'), 'host should be shown');
+  assert.match(masked, /\bcluster0\.example\.org\b/, 'host should be shown');
   assert.ok(masked.includes('Prod'), 'database name should be shown');
 });
 

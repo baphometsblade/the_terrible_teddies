@@ -7,8 +7,8 @@ const session = require('express-session');
 const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const requireDatabase = require('./middleware/requireDatabase');
+const { actionLimiter } = require('./middleware/rateLimits');
 const { handleErrors } = require('./middleware/errorHandlers');
 const BoundedSessionStore = require('./utils/boundedSessionStore');
 
@@ -228,17 +228,10 @@ function createApp() {
     next();
   });
 
-  // Throttle credential endpoints. Without this /auth/login is open to
-  // unlimited password guessing.
-  const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 20,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: 'Too many attempts. Please try again later.'
-  });
-  app.use('/auth/login', authLimiter);
-  app.use('/auth/register', authLimiter);
+  // Rate limits are set on the routes themselves (middleware/rateLimits.js), so
+  // a router keeps its limit wherever it is mounted. Password guessing at
+  // /auth/login used to be throttled here; it is throttled in routes/authRoutes.js
+  // now. test/authCoverage.test.js fails if any route has no limit.
 
   app.get('/health', (req, res) => {
     res.json({
@@ -249,7 +242,7 @@ function createApp() {
     });
   });
 
-  app.get('/', (req, res) => {
+  app.get('/', actionLimiter, (req, res) => {
     res.render('index', { user: req.session.user, demoMode });
   });
 

@@ -20,6 +20,11 @@ const { spawnSync } = require('node:child_process');
 //
 // Adding a public route means adding it to PUBLIC here, which makes the
 // decision explicit and reviewable.
+//
+// The same walk checks that every route has a rate limit as its first handler,
+// so it runs before authentication or the database. A route that does not is
+// the "database access, but is not rate-limited" finding CodeQL raised against
+// thirteen handlers before the limits moved onto the routes themselves.
 
 const ROOT = path.join(__dirname, '..');
 
@@ -44,6 +49,13 @@ const PUBLIC = new Set([
   'GET /challenges/',
   'GET /challenges/active',
   'GET /api/events'
+]);
+
+// Routes that deliberately have no rate limit. Everything else must have one.
+const UNLIMITED = new Set([
+  // The platform's health check polls this. A limit could get a healthy service
+  // restarted.
+  'GET /health'
 ]);
 
 /* eslint-disable no-undef */
@@ -91,8 +103,11 @@ async function authProbe(options) {
         if (typeof layer.route.path !== 'string') {
           throw new Error('non-string route path under ' + prefix);
         }
+        // express-rate-limit puts resetKey on the middleware it returns.
+        const first = layer.route.stack[0];
+        const limited = Boolean(first && typeof first.handle.resetKey === 'function');
         for (const method of Object.keys(layer.route.methods)) {
-          routes.push({ method: method.toUpperCase(), path: prefix + layer.route.path });
+          routes.push({ method: method.toUpperCase(), path: prefix + layer.route.path, limited });
         }
       } else if (layer.name === 'router' && layer.handle && layer.handle.stack) {
         walk(layer.handle.stack, prefix + mountPath(layer));
@@ -204,4 +219,40 @@ test('the probe can tell an open route from a protected one', () => {
   const protectedRoute = results.find((r) => key(r) === 'POST /game/choose-lineup');
   assert.ok(protectedRoute, 'a known protected route should be enumerated');
   assert.equal(refused(protectedRoute), true, `a protected route must be classed as refused (got ${protectedRoute.status})`);
+});
+
+test('every route is rate limited before anything else runs, unless it is listed in UNLIMITED', () => {
+  const offenders = probe()
+    .filter((r) => !UNLIMITED.has(key(r)))
+    .filter((r) => !r.limited)
+    .map(key);
+
+  assert.deepEqual(
+    offenders,
+    [],
+    `route(s) with no rate limit as their first handler: ${offenders.join(', ')}. ` +
+      'Put actionLimiter from middleware/rateLimits.js first, or - if the route must never be throttled - list it in UNLIMITED.'
+  );
+});
+
+test('the UNLIMITED allowlist only names routes that exist', () => {
+  const existing = new Set(probe().map(key));
+  const stale = [...UNLIMITED].filter((entry) => !existing.has(entry));
+
+  assert.deepEqual(stale, [], `UNLIMITED lists route(s) that no longer exist: ${stale.join(', ')}`);
+});
+
+test('the probe can tell a limited route from an unlimited one', () => {
+  // Without a control, "every route is limited" could pass because the probe
+  // reports everything as limited.
+  const results = probe({ openControl: true });
+  const control = results.find((r) => key(r) === 'POST /__control__/open');
+  assert.ok(control, 'the control route should have been enumerated');
+  assert.equal(control.limited, false, 'a route with no limiter must be reported as unlimited');
+
+  for (const name of ['POST /play/start', 'POST /auth/login', 'POST /game/choose-lineup', 'GET /market']) {
+    const route = results.find((r) => key(r) === name);
+    assert.ok(route, `${name} should have been enumerated`);
+    assert.equal(route.limited, true, `${name} should be reported as limited`);
+  }
 });

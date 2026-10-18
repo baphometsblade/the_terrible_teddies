@@ -3,12 +3,13 @@ const { DEMO_TEDDIES, getDemoTeddyById } = require('../data/demoTeddies');
 const { createBattle, executeTurn, autoBattle } = require('../services/battleEngine');
 
 const router = express.Router();
+const { actionLimiter } = require('../middleware/rateLimits');
 
 function pickOpponent(playerId) {
   return DEMO_TEDDIES.find((teddy) => teddy._id !== playerId) || DEMO_TEDDIES[0];
 }
 
-router.get('/play', (req, res) => {
+router.get('/play', actionLimiter, (req, res) => {
   res.render('play', {
     teddies: DEMO_TEDDIES,
     battle: null,
@@ -18,7 +19,7 @@ router.get('/play', (req, res) => {
   });
 });
 
-router.post('/play/start', (req, res) => {
+router.post('/play/start', actionLimiter, (req, res) => {
   const selectedTeddyId = req.body.teddyId || DEMO_TEDDIES[0]._id;
   const playerTeddy = getDemoTeddyById(selectedTeddyId) || DEMO_TEDDIES[0];
   const opponentTeddy = pickOpponent(playerTeddy._id);
@@ -34,7 +35,7 @@ router.post('/play/start', (req, res) => {
   });
 });
 
-router.post('/play/turn', (req, res) => {
+router.post('/play/turn', actionLimiter, (req, res) => {
   const move = req.body.move === 'special' ? 'special' : 'attack';
   const existingBattle = req.session.demoBattle;
 
@@ -57,11 +58,11 @@ router.post('/play/turn', (req, res) => {
   });
 });
 
-router.get('/api/demo/teddies', (req, res) => {
+router.get('/api/demo/teddies', actionLimiter, (req, res) => {
   res.json({ teddies: DEMO_TEDDIES });
 });
 
-router.post('/api/demo/battle', (req, res) => {
+router.post('/api/demo/battle', actionLimiter, (req, res) => {
   const playerTeddy = getDemoTeddyById(req.body.teddyId) || DEMO_TEDDIES[0];
   const opponentTeddy = pickOpponent(playerTeddy._id);
   res.json(autoBattle(playerTeddy, opponentTeddy));

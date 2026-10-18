@@ -25,6 +25,12 @@ on:
         default: ubuntu-latest
         required: false
 
+# Nothing here writes to the repository or to GitHub, so the token the workflow
+# runs with only needs to read the code. Without this it gets whatever the
+# repository's default is, which can include write access.
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test (Node ${{ matrix.node }})

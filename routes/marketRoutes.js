@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
+const { actionLimiter } = require('../middleware/rateLimits');
 const MarketItem = require('../models/MarketItem');
 const Teddy = require('../models/Teddy');
 const { isAuthenticated } = require('../middleware/authMiddleware');
@@ -9,7 +10,7 @@ const teddyAssets = require('../services/teddyAssets');
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 // Browsing the market stays public.
-router.get('/market', async (req, res, next) => {
+router.get('/market', actionLimiter, async (req, res, next) => {
   try {
     // A listing whose teddy has been deleted populates to null, which made the
     // whole page 500 on item.teddy.name. Leave those out.
@@ -26,7 +27,7 @@ router.get('/market', async (req, res, next) => {
 
 // Listing an item requires a login. Previously anonymous callers could create
 // listings with owner: undefined.
-router.post('/market/sell', isAuthenticated, async (req, res, next) => {
+router.post('/market/sell', actionLimiter, isAuthenticated, async (req, res, next) => {
   const { teddyId } = req.body;
   const price = Number(req.body.price);
 
@@ -65,7 +66,7 @@ router.post('/market/sell', isAuthenticated, async (req, res, next) => {
 // hitting it simultaneously both passed the check and both "bought" it. It also
 // never recorded who bought it, never transferred the teddy, and threw a
 // TypeError (500) instead of 404 when the item did not exist.
-router.post('/market/buy/:itemId', isAuthenticated, async (req, res, next) => {
+router.post('/market/buy/:itemId', actionLimiter, isAuthenticated, async (req, res, next) => {
   const { itemId } = req.params;
 
   if (!isValidId(itemId)) {

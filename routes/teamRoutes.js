@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
+const { actionLimiter } = require('../middleware/rateLimits');
 const Team = require('../models/Team');
 const Player = require('../models/Player');
 const { isAuthenticated } = require('../middleware/authMiddleware');
@@ -9,7 +10,7 @@ const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const { currentPlayer } = require('../utils/currentPlayer');
 
-router.post('/create', isAuthenticated, async (req, res) => {
+router.post('/create', actionLimiter, isAuthenticated, async (req, res) => {
   const { name } = req.body;
   const members = Array.isArray(req.body.members) ? req.body.members : [];
 
@@ -43,7 +44,7 @@ router.post('/create', isAuthenticated, async (req, res) => {
 
 // Adding a member now requires that YOU are on the team.
 // Previously any authenticated user could add any player to any team.
-router.post('/:teamId/addMember', isAuthenticated, async (req, res) => {
+router.post('/:teamId/addMember', actionLimiter, isAuthenticated, async (req, res) => {
   const { teamId } = req.params;
   const { memberId } = req.body;
 

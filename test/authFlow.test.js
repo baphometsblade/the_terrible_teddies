@@ -30,8 +30,13 @@ let ids;
 let calls;
 let failPlayerCreate;
 let logged;
+let visitors = 0;
+let visitor;
 
 function reset() {
+  // Every test is a different visitor, as far as the rate limits can tell, so
+  // the failed logins of one do not count against the next.
+  visitor = `192.0.2.${++visitors}`;
   users = new Map();
   ids = 0;
   calls = { findOne: [], create: [], playerCreate: [], deleteOne: [], compare: [] };
@@ -76,6 +81,9 @@ let base;
 
 function buildApp() {
   const app = express();
+  // As in production (server.js): behind one proxy that terminates TLS and
+  // names the visitor in X-Forwarded-For, with a cookie that is secure.
+  app.set('trust proxy', 1);
   // One connection per request. A server keeps an idle connection open for five
   // seconds, which would hold the process open that long after the last test.
   app.use((req, res, next) => { res.set('Connection', 'close'); next(); });
@@ -86,7 +94,7 @@ function buildApp() {
     secret: 'auth-flow-test',
     resave: false,
     saveUninitialized: false,
-    cookie: { httpOnly: true, sameSite: 'lax' }
+    cookie: { httpOnly: true, sameSite: 'lax', secure: true }
   }));
 
   // Stand-ins for the rest of the site: one gives a visitor a session without
@@ -133,10 +141,10 @@ after(() => {
 const FORM = { 'content-type': 'application/x-www-form-urlencoded' };
 const JSON_TYPE = { 'content-type': 'application/json' };
 
-async function send(method, route, { body, headers = {}, cookie } = {}) {
+async function send(method, route, { body, headers = {}, cookie, from = visitor } = {}) {
   const res = await fetch(base + route, {
     method,
-    headers: { ...headers, ...(cookie ? { cookie } : {}) },
+    headers: { 'x-forwarded-for': from, 'x-forwarded-proto': 'https', ...headers, ...(cookie ? { cookie } : {}) },
     body,
     redirect: 'manual'
   });
@@ -146,14 +154,15 @@ async function send(method, route, { body, headers = {}, cookie } = {}) {
     status: res.status,
     text,
     location: res.headers.get('location'),
+    retryAfter: res.headers.get('retry-after'),
     setCookies,
     // name=value, ready to send back as a Cookie header
     sid: (setCookies.find((c) => c.startsWith('tt.sid=')) || '').split(';')[0]
   };
 }
 
-const postForm = (route, fields, cookie) => send('POST', route, { body: new URLSearchParams(fields).toString(), headers: FORM, cookie });
-const postJson = (route, value, cookie) => send('POST', route, { body: JSON.stringify(value), headers: JSON_TYPE, cookie });
+const postForm = (route, fields, cookie, from) => send('POST', route, { body: new URLSearchParams(fields).toString(), headers: FORM, cookie, from });
+const postJson = (route, value, cookie, from) => send('POST', route, { body: JSON.stringify(value), headers: JSON_TYPE, cookie, from });
 const whoami = async (cookie) => JSON.parse((await send('GET', '/__whoami', { cookie })).text);
 
 const GOOD_PASSWORD = 'correct horse battery';
@@ -317,6 +326,61 @@ for (const method of ['POST', 'GET']) {
     assert.equal((await whoami(sid)).userId, null, 'and the session is gone on the server too');
   });
 }
+
+test('login stops answering after 20 failed attempts from one visitor, and only to that visitor', async () => {
+  reset();
+  await addUser('alice', GOOD_PASSWORD);
+  const guesser = '198.51.100.7';
+
+  for (let attempt = 1; attempt <= 20; attempt++) {
+    const res = await postForm('/auth/login', { username: 'alice', password: `guess ${attempt}` }, undefined, guesser);
+    assert.equal(res.status, 401, `attempt ${attempt} is answered`);
+  }
+
+  const refused = await postForm('/auth/login', { username: 'alice', password: GOOD_PASSWORD }, undefined, guesser);
+  assert.equal(refused.status, 429, 'the 21st is refused, even with the right password');
+  assert.equal(refused.text, 'Too many attempts. Please try again later.');
+  assert.ok(Number(refused.retryAfter) > 0, 'and says when to come back');
+  assert.equal(refused.sid, '', 'no session is started for a refused attempt');
+
+  const someoneElse = await postForm('/auth/login', { username: 'alice', password: GOOD_PASSWORD }, undefined, '198.51.100.8');
+  assert.equal(someoneElse.status, 302, 'a different visitor is not affected');
+});
+
+test('signing in correctly does not use up the allowance, so a shared address can sign in more than 20 times', async () => {
+  reset();
+  await addUser('alice', GOOD_PASSWORD);
+  const school = '198.51.100.20';
+
+  for (let signIn = 1; signIn <= 25; signIn++) {
+    const res = await postForm('/auth/login', { username: 'alice', password: GOOD_PASSWORD }, undefined, school);
+    assert.equal(res.status, 302, `sign-in ${signIn}`);
+  }
+
+  // Control: the counter is live, and still has all 20 failures to give.
+  for (let attempt = 1; attempt <= 20; attempt++) {
+    assert.equal((await postForm('/auth/login', { username: 'alice', password: 'wrong' }, undefined, school)).status, 401);
+  }
+  assert.equal((await postForm('/auth/login', { username: 'alice', password: 'wrong' }, undefined, school)).status, 429);
+});
+
+test('making accounts is limited to 20 attempts from one visitor, refused attempts included', async () => {
+  reset();
+  const farmer = '198.51.100.30';
+
+  for (let attempt = 1; attempt <= 20; attempt++) {
+    // Too short on purpose: a refused attempt still costs the allowance.
+    const res = await postForm('/auth/register', { username: `farm${attempt}`, password: 'short' }, undefined, farmer);
+    assert.equal(res.status, 400, `attempt ${attempt}`);
+  }
+
+  const refused = await postForm('/auth/register', { username: 'farm21', password: GOOD_PASSWORD }, undefined, farmer);
+  assert.equal(refused.status, 429);
+  assert.deepEqual(calls.create, [], 'nothing was created');
+
+  const someoneElse = await postForm('/auth/register', { username: 'bystander', password: GOOD_PASSWORD }, undefined, '198.51.100.31');
+  assert.equal(someoneElse.status, 302, 'a different visitor can still register');
+});
 
 test('passwords never reach the log', async () => {
   reset();

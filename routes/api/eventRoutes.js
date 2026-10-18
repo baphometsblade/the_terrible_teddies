@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { actionLimiter } = require('../../middleware/rateLimits');
 const Event = require('../../models/Event'); // Corrected path to match the project's directory structure
 const logger = require('../../config/loggingConfig'); // Corrected path to loggingConfig
 const Boss = require('../../models/Boss'); // Ensure Boss model is required for boss fight logic
@@ -8,7 +9,7 @@ const mongoose = require('mongoose');
 const { isAuthenticated } = require('../../middleware/authMiddleware');
 
 // Route to fetch and return a list of available special events from the database
-router.get('/events', async (req, res) => {
+router.get('/events', actionLimiter, async (req, res) => {
   try {
     const now = new Date();
     const events = await Event.find({ isActive: true, startDate: { $lte: now }, endDate: { $gte: now } });
@@ -26,7 +27,7 @@ router.get('/events', async (req, res) => {
 // Authenticated: the attack total is computed from the caller's own teddies, so
 // there is no meaningful anonymous answer - and this was the one route in the
 // app that never looked at the session.
-router.get('/boss-fight', isAuthenticated, async (req, res) => {
+router.get('/boss-fight', actionLimiter, isAuthenticated, async (req, res) => {
   try {
     const bossId = req.query.bossId;
     // ?bossId[$ne]=x is parsed into an object by the query parser; only a plain
