@@ -14,7 +14,8 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       # Render's edge names the visitor here. The rate limits count this address
-      # rather than guessing how many proxies sit in front of the app.
+      # rather than guessing how many proxies sit in front of the app. If none of
+      # the first 20 requests carries it, the app logs one warning saying so.
       - key: CLIENT_IP_HEADER
         value: True-Client-IP
       - key: FOUNDER_PACK_URL

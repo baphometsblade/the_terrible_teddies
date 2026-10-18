@@ -126,10 +126,11 @@ function probe(extraEnv = {}) {
     match,
     `probe produced no payload. stderr: ${(result.stderr || '').slice(0, 600)} stdout: ${(result.stdout || '').slice(0, 300)}`
   );
-  return JSON.parse(match[1]);
+  return { ...JSON.parse(match[1]), log: result.stderr || '' };
 }
 
 const defaults = probe();
+const named = probe({ CLIENT_IP_HEADER: 'True-Client-IP' });
 
 test('a visitor is served up to the advertised limit and refused after it', () => {
   const limit = Number(defaults.limit);
@@ -176,8 +177,6 @@ test('by default the visitor is the address the proxy reports, and a header from
 });
 
 test('CLIENT_IP_HEADER counts the address the platform names instead', () => {
-  const named = probe({ CLIENT_IP_HEADER: 'True-Client-IP' });
-
   assert.equal(named.served, Number(named.limit), 'ordinary limits still apply');
   assert.equal(named.sameProxyOtherEdge, 200, 'a different edge address is a different visitor, whatever the proxy says');
   assert.equal(named.sameProxySameEdge, 429, 'the same edge address is the same visitor');
@@ -207,4 +206,105 @@ test('clientKey: req.ip unless a named header holds an address', () => {
   } finally {
     if (saved === undefined) delete process.env.CLIENT_IP_HEADER; else process.env.CLIENT_IP_HEADER = saved;
   }
+});
+
+// The check for a header that never arrives keeps a count, so each case below
+// gets its own copy of the module and starts from zero.
+function freshClientKey() {
+  const file = require.resolve('../middleware/rateLimits');
+  const original = require.cache[file];
+  delete require.cache[file];
+  try {
+    return require('../middleware/rateLimits').clientKey;
+  } finally {
+    require.cache[file] = original;
+  }
+}
+
+function warningsFrom(fn) {
+  const original = console.warn;
+  const lines = [];
+  console.warn = (...args) => lines.push(args.join(' '));
+  try {
+    fn();
+  } finally {
+    console.warn = original;
+  }
+  return lines;
+}
+
+function withHeaderSetting(value, fn) {
+  const saved = process.env.CLIENT_IP_HEADER;
+  if (value === undefined) delete process.env.CLIENT_IP_HEADER; else process.env.CLIENT_IP_HEADER = value;
+  try {
+    return fn();
+  } finally {
+    if (saved === undefined) delete process.env.CLIENT_IP_HEADER; else process.env.CLIENT_IP_HEADER = saved;
+  }
+}
+
+const request = (ip, headers = {}) => ({ ip, get: (name) => headers[name.toLowerCase()] });
+
+test('a named header that never arrives is reported once, with no visitor address in it', () => {
+  withHeaderSetting('True-Client-IP', () => {
+    const key = freshClientKey();
+
+    const early = warningsFrom(() => {
+      for (let i = 0; i < 19; i++) key(request(`10.0.0.${i}`));
+    });
+    assert.deepEqual(early, [], 'nineteen requests are not yet a pattern');
+
+    const twentieth = warningsFrom(() => key(request('10.0.1.19')));
+    assert.equal(twentieth.length, 1, 'said on the twentieth request');
+    assert.match(twentieth[0], /CLIENT_IP_HEADER is True-Client-IP/);
+    assert.match(twentieth[0], /first 20 requests/);
+    assert.doesNotMatch(twentieth[0], /10\.0\./, 'no visitor address goes in the log');
+
+    const after = warningsFrom(() => {
+      for (let i = 20; i < 80; i++) {
+        // Half carry nothing, half carry something that is not an address.
+        key(request(`10.0.1.${i}`, i % 2 ? { 'true-client-ip': 'not an address' } : {}));
+      }
+    });
+    assert.deepEqual(after, [], 'and not again');
+  });
+});
+
+test('the header name in the report cannot break the log line', () => {
+  withHeaderSetting('X-Odd Name\nsecond line', () => {
+    const key = freshClientKey();
+    const said = warningsFrom(() => {
+      for (let i = 0; i < 20; i++) key(request('10.0.0.1'));
+    });
+    assert.equal(said.length, 1);
+    assert.doesNotMatch(said[0], /[\r\n]/, 'one line, whatever the setting held');
+    assert.match(said[0], /CLIENT_IP_HEADER is X-Odd\?Name\?second\?line,/);
+  });
+});
+
+test('the missing-header report stays quiet once the header has been seen, or when none is named', () => {
+  withHeaderSetting('True-Client-IP', () => {
+    const key = freshClientKey();
+    const said = warningsFrom(() => {
+      for (let i = 0; i < 5; i++) key(request('10.0.0.1'));
+      key(request('10.0.0.1', { 'true-client-ip': '203.0.113.9' }));
+      for (let i = 0; i < 100; i++) key(request('10.0.0.1'));
+    });
+    assert.deepEqual(said, [], 'one request that carried the address settles it');
+  });
+
+  withHeaderSetting(undefined, () => {
+    const key = freshClientKey();
+    const said = warningsFrom(() => {
+      for (let i = 0; i < 100; i++) key(request('10.0.0.1'));
+    });
+    assert.deepEqual(said, [], 'with no header named there is nothing to be missing');
+  });
+});
+
+test('in the real app the report appears once in the log, and only when a header is named', () => {
+  const lines = named.log.split(/\r?\n/).filter((line) => line.includes('CLIENT_IP_HEADER is True-Client-IP'));
+  assert.equal(lines.length, 1, `expected one report, the log was: ${named.log.slice(0, 400)}`);
+
+  assert.doesNotMatch(defaults.log, /CLIENT_IP_HEADER/, 'no header named, nothing to report');
 });

@@ -56,8 +56,10 @@ Read this before deploying.
   and where it is wrong every visitor shares one allowance. Set
   `CLIENT_IP_HEADER` to a header your platform's edge writes itself and that
   address is used instead; `render.yaml` sets `True-Client-IP`, which Render
-  points to. Never name a header a visitor can send themselves: they could forge
-  it and walk around the limits.
+  points to. If that header is named and none of the first 20 requests carries
+  it, the log says so once, which is how to tell that a host does not send it.
+  Never name a header a visitor can send themselves: they could forge it and
+  walk around the limits.
 - **Writes from another site are refused.** The forms carry no CSRF tokens. The
   session cookie is `SameSite=Lax`, and `middleware/refuseCrossSite.js` also
   refuses any POST, PUT, PATCH or DELETE (and the logout link) that the browser

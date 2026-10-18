@@ -32,7 +32,37 @@ function clientKey(req) {
   const name = process.env.CLIENT_IP_HEADER;
   const value = name ? req.get(name) : undefined;
   const address = typeof value === 'string' ? value.trim() : '';
-  return ipKeyGenerator(net.isIP(address) ? address : req.ip);
+  const named = net.isIP(address) !== 0;
+  if (name) checkHeaderArrives(name, named);
+  return ipKeyGenerator(named ? address : req.ip);
+}
+
+// A header the platform does not send leaves every visitor counted by the
+// proxy's address, which may be one shared address. Nothing breaks until the
+// day the app is busy, so say so in the log instead. If the header is named and
+// none of the first few requests carried an address in it, the log says so
+// once. A single request that does carry it settles the question the other way
+// and ends the checking, so an internal probe that lacks it is not an alarm.
+// Nothing about any visitor goes in the message.
+const CHECK_FIRST = 20;
+let missingBeforeFirstSeen = 0;
+let headerChecked = false;
+
+function checkHeaderArrives(name, present) {
+  if (headerChecked) return;
+  if (present) {
+    headerChecked = true;
+    return;
+  }
+  missingBeforeFirstSeen += 1;
+  if (missingBeforeFirstSeen < CHECK_FIRST) return;
+  headerChecked = true;
+  const shown = String(name).replace(/[^\w-]/g, '?').slice(0, 60);
+  console.warn(
+    `CLIENT_IP_HEADER is ${shown}, but none of the first ${CHECK_FIRST} requests carried an address in it. ` +
+      'Visitors are being counted by the proxy address instead, and if that is one shared address they all share one allowance. ' +
+      'Check the setting against what the platform actually sends.'
+  );
 }
 
 // A refused request is answered in the shape the caller asked for, the way
