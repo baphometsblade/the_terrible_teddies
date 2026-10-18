@@ -20,6 +20,17 @@ const demoMode = process.env.DEMO_MODE === 'true' || !hasDatabase;
 // How long to wait for MongoDB before giving up. See connectDatabase().
 const dbTimeoutMs = Number(process.env.DB_TIMEOUT_MS) || 10000;
 
+// How long a shutdown waits for open connections before giving up. See
+// installShutdown(). Render kills the process 30 seconds after SIGTERM, so the
+// default stays well inside that. Anything unset or unusable gets the default
+// rather than 0: a zero or negative wait would cut every connection off at once,
+// and setTimeout reads a delay above 2^31-1 as 1.
+function positiveMs(value, fallback) {
+  const ms = Number(value);
+  return Number.isFinite(ms) && ms > 0 ? Math.min(ms, 2 ** 31 - 1) : fallback;
+}
+const shutdownGraceMs = positiveMs(process.env.SHUTDOWN_GRACE_MS, 10000);
+
 /**
  * Hostname of a connection string, with any credentials stripped.
  *
@@ -312,6 +323,58 @@ async function connectDatabase() {
   return true;
 }
 
+/**
+ * Stop cleanly when the platform asks.
+ *
+ * Render, Docker and systemd stop a process with SIGTERM and kill it outright
+ * if it is still there after a delay (30 seconds on Render). With no handler,
+ * Node dies on the spot and drops every request that is open. The only handler
+ * here used to be for SIGINT, and it could wait forever.
+ *
+ * The first signal stops accepting connections, lets open requests finish,
+ * closes MongoDB and exits 0. Three things keep that from hanging:
+ *
+ *   - Idle keep-alive connections are closed straight away. Node 18 leaves them
+ *     to time out by themselves, and close() waits for every one.
+ *   - Whatever is still open after SHUTDOWN_GRACE_MS (default 10 seconds) is
+ *     given up on: the process exits 1.
+ *   - A second signal exits at once, so Ctrl-C twice always works.
+ *
+ * test/shutdown.test.js starts the real server and signals it.
+ */
+function installShutdown(server) {
+  let stopping = false;
+
+  const stop = (signal) => {
+    if (stopping) {
+      console.warn(`${signal} signal received again: exiting now`);
+      process.exit(1);
+    }
+    stopping = true;
+    console.log(`${signal} signal received: closing HTTP server`);
+
+    setTimeout(() => {
+      console.warn(`Shutdown had not finished after ${shutdownGraceMs}ms: exiting anyway`);
+      process.exit(1);
+    }, shutdownGraceMs).unref();
+
+    server.close(async () => {
+      try {
+        if (mongoose.connection.readyState !== 0) {
+          await mongoose.connection.close();
+        }
+      } catch (error) {
+        console.error(`Closing MongoDB failed: ${error.message}`);
+      }
+      process.exit(0);
+    });
+    server.closeIdleConnections();
+  };
+
+  process.on('SIGINT', () => stop('SIGINT'));
+  process.on('SIGTERM', () => stop('SIGTERM'));
+}
+
 async function bootstrap() {
   const app = createApp();
   await connectDatabase();
@@ -321,15 +384,7 @@ async function bootstrap() {
     console.log(`Playable demo: http://localhost:${port}/play`);
   });
 
-  process.on('SIGINT', async () => {
-    console.log('SIGINT signal received: closing HTTP server');
-    server.close(async () => {
-      if (mongoose.connection.readyState !== 0) {
-        await mongoose.connection.close();
-      }
-      process.exit(0);
-    });
-  });
+  installShutdown(server);
 
   return server;
 }

@@ -23,7 +23,11 @@ The repository now includes a guaranteed playable web demo that can run without 
 
 ## Requirements
 
-- Node.js 18.18 or newer
+- Node.js 18.18 or newer. A Render deploy runs the version in `.node-version`
+  (24), unless a `NODE_VERSION` variable set in Render's dashboard overrides it.
+  With neither, Render takes the newest release at every rebuild, and a new
+  major would reach production before CI had seen it.
+  `test/nodeVersion.test.js` keeps the pin to a version CI tests.
 - MongoDB is optional for the playable demo
 - MongoDB is required for the full persistent account/collection experience
 
@@ -161,6 +165,10 @@ without writing. The same applies to `populateDatabase.js`, `populateItems.js`,
 for non-interactive use. `test/dbWriteScripts.test.js` finds every script that
 connects and writes, and fails unless it stops at the guard.
 
+`scripts/dalleImageGenerator.js` also needs `UNSPLASH_ACCESS_KEY` (see
+`.env.example`) for its photo lookups. `test/envDocs.test.js` fails when the code
+reads an environment variable that neither this file nor `.env.example` mentions.
+
 Note on `fixDatabase.js`: it overwrites `health` and `attackDamage` on the
 teddies it lists, which undoes any level-up progression those teddies earned.
 Its `--dry-run` prints a field-by-field diff so you can see that before it
@@ -262,6 +270,13 @@ defect rather than single bugs:
   git tracks, every `loadRoute` target in `server.js` exists (a missing one would
   otherwise just 404), and every tracked script parses.
 - `noSecrets`: no credentialed connection string in any tracked file.
+- `envDocs`: every environment variable the code reads is described in this file
+  or `.env.example`, and every setting `.env.example` shows is read by something.
+- `nodeVersion`: the Node version a deploy pins in `.node-version` is one CI runs
+  the tests on, and CI's oldest version is the floor `package.json` declares.
+- `shutdown`: starts the real server and sends it `SIGTERM` and `SIGINT`. Open
+  requests finish, idle and stuck connections cannot hold it up, and a second
+  signal exits at once. Skipped on Windows, which only emulates signals.
 
 Each has a control case, so it cannot pass just because it never sees a failure.
 
@@ -328,6 +343,8 @@ route renders.
 For the fastest public demo, deploy with `DEMO_MODE=true` and no `DATABASE_URL`. Add MongoDB later when you want persistent user accounts, inventory, marketplace listings, and progression.
 
 Without a database the demo keeps its sessions in memory: at most `DEMO_MAX_SESSIONS` of them (default 10000, oldest unused dropped first), swept after two hours, so a flood of visitors cannot exhaust the server's memory. Restarting the server ends every demo session.
+
+On `SIGTERM` or `SIGINT` the server stops taking new connections, lets requests in flight finish, closes MongoDB and exits 0. Anything still open after `SHUTDOWN_GRACE_MS` (default 10 seconds) is cut off and the exit code is 1; a second signal exits at once. Render sends `SIGTERM` when it replaces an instance and kills the process 30 seconds later. `test/shutdown.test.js` starts the real server and signals it; Windows only emulates signals, so the test is skipped there.
 
 ## License
 

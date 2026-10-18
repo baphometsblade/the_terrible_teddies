@@ -1,3 +1,6 @@
+# Which Node runs the service is decided by .node-version, not by this file
+# (test/nodeVersion.test.js keeps it to a version CI tests). A NODE_VERSION
+# variable would outrank that file, so do not set one here.
 services:
   - type: web
     name: terrible-teddies
