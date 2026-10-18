@@ -9,9 +9,12 @@ const path = require('node:path');
 // launched, and server.js shuts down cleanly when it hears it. `npm start` puts
 // two processes in between: npm, then `sh -c node server.js`. npm passes the
 // signal on, but only as far as that shell, which dies without telling node.
-// Measured with npm 10.9.8 on Linux: SIGTERM to npm ended npm and the shell
-// within 200 ms and left node serving, never told. The shutdown code never ran.
-// `node server.js` is the same program with nothing in between.
+// Measured with npm 10.9.8 on Linux, where sh is dash: SIGTERM to npm ended npm
+// and the shell within 200 ms and left node serving, never told. The shutdown
+// code never ran. `node server.js` is the same program with nothing in between.
+// (How the platform itself launches the command is its own business: dash keeps
+// a shell between the caller and node even for `sh -c "node server.js"`, bash
+// does not. Render's support advice is the same as this test's: start with node.)
 //
 // So render.yaml must name node itself, and the file it names must be the one
 // package.json's "start" script runs, so the two cannot drift apart. (A service
@@ -29,9 +32,16 @@ function startCommandOf(yaml) {
 }
 
 // `node server.js`, with optional node flags: node itself and nothing wrapped
-// around it, no shell and no package manager.
+// around it, no shell and no package manager. It splits the command into words
+// and checks each one. A single pattern with a repeated group for the flags did
+// the same job and doubled its work for every extra flag on a command that
+// almost matched (CodeQL flagged it, and 26 flags took a second).
 function runsNodeDirectly(command) {
-  return /^node(?:[ \t]+--?[\w=.:-]+)*[ \t]+[\w./-]+\.[cm]?js$/.test(String(command));
+  const words = String(command).trim().split(/[ \t]+/);
+  if (words.length < 2 || words[0] !== 'node') return false;
+  const flags = words.slice(1, -1);
+  const file = words[words.length - 1];
+  return flags.every((word) => /^-{1,2}[\w=.:][\w=.:-]*$/.test(word)) && /^[\w./-]+\.[cm]?js$/.test(file);
 }
 
 test('the readers tell node from a wrapper around node', () => {
@@ -52,6 +62,13 @@ test('the readers tell node from a wrapper around node', () => {
   ]) {
     assert.ok(!runsNodeDirectly(wrapped), JSON.stringify(wrapped));
   }
+
+  // The input that made the first version of this reader take ages: a command
+  // that almost matches, with many flags. 40 repeats would not finish in this
+  // lifetime on that version.
+  const started = Date.now();
+  assert.ok(!runsNodeDirectly(`node\t-${'--\t-'.repeat(40)}!`));
+  assert.ok(Date.now() - started < 1000, 'a long, odd command should be refused at once');
 });
 
 test('render.yaml starts node itself, so SIGTERM reaches the server', () => {
