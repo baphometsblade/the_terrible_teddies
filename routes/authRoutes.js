@@ -6,6 +6,8 @@ const bcrypt = require('bcrypt');
 const router = express.Router();
 
 const MIN_PASSWORD_LENGTH = 10;
+// C0 controls (line breaks, tabs, NUL, escape) and DEL.
+const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f]/;
 
 // The database guard that used to live here now applies to this whole router
 // at its mount point in server.js (mountDbRoute), alongside every other
@@ -32,6 +34,11 @@ router.post('/auth/register', async (req, res) => {
     }
     if (username.length > 40) {
       return res.status(400).send('Username must be 40 characters or fewer.');
+    }
+    // Usernames are written to the log. A line break or escape code inside one
+    // could forge log lines, and no real name contains one.
+    if (CONTROL_CHARACTERS.test(username)) {
+      return res.status(400).send('Username contains characters that are not allowed.');
     }
     if (password.length < MIN_PASSWORD_LENGTH) {
       return res.status(400).send(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);

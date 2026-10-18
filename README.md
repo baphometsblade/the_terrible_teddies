@@ -230,6 +230,9 @@ defect rather than single bugs:
 - `boundedSessionStore`: the demo's in-memory sessions are capped and swept, so
   visitors who never return cannot fill the server's memory; the oldest unused
   session goes first.
+- `authFlow`: register, log in and log out against stand-in models, with no
+  database: validation, identical failures for a wrong password and an unknown
+  user, session replacement at login, logout, and no passwords in the log.
 - `moduleGraph`: every `require` is a built-in, a declared dependency or a file
   git tracks, every `loadRoute` target in `server.js` exists (a missing one would
   otherwise just 404), and every tracked script parses.
