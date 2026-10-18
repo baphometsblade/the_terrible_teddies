@@ -10,6 +10,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const requireDatabase = require('./middleware/requireDatabase');
 const { handleErrors } = require('./middleware/errorHandlers');
+const BoundedSessionStore = require('./utils/boundedSessionStore');
 
 const port = process.env.PORT || 3000;
 const hasDatabase = Boolean(process.env.DATABASE_URL);
@@ -133,8 +134,13 @@ function mountDbRoute(app, pathOrRouter, maybeRouter) {
 
 function createSessionStore() {
   if (!hasDatabase || demoMode) {
-    console.warn('Using in-memory session store. Set DATABASE_URL for persistent production sessions.');
-    return undefined;
+    // express-session's default MemoryStore never evicts, so a visitor who
+    // starts a battle and leaves would cost memory until the process restarted,
+    // with no ceiling. This store is capped and sweeps expired sessions. See
+    // utils/boundedSessionStore.js.
+    const maxSessions = BoundedSessionStore.parseMaxSessions(process.env.DEMO_MAX_SESSIONS);
+    console.warn(`Using an in-memory session store, capped at ${maxSessions} sessions. Set DATABASE_URL for persistent sessions.`);
+    return new BoundedSessionStore({ maxSessions });
   }
 
   return MongoStore.create({
@@ -201,10 +207,9 @@ function createApp() {
         // required FORCE_SECURE_COOKIES=true as well, so the default production
         // deploy sent session cookies over plain HTTP.
         secure: isProduction && process.env.FORCE_SECURE_COOKIES !== 'false',
-        // Demo mode has no DATABASE_URL, so sessions live in express-session's
-        // MemoryStore, which never evicts and is documented as unsuitable for
-        // production. A shorter demo lifetime bounds how long an abandoned
-        // battle occupies memory. Configure DATABASE_URL for a real store.
+        // Demo sessions live in memory (utils/boundedSessionStore.js), so they
+        // get a shorter life: an abandoned battle is swept after two hours.
+        // Configure DATABASE_URL for a persistent store.
         maxAge: demoMode ? 2 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000
       }
     })

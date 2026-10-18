@@ -227,6 +227,9 @@ defect rather than single bugs:
   of the body. A failure of our own is still a 500 with its stack in the log.
 - `relocatable`: pages, stylesheets and the favicon are served the same when the
   server is started from any directory, not just the repo root.
+- `boundedSessionStore`: the demo's in-memory sessions are capped and swept, so
+  visitors who never return cannot fill the server's memory; the oldest unused
+  session goes first.
 - `moduleGraph`: every `require` is a built-in, a declared dependency or a file
   git tracks, every `loadRoute` target in `server.js` exists (a missing one would
   otherwise just 404), and every tracked script parses.
@@ -293,6 +296,8 @@ route renders.
 ## Deployment notes
 
 For the fastest public demo, deploy with `DEMO_MODE=true` and no `DATABASE_URL`. Add MongoDB later when you want persistent user accounts, inventory, marketplace listings, and progression.
+
+Without a database the demo keeps its sessions in memory: at most `DEMO_MAX_SESSIONS` of them (default 10000, oldest unused dropped first), swept after two hours, so a flood of visitors cannot exhaust the server's memory. Restarting the server ends every demo session.
 
 ## License
 
