@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const dns = require('node:dns').promises;
+const path = require('node:path');
 const express = require('express');
 const session = require('express-session');
 const mongoose = require('mongoose');
@@ -8,6 +9,7 @@ const MongoStore = require('connect-mongo');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const requireDatabase = require('./middleware/requireDatabase');
+const { handleErrors } = require('./middleware/errorHandlers');
 
 const port = process.env.PORT || 3000;
 const hasDatabase = Boolean(process.env.DATABASE_URL);
@@ -151,6 +153,12 @@ function createApp() {
   app.locals.demoMode = demoMode;
   app.locals.showOperatorNotes = !isProduction;
 
+  // Anchored to this file, not the working directory. Express resolves a bare
+  // 'views' (its default) and a bare 'public' against process.cwd(), so starting
+  // the server from anywhere but the repo root - a service manager, or
+  // `node /srv/teddies/server.js` - failed every page render and 404'd the
+  // stylesheets and the favicon.
+  app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'ejs');
 
 
@@ -177,7 +185,7 @@ function createApp() {
   // query operator.
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json({ limit: '100kb' }));
-  app.use(express.static('public'));
+  app.use(express.static(path.join(__dirname, 'public')));
 
   app.use(
     session({
@@ -264,11 +272,10 @@ function createApp() {
     });
   });
 
-  app.use((err, req, res, next) => {
-    console.error(`Unhandled application error: ${err.message}`);
-    console.error(err.stack);
-    res.status(500).send('There was an error serving your request.');
-  });
+  // Last, so it sees errors from everything above. A malformed or oversized
+  // request body is the sender's mistake and is answered 4xx; anything else is
+  // a 500. See middleware/errorHandlers.js.
+  app.use(handleErrors);
 
   return app;
 }

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const wantsJson = require('../utils/wantsJson');
 
 /**
  * Reject requests to database-backed routes when there is no live connection.
@@ -22,10 +23,8 @@ function requireDatabase(req, res, next) {
 
   const message = 'This feature needs a database. The playable demo is at /play.';
 
-  // Match the caller's expectations rather than always sending HTML. This reads
-  // originalUrl: the guard is mounted with app.use, which strips the mount path
-  // from req.path, so a req.path check for /api never matched.
-  if (req.accepts(['html', 'json']) === 'json' || req.originalUrl.startsWith('/api')) {
+  // Match the caller's expectations rather than always sending HTML.
+  if (wantsJson(req)) {
     return res.status(503).json({ error: 'database_unavailable', detail: message });
   }
 

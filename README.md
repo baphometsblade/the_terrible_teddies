@@ -222,6 +222,11 @@ defect rather than single bugs:
   naming the host and never the credentials.
 - `dbWriteScripts`: every script that connects to the database and writes stops
   at the confirmation guard unless given `--yes`.
+- `clientErrors`: a malformed, oversized or badly compressed request body is
+  answered 400 or 413 and logged as one short line, with no stack trace and none
+  of the body. A failure of our own is still a 500 with its stack in the log.
+- `relocatable`: pages, stylesheets and the favicon are served the same when the
+  server is started from any directory, not just the repo root.
 - `moduleGraph`: every `require` is a built-in, a declared dependency or a file
   git tracks, every `loadRoute` target in `server.js` exists (a missing one would
   otherwise just 404), and every tracked script parses.
