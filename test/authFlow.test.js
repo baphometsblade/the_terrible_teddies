@@ -76,6 +76,9 @@ let base;
 
 function buildApp() {
   const app = express();
+  // One connection per request. A server keeps an idle connection open for five
+  // seconds, which would hold the process open that long after the last test.
+  app.use((req, res, next) => { res.set('Connection', 'close'); next(); });
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
   app.use(session({
@@ -112,6 +115,11 @@ before(async () => {
   console.warn = capture;
 
   server = await new Promise((resolve) => { const s = buildApp().listen(0, () => resolve(s)); });
+  // This listener must not be what keeps the process alive. On Node 18 a
+  // root-level after() runs only once the event loop is empty, so a server that
+  // is closed only there waits for itself forever: every test passes and the
+  // process never exits. after() below still closes it where hooks run sooner.
+  server.unref();
   base = `http://127.0.0.1:${server.address().port}`;
 });
 
