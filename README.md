@@ -58,6 +58,12 @@ Read this before deploying.
   address is used instead; `render.yaml` sets `True-Client-IP`, which Render
   points to. Never name a header a visitor can send themselves: they could forge
   it and walk around the limits.
+- **Writes from another site are refused.** The forms carry no CSRF tokens. The
+  session cookie is `SameSite=Lax`, and `middleware/refuseCrossSite.js` also
+  refuses any POST, PUT, PATCH or DELETE (and the logout link) that the browser
+  says another site caused, using the `Sec-Fetch-Site` header. A client that
+  sends no such header, such as curl or a browser from before 2023, is let
+  through: it is not a page borrowing a visitor's cookie.
 
 ## Battle randomness
 
@@ -221,6 +227,9 @@ defect rather than single bugs:
 - `rateLimits`: a visitor is served up to the limit and refused after it, a
   refusal says when to come back, a whole battle is far below it, and visitors
   are told apart by the address you tell the app to trust.
+- `refuseCrossSite`: a write that another site caused is refused and starts
+  nothing, while reading, the site's own pages and clients that send no
+  `Sec-Fetch-Site` header are not affected.
 - `linkTargets` and `formActions`: every hard-coded link and form action in a
   view must lead to a real route.
 - `viewCompile` and `viewRender`: every view compiles, emits nothing unescaped,

@@ -7,6 +7,7 @@ const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 
+const { refuseCrossSiteWrites } = require('../middleware/refuseCrossSite');
 const User = require('../models/User');
 const Player = require('../models/Player');
 
@@ -87,6 +88,7 @@ function buildApp() {
   // One connection per request. A server keeps an idle connection open for five
   // seconds, which would hold the process open that long after the last test.
   app.use((req, res, next) => { res.set('Connection', 'close'); next(); });
+  app.use(refuseCrossSiteWrites); // as in server.js
   app.use(express.urlencoded({ extended: false }));
   app.use(express.json());
   app.use(session({
@@ -380,6 +382,35 @@ test('making accounts is limited to 20 attempts from one visitor, refused attemp
 
   const someoneElse = await postForm('/auth/register', { username: 'bystander', password: GOOD_PASSWORD }, undefined, '198.51.100.31');
   assert.equal(someoneElse.status, 302, 'a different visitor can still register');
+});
+
+test('a login that another site caused is refused before anything is looked up', async () => {
+  reset();
+  await addUser('alice', GOOD_PASSWORD);
+  const body = new URLSearchParams({ username: 'alice', password: GOOD_PASSWORD }).toString();
+
+  const foreign = await send('POST', '/auth/login', { body, headers: { ...FORM, 'sec-fetch-site': 'cross-site' } });
+  assert.equal(foreign.status, 403);
+  assert.deepEqual(calls.findOne, [], 'no account was looked up');
+  assert.equal(foreign.sid, '', 'and no session was started');
+
+  const own = await send('POST', '/auth/login', { body, headers: { ...FORM, 'sec-fetch-site': 'same-origin' } });
+  assert.equal(own.status, 302, 'control: the same request from the site\'s own page logs in');
+});
+
+test('logging out by link works from this site and not from another', async () => {
+  reset();
+  await addUser('alice', GOOD_PASSWORD);
+  const { sid } = await postForm('/auth/login', { username: 'alice', password: GOOD_PASSWORD });
+  assert.equal((await whoami(sid)).userId, 'user-1', 'control: signed in');
+
+  const foreign = await send('GET', '/auth/logout', { cookie: sid, headers: { 'sec-fetch-site': 'cross-site' } });
+  assert.equal(foreign.status, 403);
+  assert.equal((await whoami(sid)).userId, 'user-1', 'still signed in after a link on another site');
+
+  const own = await send('GET', '/auth/logout', { cookie: sid, headers: { 'sec-fetch-site': 'same-origin' } });
+  assert.equal(own.status, 302);
+  assert.equal((await whoami(sid)).userId, null, 'signed out by this site\'s own link');
 });
 
 test('passwords never reach the log', async () => {

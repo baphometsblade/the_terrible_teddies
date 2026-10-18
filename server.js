@@ -9,6 +9,7 @@ const MongoStore = require('connect-mongo');
 const helmet = require('helmet');
 const requireDatabase = require('./middleware/requireDatabase');
 const { actionLimiter } = require('./middleware/rateLimits');
+const { refuseCrossSiteWrites } = require('./middleware/refuseCrossSite');
 const { handleErrors } = require('./middleware/errorHandlers');
 const BoundedSessionStore = require('./utils/boundedSessionStore');
 
@@ -185,6 +186,10 @@ function createApp() {
       }
     }
   }));
+
+  // Before the body is read and before any session is touched: a write that a
+  // page on another site caused goes no further. See middleware/refuseCrossSite.js.
+  app.use(refuseCrossSiteWrites);
 
   // extended:false keeps req.body values as strings. With extended:true a
   // request like ?username[$ne]= produces an object that can reach Mongo as a

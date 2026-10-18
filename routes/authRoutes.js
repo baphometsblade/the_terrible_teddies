@@ -5,6 +5,7 @@ const Player = require('../models/Player');
 const bcrypt = require('bcrypt');
 const router = express.Router();
 const { actionLimiter, loginLimiter, registerLimiter } = require('../middleware/rateLimits');
+const { refuseCrossSite } = require('../middleware/refuseCrossSite');
 
 const MIN_PASSWORD_LENGTH = 10;
 // C0 controls (line breaks, tabs, NUL, escape) and DEL.
@@ -136,9 +137,11 @@ router.post('/auth/logout', actionLimiter, (req, res) => {
   });
 });
 
-// Kept for backwards compatibility with existing links. Logout via GET is
-// CSRF-able, so prefer the POST route above.
-router.get('/auth/logout', actionLimiter, (req, res) => {
+// Kept for backwards compatibility with existing links, including the navbar's.
+// A GET that changes something can be triggered by a link on another site, which
+// SameSite=Lax does not stop, so a request from another site is refused here.
+// Prefer the POST route above.
+router.get('/auth/logout', actionLimiter, refuseCrossSite, (req, res) => {
   req.session.destroy(() => {
     res.clearCookie('tt.sid');
     res.redirect('/auth/login');
