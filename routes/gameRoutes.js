@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
@@ -5,7 +6,7 @@ const { actionLimiter } = require('../middleware/rateLimits');
 const { isAuthenticated } = require('../middleware/authMiddleware');
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
-const { initiateBattle, executeTurn, initiateEndGameBattle, loadTeddiesByIds, saveTeddyProgress } = require('../gameLogic');
+const { initiateBattle, executeTurn, initiateEndGameBattle, loadTeddiesByIds, saveTeddyProgress, claimBattleAward } = require('../gameLogic');
 const { loadEndGameContent } = require('../services/endGameService');
 const Teddy = require('../models/Teddy'); // Import the Teddy model
 const Arena = require('../models/Arena');
@@ -52,7 +53,8 @@ router.post('/game/initiate-battle', actionLimiter, isAuthenticated, (req, res) 
     }
     const playerTeddy = req.session.teddyLineup[0];
     const opponentTeddy = req.session.teddyLineup[1];
-    const battleState = initiateBattle(playerTeddy, opponentTeddy);
+    // The id lets a finished battle pay out experience exactly once.
+    const battleState = { ...initiateBattle(playerTeddy, opponentTeddy), id: crypto.randomUUID() };
     req.session.battleState = battleState;
     console.log('Battle initiated for user:', req.session.userId);
     res.json(battleState);
@@ -78,8 +80,9 @@ router.post('/game/execute-turn', actionLimiter, isAuthenticated, async (req, re
 
     const updatedBattleState = executeTurn(battleState, playerMove);
 
-    // Only award progression once the battle has actually concluded.
-    if (updatedBattleState.status === 'finished') {
+    // Only award progression once the battle has actually concluded, and only
+    // once per battle: the final turn submitted twice at once used to pay twice.
+    if (updatedBattleState.status === 'finished' && (await claimBattleAward(updatedBattleState.id))) {
       await saveTeddyProgress(updatedBattleState.player, { won: updatedBattleState.winner === 'player' });
       await saveTeddyProgress(updatedBattleState.opponent, { won: updatedBattleState.winner === 'opponent' });
     }

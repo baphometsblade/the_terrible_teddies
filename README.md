@@ -294,8 +294,9 @@ defect rather than single bugs:
   level teddies up, lists and buys in the market, runs a team, completes
   challenges, lists events and fights the boss. Requests that race each other
   (two buyers, a teddy listed several times, a member added several times, a
-  challenge completed several times) are sent together, and each may take
-  effect only once.
+  challenge completed several times, a battle's final turn sent several times)
+  are sent together, and each may take effect only once. Experience paid out to
+  one teddy at the same moment must all be kept.
 - `startCommand`: `render.yaml` starts `node server.js` itself rather than going
   through npm, which would swallow the `SIGTERM` Render sends, and it names the
   same file as `npm start`.

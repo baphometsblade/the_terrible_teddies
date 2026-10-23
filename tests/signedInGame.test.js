@@ -18,6 +18,7 @@ const Boss = require('../models/Boss');
 const Skin = require('../models/Skin');
 const { DEMO_TEDDIES } = require('../data/demoTeddies');
 const { completeChallenge } = require('../services/challengeService');
+const { levelUpTeddy } = require('../gameLogic');
 
 // The signed-in game, played against a real MongoDB.
 //
@@ -406,6 +407,36 @@ test('the signed-in game, against a real MongoDB', { skip: SKIP, timeout: 300000
         assert.equal(now.attackDamage, old.attackDamage + 5);
         assert.equal(now.experience, 95 + gained - 100, `${old.name}: what is left over carries into the next level`);
       }
+    });
+
+    await t.test('the final turn sent several times at once pays out once', async () => {
+      const mine = world.teddy['Sir Stuffs-a-Lot'];
+      const theirs = world.teddy['Lord Lint'];
+      await Teddy.updateMany({ _id: { $in: [mine._id, theirs._id] } }, { $set: { experience: 0 } });
+      // One hit ends it, and the player strikes first. The lineup is copied into
+      // the session, so the teddy's real health can be put back straight away.
+      await Teddy.updateOne({ _id: theirs._id }, { $set: { health: 1 } });
+      assert.equal((await ada.post('/game/choose-lineup', { json: { lineup: [String(mine._id), String(theirs._id)] } })).status, 200);
+      await Teddy.updateOne({ _id: theirs._id }, { $set: { health: theirs.health } });
+      assert.equal((await ada.post('/game/initiate-battle')).status, 200);
+
+      const statuses = await burst(live, times(4, { browser: ada, path: '/game/execute-turn', json: { move: 'attack' } }));
+      assert.ok(statuses.includes(200), `answers ${statuses}`);
+      assert.equal((await Teddy.findById(mine._id)).experience, 25, `the winner was paid more than once (answers ${statuses})`);
+      assert.equal((await Teddy.findById(theirs._id)).experience, 10, 'the loser was paid more than once');
+    });
+
+    await t.test('experience paid out at the same moment is all kept', async () => {
+      const teddy = world.teddy['Captain Grumblefluff'];
+      await Teddy.updateOne({ _id: teddy._id }, { $set: { experience: 0 } });
+      const before = await Teddy.findById(teddy._id).lean();
+      // Four payouts of 25 at once: exactly one level's worth between them.
+      await Promise.all([1, 2, 3, 4].map(() => levelUpTeddy(teddy._id, 25)));
+      const after = await Teddy.findById(teddy._id);
+      assert.equal(after.level, before.level + 1, `level ${after.level}, experience ${after.experience}: payouts were lost`);
+      assert.equal(after.experience, 0);
+      assert.equal(after.health, before.health + 10);
+      assert.equal(after.attackDamage, before.attackDamage + 5);
     });
 
     await t.test('the end game: arenas and bosses, and a battle set up against one', async () => {
