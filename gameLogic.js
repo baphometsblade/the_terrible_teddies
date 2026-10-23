@@ -19,6 +19,12 @@ function isValidId(id) {
   return mongoose.Types.ObjectId.isValid(id);
 }
 
+// An error the caller caused, carrying the status that describes it, so a route
+// can answer 400 or 404 instead of a 500 with a stack trace in the log.
+function callerError(status, message) {
+  return Object.assign(new Error(message), { status });
+}
+
 /**
  * Load teddies by id, preserving the order they were requested in so a chosen
  * lineup keeps its intended slot order.
@@ -83,7 +89,7 @@ async function levelUpTeddy(teddyId, experiencePoints) {
  */
 async function initiateEndGameBattle(playerTeddyId, arenaId) {
   if (!isValidId(playerTeddyId) || !isValidId(arenaId)) {
-    throw new Error('A valid teddy id and arena id are required');
+    throw callerError(400, 'A valid teddy id and arena id are required');
   }
 
   const [teddy, arena] = await Promise.all([
@@ -91,12 +97,12 @@ async function initiateEndGameBattle(playerTeddyId, arenaId) {
     Arena.findById(arenaId)
   ]);
 
-  if (!teddy) throw new Error('Teddy not found');
-  if (!arena) throw new Error('Arena not found');
+  if (!teddy) throw callerError(404, 'Teddy not found');
+  if (!arena) throw callerError(404, 'Arena not found');
 
   const boss = await Boss.findOne({ arena: arena._id });
   if (!boss) {
-    throw new Error(`No boss is assigned to arena ${arena.name}`);
+    throw callerError(404, 'No boss is assigned to that arena');
   }
 
   const battle = battleEngine.createBattle(teddy.toObject(), {

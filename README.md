@@ -228,6 +228,18 @@ Recommended first offer:
 npm test
 ```
 
+Everything above needs only Node. `tests/signedInGame.test.js` also plays the
+signed-in game against a real MongoDB, and runs when `TEST_DATABASE_URL` names
+one:
+
+```bash
+TEST_DATABASE_URL=mongodb://localhost:27017/teddies_test npm test
+```
+
+It empties that database first and drops it afterwards, so the database name
+must end in `_test`; it refuses any other. CI runs it against a MongoDB 8.0
+service container on every Node version, and there it cannot be skipped.
+
 Beyond unit tests there are structural guards, which catch whole classes of
 defect rather than single bugs:
 
@@ -277,6 +289,13 @@ defect rather than single bugs:
 - `shutdown`: starts the real server and sends it `SIGTERM` and `SIGINT`. Open
   requests finish, idle and stuck connections cannot hold it up, and a second
   signal exits at once. Skipped on Windows, which only emulates signals.
+- `signedInGame`: against a real MongoDB, registers and signs in, keeps the
+  session across a server restart, plays battles that award experience and
+  level teddies up, lists and buys in the market, runs a team, completes
+  challenges, lists events and fights the boss. Requests that race each other
+  (two buyers, a teddy listed several times, a member added several times, a
+  challenge completed several times) are sent together, and each may take
+  effect only once.
 - `startCommand`: `render.yaml` starts `node server.js` itself rather than going
   through npm, which would swallow the `SIGTERM` Render sends, and it names the
   same file as `npm start`.

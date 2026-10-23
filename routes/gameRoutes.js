@@ -10,6 +10,8 @@ const { loadEndGameContent } = require('../services/endGameService');
 const Teddy = require('../models/Teddy'); // Import the Teddy model
 const Arena = require('../models/Arena');
 const Boss = require('../models/Boss');
+const Skin = require('../models/Skin');
+const Accessory = require('../models/Accessory');
 const teddyAssets = require('../services/teddyAssets');
 
 // Route to start a new game session
@@ -152,6 +154,15 @@ router.post('/api/teddies/customize', actionLimiter, isAuthenticated, async (req
       return res.status(403).send('That teddy is not yours');
     }
 
+    // Any well-formed id used to be accepted, so a teddy could end up wearing a
+    // skin that does not exist.
+    if (skinId && !(await Skin.exists({ _id: skinId }))) {
+      return res.status(404).send('Skin not found');
+    }
+    if (accessoryId && !(await Accessory.exists({ _id: accessoryId }))) {
+      return res.status(404).send('Accessory not found');
+    }
+
     const update = {};
     if (skinId) update.skins = skinId;
     if (accessoryId) update.accessories = accessoryId;
@@ -187,6 +198,10 @@ router.post('/game/initiate-end-game-battle', actionLimiter, isAuthenticated, as
     const battleSetup = await initiateEndGameBattle(playerTeddyId, arenaId);
     res.json(battleSetup);
   } catch (error) {
+    // A bad or unknown id is the caller's mistake: 400 or 404, no stack trace.
+    if (error.status) {
+      return res.status(error.status).json({ message: error.message });
+    }
     console.error('Error initiating end-game battle:', error.message, error.stack);
     res.status(500).send('Failed to initiate end-game battle');
   }

@@ -39,6 +39,19 @@ jobs:
     # GitHub's six-hour default; one test file once hung on Node 18.18.
     timeout-minutes: 10
 
+    # A throwaway MongoDB for tests/signedInGame.test.js, which plays the
+    # signed-in game against it. The job waits until the database answers.
+    services:
+      mongodb:
+        image: mongo:8.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
     strategy:
       fail-fast: false
       matrix:
@@ -60,6 +73,9 @@ jobs:
         run: npm ci
 
       - name: Run tests
+        env:
+          # The test empties and drops this database, so its name ends in _test.
+          TEST_DATABASE_URL: mongodb://localhost:27017/teddies_test
         run: npm test
 
       # Boots the real app with no database to confirm demo mode still serves.

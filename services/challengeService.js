@@ -53,27 +53,24 @@ async function distributeRewards(playerId, challengeId) {
  * was never exported - the call threw 'TypeError: completeChallenge is not a
  * function' and the route returned 500 every time.
  *
- * Returns { alreadyCompleted } so the route can answer 409 without a second
- * round trip.
+ * Returns { alreadyCompleted } so the route can answer 409.
  */
 async function completeChallenge(player, challenge) {
     if (!player || !challenge) {
         throw new Error('A player and a challenge are required');
     }
 
-    const already = player.completedChallenges.some(
-        (entry) => entry.challengeId && entry.challengeId.equals(challenge._id)
+    // One conditional update, not read, check, push and save: two requests at
+    // once both passed the check that way and recorded the challenge twice. Only
+    // the update that finds it absent writes.
+    const result = await Player.updateOne(
+        { _id: player._id, 'completedChallenges.challengeId': { $ne: challenge._id } },
+        { $push: { completedChallenges: { challengeId: challenge._id, completionDate: new Date() } } }
     );
 
-    if (already) {
+    if (result.modifiedCount === 0) {
         return { alreadyCompleted: true, reward: 0 };
     }
-
-    player.completedChallenges.push({
-        challengeId: challenge._id,
-        completionDate: new Date()
-    });
-    await player.save();
 
     console.log(`Challenge ${challenge.title} completed by ${player.username}`);
     return { alreadyCompleted: false, reward: challenge.reward };

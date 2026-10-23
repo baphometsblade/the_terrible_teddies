@@ -30,6 +30,13 @@ router.post('/create', actionLimiter, isAuthenticated, async (req, res) => {
     // The creator is always a member, so the team is never left ownerless.
     const uniqueMembers = [...new Set([String(me._id), ...members.map(String)])];
 
+    // Every member has to exist. The model checks too, but its error became a
+    // 500; this answers the caller.
+    const existing = await Player.countDocuments({ _id: { $in: uniqueMembers } });
+    if (existing !== uniqueMembers.length) {
+      return res.status(404).json({ message: 'One or more players were not found' });
+    }
+
     const newTeam = await Team.create({ name: name.trim(), members: uniqueMembers });
     console.log(`New team created: ${newTeam.name}`);
     res.status(201).json({ message: 'Team created successfully', team: newTeam });
@@ -68,14 +75,21 @@ router.post('/:teamId/addMember', actionLimiter, isAuthenticated, async (req, re
     if (!member) {
       return res.status(404).json({ message: 'Player not found' });
     }
-    if (team.members.some((id) => String(id) === String(memberId))) {
+
+    // One conditional update, not read, check, push and save: three requests at
+    // once used to add the same member three times. Only the update that finds
+    // the member absent writes.
+    const result = await Team.updateOne(
+      { _id: team._id, members: { $ne: member._id } },
+      { $push: { members: member._id } }
+    );
+    if (result.modifiedCount === 0) {
       return res.status(409).json({ message: 'Member already in team' });
     }
 
-    team.members.push(memberId);
-    await team.save();
-    console.log(`Member added to team: ${team.name}`);
-    res.status(200).json({ message: 'Member added successfully', team });
+    const updated = await Team.findById(team._id);
+    console.log(`Member added to team: ${updated.name}`);
+    res.status(200).json({ message: 'Member added successfully', team: updated });
   } catch (error) {
     console.error('Error adding member to team:', error.message, error.stack);
     res.status(500).json({ message: 'Failed to add member to team' });

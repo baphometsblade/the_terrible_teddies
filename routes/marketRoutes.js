@@ -52,7 +52,15 @@ router.post('/market/sell', actionLimiter, isAuthenticated, async (req, res, nex
       return res.status(409).send('That teddy is already listed');
     }
 
-    await MarketItem.create({ owner: req.session.userId, teddy: teddyId, price });
+    try {
+      await MarketItem.create({ owner: req.session.userId, teddy: teddyId, price });
+    } catch (error) {
+      // A listing made at the same moment got there first (models/MarketItem.js).
+      if (error.code === 11000) {
+        return res.status(409).send('That teddy is already listed');
+      }
+      throw error;
+    }
     res.redirect('/market');
   } catch (error) {
     console.error('Market operation failed:', error.message, error.stack);
